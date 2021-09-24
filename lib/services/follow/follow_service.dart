@@ -95,12 +95,8 @@ class FollowService {
 
   Future<bool> isFollowingUser(String currentUserId, String visitedUserId) async {
     try {
-      DocumentSnapshot followingDoc = await firestore
-          .collection(FOLLOWERS)
-          .doc(visitedUserId)
-          .collection(FOLLOWERS)
-          .doc(currentUserId)
-          .get();
+      DocumentSnapshot followingDoc =
+          await firestore.collection(FOLLOWERS).doc(visitedUserId).collection(FOLLOWERS).doc(currentUserId).get();
       return followingDoc.exists;
     } catch (e) {
       throw e;
@@ -110,8 +106,7 @@ class FollowService {
   Future<List<User>> getUserFollowings(String userId) async {
     List<User> followings = [];
 
-    QuerySnapshot userFollowing =
-        await firestore.collection(FOLLOWING).doc(userId).collection(FOLLOWING).get();
+    QuerySnapshot userFollowing = await firestore.collection(FOLLOWING).doc(userId).collection(FOLLOWING).get();
 
     await Future.forEach(userFollowing.docs, (DocumentSnapshot actualFollowings) {
       followings.add(User.fromJson(actualFollowings.data() as Map<String, dynamic>));
@@ -122,8 +117,7 @@ class FollowService {
   Future<List<User>> getUserFollowers(String userId) async {
     List<User> followers = [];
 
-    QuerySnapshot userFollowers =
-        await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
+    QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
 
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
       followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));
@@ -133,9 +127,7 @@ class FollowService {
 
   Future<List<User>> getUserFollowersWithRange(String userId) async {
     List<User> followers = [];
-
-    QuerySnapshot userFollowers =
-        await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
+    QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
 
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
       followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));

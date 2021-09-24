@@ -136,9 +136,7 @@ class _UserSearchState extends State<UserSearch> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: user.username == MyAppState.currentUser!.username
-                      ? ColorPalette.grey
-                      : ColorPalette.black,
+                  color: user.username == MyAppState.currentUser!.username ? ColorPalette.grey : ColorPalette.black,
                 ),
               ),
               SizedBox(width: 10),
@@ -157,10 +155,7 @@ class _UserSearchState extends State<UserSearch> {
             padding: const EdgeInsets.only(top: 5.0),
             child: Text(
               user.team,
-              style: TextStyle(
-                fontSize: 15,
-                color: ColorPalette.grey,
-              ),
+              style: TextStyle(fontSize: 15, color: ColorPalette.grey),
             ),
           ),
           trailing: FutureBuilder<bool>(
@@ -180,8 +175,7 @@ class _UserSearchState extends State<UserSearch> {
                 return GestureDetector(
                   onTap: () async {
                     try {
-                      await _followService.unFollowUser(
-                          MyAppState.currentUser!.userID, user.userID);
+                      await _followService.unFollowUser(MyAppState.currentUser!.userID, user.userID);
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

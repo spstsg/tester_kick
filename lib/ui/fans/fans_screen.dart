@@ -52,8 +52,7 @@ class _FanScreenState extends State<FanScreen> {
       });
 
       _scrollController.addListener(() {
-        if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent &&
-            !loading) {
+        if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !loading) {
           getAllUsers();
           _usersStream = _usersController.stream;
         }
@@ -113,10 +112,7 @@ class _FanScreenState extends State<FanScreen> {
             );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
-              child: showEmptyState(
-                'No Conversations Found.',
-                'All your conversations will show up here',
-              ),
+              child: showEmptyState('No user found.', ''),
             );
           } else {
             return Container(
@@ -169,9 +165,7 @@ class _FanScreenState extends State<FanScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: user.username == MyAppState.currentUser!.username
-                      ? ColorPalette.grey
-                      : ColorPalette.black,
+                  color: user.username == MyAppState.currentUser!.username ? ColorPalette.grey : ColorPalette.black,
                 ),
               ),
               SizedBox(width: 10),
@@ -352,8 +346,7 @@ class _FanScreenState extends State<FanScreen> {
   }
 
   Stream<bool> checkIfUserIsFollowed(String followedUserId) async* {
-    bool isFollowingThisUser =
-        await _followService.isFollowingUser(MyAppState.currentUser!.userID, followedUserId);
+    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, followedUserId);
     if (!_userExistStream.isClosed) {
       _userExistStream.sink.add(isFollowingThisUser);
     }
