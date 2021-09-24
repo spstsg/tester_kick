@@ -28,7 +28,8 @@ class _ProfilePostState extends State<ProfilePost> {
 
   @override
   void initState() {
-    userPosts = _postService.getProfilePosts(widget.user.userID);
+    userPosts =
+        _postService.getProfilePosts(widget.user.userID).asBroadcastStream();
     super.initState();
   }
 
@@ -49,10 +50,12 @@ class _ProfilePostState extends State<ProfilePost> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return PostSkeleton();
-          } else if (!snapshot.hasData || snapshot.hasData && snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData ||
+              snapshot.hasData && snapshot.data!.isEmpty) {
             noPosts = true;
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
               child: Center(
                 child: showEmptyState(
                   'No Posts Found',
@@ -132,7 +135,8 @@ class _ProfilePostState extends State<ProfilePost> {
                                             alignment: Alignment.center,
                                             width: double.infinity,
                                             padding: EdgeInsets.all(20),
-                                            color: hexStringToColor(post.bgColor),
+                                            color:
+                                                hexStringToColor(post.bgColor),
                                             child: ExpandableText(
                                               text: post.post,
                                               itemTextAlign: TextAlign.center,

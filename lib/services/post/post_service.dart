@@ -16,9 +16,10 @@ class PostService {
   NotificationService notificationService = NotificationService();
   UserService _userService = UserService();
   late StreamSubscription<QuerySnapshot> _postsStreamSubscription;
-  late StreamController<List<Post>> _profilePostsStream;
+  StreamController<List<Post>> _profilePostsStream =
+      StreamController.broadcast();
   late StreamSubscription<QuerySnapshot> _profilePostsStreamSubscription;
-  late StreamController<List<Post>> _postsStream;
+  StreamController<List<Post>> _postsStream = StreamController.broadcast();
 
   Stream<List<Post>> getProfilePosts(String userID) async* {
     List<Post> _profilePosts = [];
@@ -29,7 +30,8 @@ class PostService {
         .orderBy('createdAt', descending: true)
         .snapshots();
 
-    _profilePostsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
+    _profilePostsStreamSubscription =
+        result.listen((QuerySnapshot querySnapshot) async {
       _profilePosts.clear();
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
         try {
@@ -46,10 +48,13 @@ class PostService {
   Stream<List<Post>> getPostsStream() async* {
     List<Post> _postsList = [];
     _postsStream = StreamController();
-    Stream<QuerySnapshot> result =
-        firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).snapshots();
+    Stream<QuerySnapshot> result = firestore
+        .collection(SOCIAL_POSTS)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
 
-    _postsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
+    _postsStreamSubscription =
+        result.listen((QuerySnapshot querySnapshot) async {
       _postsList.clear();
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
         Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
@@ -62,8 +67,10 @@ class PostService {
 
   Future<List<Post>> getPosts() async {
     List<Post> _postsList = [];
-    QuerySnapshot result =
-        await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
+    QuerySnapshot result = await firestore
+        .collection(SOCIAL_POSTS)
+        .orderBy('createdAt', descending: true)
+        .get();
 
     await Future.forEach(result.docs, (DocumentSnapshot post) {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
@@ -74,11 +81,14 @@ class PostService {
 
   Future<List<Comment>> getPostComments(Post post) async {
     List<Comment> _commentsList = [];
-    QuerySnapshot result =
-        await firestore.collection(POSTS_COMMENTS).where('postId', isEqualTo: post.id).get();
+    QuerySnapshot result = await firestore
+        .collection(POSTS_COMMENTS)
+        .where('postId', isEqualTo: post.id)
+        .get();
     await Future.forEach(result.docs, (DocumentSnapshot post) {
       try {
-        Comment socialCommentModel = Comment.fromJson(post.data() as Map<String, dynamic>);
+        Comment socialCommentModel =
+            Comment.fromJson(post.data() as Map<String, dynamic>);
         _commentsList.add(socialCommentModel);
       } catch (e) {
         print('FireStoreUtils.getPostComments POST_COMMENTS table invalid json '
@@ -107,7 +117,8 @@ class PostService {
         firestore.collection(USERS).doc(post.authorId);
     incrementPostCount.update({'postCount': FieldValue.increment(1)});
 
-    User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+    User? user =
+        await _userService.getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
@@ -134,12 +145,14 @@ class PostService {
     DocumentReference<Map<String, dynamic>> decrementPostCount =
         firestore.collection(USERS).doc(post.authorId);
     decrementPostCount.update({'postCount': FieldValue.increment(-1)});
-    User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+    User? user =
+        await _userService.getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
   postComment(String uid, Comment newComment, Post post) async {
-    DocumentReference commentDocument = firestore.collection(POSTS_COMMENTS).doc(uid);
+    DocumentReference commentDocument =
+        firestore.collection(POSTS_COMMENTS).doc(uid);
     await commentDocument.set(newComment.toJson());
     DocumentReference<Map<String, dynamic>> incrementCommentsCount =
         firestore.collection(SOCIAL_POSTS).doc(post.id);

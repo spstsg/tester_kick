@@ -1,12 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:collection/collection.dart';
-
-import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/models/user_model.dart';
-import 'package:kick_chat/services/helper.dart';
 
 class Post with ChangeNotifier {
   User author;
@@ -23,23 +19,10 @@ class Post with ChangeNotifier {
   int commentsCount;
   int reactionsCount;
   Timestamp createdAt;
-  PostReactions reactions;
+  Map reactions;
   List postMedia;
   int shareCount;
   SharedPost sharedPost;
-  Reaction myReaction = Reaction(
-    title: buildTitle('Like'),
-    previewIcon: buildPreviewIcon('assets/images/like_transparent.png'),
-    icon: buildDefaultReactionsIcon(
-      'assets/images/like_transparent.png',
-      Text(
-        'Like',
-        style: TextStyle(
-          color: ColorPalette.grey,
-        ),
-      ),
-    ),
-  );
 
   Post({
     author,
@@ -65,19 +48,21 @@ class Post with ChangeNotifier {
         this.shareCount = shareCount ?? 0,
         this.createdAt = createdAt ?? Timestamp.now(),
         this.reactions = reactions ??
-            PostReactions(
-              angry: 0,
-              haha: 0,
-              wow: 0,
-              like: 0,
-              love: 0,
-              sad: 0,
-            );
+            {
+              'angry': 0,
+              'happy': 0,
+              'wow': 0,
+              'like': 0,
+              'love': 0,
+              'sad': 0,
+            };
 
   factory Post.fromJson(Map<String, dynamic> parsedJson) {
     List _postMedia = parsedJson['postMedia'] ?? [];
     return new Post(
-      author: parsedJson.containsKey('author') ? User.fromJson(parsedJson['author']) : User(),
+      author: parsedJson.containsKey('author')
+          ? User.fromJson(parsedJson['author'])
+          : User(),
       id: parsedJson['id'] ?? '',
       authorId: parsedJson['authorId'] ?? '',
       username: parsedJson['username'] ?? '',
@@ -96,9 +81,15 @@ class Post with ChangeNotifier {
       privacy: parsedJson['privacy'] ?? '',
       reactionsCount: parsedJson['reactionsCount'] ?? 0,
       postMedia: _postMedia,
-      reactions: parsedJson.containsKey('reactions')
-          ? PostReactions.fromJson(parsedJson['reactions'])
-          : PostReactions(),
+      reactions: parsedJson['reactions'] ??
+          {
+            'angry': 0,
+            'happy': 0,
+            'wow': 0,
+            'like': 0,
+            'love': 0,
+            'sad': 0,
+          },
     );
   }
 
@@ -120,7 +111,7 @@ class Post with ChangeNotifier {
       'gifUrl': this.gifUrl,
       'privacy': this.privacy,
       'reactionsCount': this.reactionsCount,
-      'reactions': this.reactions.toJson(),
+      'reactions': this.reactions,
       "postMedia": this.postMedia,
     };
   }
@@ -143,7 +134,7 @@ class Post with ChangeNotifier {
     List? postMedia,
     int? shareCount,
     SharedPost? sharedPost,
-    PostReactions? reactions,
+    Map? reactions,
   }) {
     return Post(
       author: author ?? this.author,
@@ -188,8 +179,9 @@ class Post with ChangeNotifier {
         other.createdAt == createdAt &&
         listEquals(other.postMedia, postMedia) &&
         other.shareCount == shareCount &&
-        DeepCollectionEquality().equals(other.sharedPost.toJson(), sharedPost.toJson()) &&
-        DeepCollectionEquality().equals(other.reactions.toJson(), reactions.toJson());
+        DeepCollectionEquality()
+            .equals(other.sharedPost.toJson(), sharedPost.toJson()) &&
+        DeepCollectionEquality().equals(other.reactions, reactions);
   }
 
   @override
@@ -226,6 +218,7 @@ class SharedPost {
   String gifUrl;
   Timestamp createdAt;
   List postMedia;
+  Map reactions;
 
   SharedPost({
     this.id = '',
@@ -238,7 +231,17 @@ class SharedPost {
     this.gifUrl = '',
     createdAt,
     this.postMedia = const [],
-  }) : this.createdAt = createdAt ?? Timestamp.now();
+    reactions,
+  })  : this.createdAt = createdAt ?? Timestamp.now(),
+        this.reactions = reactions ??
+            {
+              'angry': 0,
+              'happy': 0,
+              'wow': 0,
+              'like': 0,
+              'love': 0,
+              'sad': 0,
+            };
 
   factory SharedPost.fromJson(Map<String, dynamic> parsedJson) {
     List _postMedia = parsedJson['postMedia'] ?? [];
@@ -252,6 +255,15 @@ class SharedPost {
       createdAt: parsedJson['createdAt'] ?? Timestamp.now(),
       post: parsedJson['post'] ?? '',
       gifUrl: parsedJson['gifUrl'] ?? '',
+      reactions: parsedJson['reactions'] ??
+          {
+            'angry': 0,
+            'happy': 0,
+            'wow': 0,
+            'like': 0,
+            'love': 0,
+            'sad': 0,
+          },
       postMedia: _postMedia,
     );
   }
@@ -268,45 +280,7 @@ class SharedPost {
       'post': this.post,
       'gifUrl': this.gifUrl,
       "postMedia": this.postMedia,
-    };
-  }
-}
-
-class PostReactions {
-  int angry;
-  int haha;
-  int wow;
-  int like;
-  int love;
-  int sad;
-
-  PostReactions({
-    this.angry = 0,
-    this.haha = 0,
-    this.wow = 0,
-    this.like = 0,
-    this.love = 0,
-    this.sad = 0,
-  });
-
-  factory PostReactions.fromJson(Map<String, dynamic> parsedJson) {
-    return new PostReactions(
-        angry: parsedJson['angry'] ?? 0,
-        haha: parsedJson['haha'] ?? 0,
-        wow: parsedJson['wow'] ?? 0,
-        like: parsedJson['like'] ?? 0,
-        love: parsedJson['love'] ?? 0,
-        sad: parsedJson['sad'] ?? 0);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "angry": this.angry,
-      "haha": this.haha,
-      "wow": this.wow,
-      "like": this.like,
-      "love": this.love,
-      'sad': this.sad,
+      "reactions": this.reactions,
     };
   }
 }

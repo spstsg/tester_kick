@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
@@ -12,10 +11,18 @@ import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/posts/edit_post_screen.dart';
 import 'package:kick_chat/ui/posts/post_comments_screen.dart';
 import 'package:kick_chat/ui/posts/share_create_post_screen.dart';
+import 'package:kick_chat/ui/posts/widgets/reactions_widget.dart';
 import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:kick_chat/ui/widgets/share_widget.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+
+class ReactionDisplay {
+  final String name;
+  final int size;
+
+  ReactionDisplay(this.name, this.size);
+}
 
 class PostHeader extends StatelessWidget {
   final Post post;
@@ -155,49 +162,60 @@ class PostHeader extends StatelessWidget {
 class PostStats extends StatefulWidget {
   final Post post;
 
-  PostStats({
-    required this.post,
-  });
+  PostStats({required this.post});
 
   @override
   PostStatsState createState() => PostStatsState();
 }
 
 class PostStatsState extends State<PostStats> {
-  // ReactionService _reactionService = ReactionService();
-  String postTypeReaction = '';
-  String previousReaction = '';
-
   @override
   Widget build(BuildContext context) {
     FocusScope.of(context).unfocus();
-
-    var addedPostReactions = getAddedPostReactions(widget.post.reactions);
+    List reactionsData = widget.post.reactions.entries.map((entry) => ReactionDisplay(entry.key, entry.value)).toList();
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            widget.post.reactionsCount > 0
-                ? Container(
-                    child: Row(
-                      children: List.generate(addedPostReactions.length, (index) {
-                        return buildReactionsIconDisplay(addedPostReactions[index]);
-                      }),
-                    ),
-                  )
-                : Text(''),
-            SizedBox(width: 4.0, height: 30.0),
-            Expanded(
-              child: widget.post.reactionsCount > 0
-                  ? Text(
-                      NumberFormat.compact().format(widget.post.reactionsCount),
-                      style: TextStyle(
-                        color: ColorPalette.grey,
-                        fontSize: 16,
+            Container(
+              width: MediaQuery.of(context).size.width * 0.85,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(reactionsData.length, (index) {
+                  return ReactionsWidget(reactions: reactionsData[index], post: widget.post);
+                }),
+              ),
+            ),
+            SizedBox(height: 30.0),
+          ],
+        ),
+        Divider(),
+        Row(
+          children: [
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+                child: TextField(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      new MaterialPageRoute<Null>(
+                        builder: (BuildContext context) {
+                          return PostCommentsScreen(post: widget.post);
+                        },
+                        fullscreenDialog: true,
                       ),
-                    )
-                  : Text(''),
+                    );
+                  },
+                  decoration: InputDecoration.collapsed(
+                    hintText: 'Add comment here...',
+                    hintStyle: TextStyle(
+                      color: ColorPalette.grey,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
+              ),
             ),
             widget.post.commentsCount > 0
                 ? Container(
@@ -223,7 +241,7 @@ class PostStatsState extends State<PostStats> {
                             ),
                           ),
                           Text(
-                            NumberFormat.compact().format(widget.post.commentsCount),
+                            NumberFormat.compact().format(12340003403),
                             style: TextStyle(
                               color: ColorPalette.grey,
                               fontSize: 16,
@@ -233,276 +251,11 @@ class PostStatsState extends State<PostStats> {
                       ),
                     ),
                   )
-                : Container(),
+                : Container()
           ],
         ),
-        widget.post.reactionsCount > 0 || widget.post.commentsCount > 0 ? Divider() : Container(),
-        // Row(
-        //   children: [
-        //     Container(
-        //       padding: EdgeInsets.symmetric(horizontal: 1.0),
-        //       height: 25.0,
-        //       child: Row(
-        //         mainAxisAlignment: MainAxisAlignment.start,
-        //         children: skipNulls([
-        //           SizedBox(
-        //             width: MediaQuery.of(context).size.width * .2,
-        //             child: FutureBuilder<List<Reactions>>(
-        //               future: PostContainerState.myReactions,
-        //               builder: (context, snapshot) {
-        //                 if (snapshot.hasData) {
-        //                   Reactions _postReaction;
-        //                   if (snapshot.data!.isNotEmpty) {
-        //                     _postReaction = PostContainerState.reactionsList.firstWhere(
-        //                         (element) => element.postId == widget.post.id, orElse: () {
-        //                       return Reactions(
-        //                           postId: '',
-        //                           username: '',
-        //                           type: '',
-        //                           avatarColor: '',
-        //                           profilePicture: '');
-        //                     });
-
-        //                     if (_postReaction.type != '') {
-        //                       widget.post.myReaction = postReactionType(
-        //                         _postReaction.type,
-        //                       );
-        //                     }
-        //                   }
-        //                   return FlutterReactionButtonCheck(
-        //                     onReactionChanged: (reaction, index, isChecked) {
-        //                       if (index > -1) {
-        //                         String reactionString =
-        //                             _reactionService.getReactionString(index + 1);
-
-        //                         setState(() {
-        //                           postTypeReaction = reactionString;
-        //                           widget.post.myReaction = postReactionsList[index];
-        //                         });
-        //                       }
-        //                       if (isChecked) {
-        //                         bool isNewReaction = false;
-        //                         Reactions postReaction =
-        //                             PostContainerState.reactionsList.firstWhere(
-        //                           (element) => element.postId == widget.post.id,
-        //                           orElse: () {
-        //                             isNewReaction = true;
-        //                             String reactionString =
-        //                                 _reactionService.getReactionString(index + 1);
-        //                             setState(() {
-        //                               postTypeReaction = reactionString;
-        //                             });
-        //                             Reactions newReaction = Reactions(
-        //                               postId: widget.post.id,
-        //                               createdAt: Timestamp.now(),
-        //                               reactionAuthorId: MyAppState.currentUser!.userID,
-        //                               type: reactionString,
-        //                               username: MyAppState.currentUser!.username,
-        //                               avatarColor: MyAppState.currentUser!.avatarColor,
-        //                               profilePicture: MyAppState.currentUser!.profilePictureURL,
-        //                             );
-        //                             PostContainerState.reactionsList.add(newReaction);
-        //                             return newReaction;
-        //                           },
-        //                         );
-        //                         setState(() {
-        //                           previousReaction = postReaction.type;
-        //                         });
-        //                         if (isNewReaction) {
-        //                           setState(() {
-        //                             widget.post.reactionsCount++;
-        //                           });
-        //                           _reactionService.postReaction(
-        //                             postReaction,
-        //                             widget.post,
-        //                           );
-        //                         } else {
-        //                           postReaction.type = _reactionService.getReactionString(index + 1);
-        //                           postReaction.createdAt = Timestamp.now();
-        //                           _reactionService.updateReaction(
-        //                             postReaction,
-        //                             widget.post,
-        //                             previousReaction,
-        //                           );
-        //                         }
-        //                       } else {
-        //                         var postReaction = PostContainerState.reactionsList
-        //                             .firstWhere((element) => element.postId == widget.post.id);
-        //                         PostContainerState.reactionsList.removeWhere(
-        //                           (element) => element.postId == widget.post.id,
-        //                         );
-        //                         setState(() {
-        //                           widget.post.reactionsCount--;
-        //                         });
-        //                         _reactionService.removeReaction(
-        //                           widget.post,
-        //                           postReaction.type,
-        //                         );
-        //                         setState(() {
-        //                           widget.post.myReaction = postReactionsList[0];
-        //                         });
-        //                       }
-        //                     },
-        //                     isChecked: _reactionService.getReactionIndex(postTypeReaction) != 1,
-        //                     reactions: postReactionsList,
-        //                     initialReaction: widget.post.myReaction,
-        //                     selectedReaction:
-        //                         _reactionService.getReactionIndex(postTypeReaction) != 1
-        //                             ? postReactionsList[
-        //                                 _reactionService.getReactionIndex(postTypeReaction) - 1]
-        //                             : postReactionsList[0],
-        //                   );
-        //                 } else {
-        //                   return Container();
-        //                 }
-        //               },
-        //             ),
-        //           ),
-        //         ]),
-        //       ),
-        //     ),
-        //     VerticalDivider(width: 20.0),
-        //     Flexible(
-        //       child: Padding(
-        //         padding: EdgeInsets.symmetric(horizontal: 30),
-        //         child: TextField(
-        //           onTap: () {
-        //             Navigator.of(context).push(
-        //               new MaterialPageRoute<Null>(
-        //                 builder: (BuildContext context) {
-        //                   return PostCommentsScreen(post: widget.post);
-        //                 },
-        //                 fullscreenDialog: true,
-        //               ),
-        //             );
-        //           },
-        //           decoration: InputDecoration.collapsed(
-        //             hintText: 'Add comment here...',
-        //             hintStyle: TextStyle(
-        //               color: ColorPalette.grey,
-        //               fontSize: 17,
-        //             ),
-        //           ),
-        //         ),
-        //       ),
-        //     )
-        //   ],
-        // ),
       ],
     );
-  }
-
-  dynamic getAddedPostReactions(PostReactions reactions) {
-    List reactionsList = [];
-    reactions.toJson().forEach((k, v) {
-      if (v > 0) {
-        reactionsList.add(k);
-      }
-    });
-    return reactionsList;
-  }
-
-  Reaction postReactionType(type) {
-    switch (type) {
-      case 'like':
-        return Reaction(
-          title: buildTitle('Like'),
-          previewIcon: buildPreviewIcon('assets/images/likes.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/likes_btn_1.png',
-            Text(
-              'Like',
-              style: TextStyle(
-                color: Color(0XFF50b5ff),
-              ),
-            ),
-          ),
-        );
-      case 'love':
-        return Reaction(
-          title: buildTitle('Love'),
-          previewIcon: buildPreviewIcon('assets/images/love.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/love.png',
-            Text(
-              'Love',
-              style: TextStyle(
-                color: Color(0XFFf33e58),
-              ),
-            ),
-          ),
-        );
-      case 'wow':
-        return Reaction(
-          title: buildTitle('Wow'),
-          previewIcon: buildPreviewIcon('assets/images/wow.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/wow.png',
-            Text(
-              'Wow',
-              style: TextStyle(
-                color: Color(0XFFf7b124),
-              ),
-            ),
-          ),
-        );
-      case 'haha':
-        return Reaction(
-          title: buildTitle('Haha'),
-          previewIcon: buildPreviewIcon('assets/images/haha.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/haha.png',
-            Text(
-              'Haha',
-              style: TextStyle(
-                color: Color(0XFFf7b124),
-              ),
-            ),
-          ),
-        );
-      case 'sad':
-        return Reaction(
-          title: buildTitle('Sad'),
-          previewIcon: buildPreviewIcon('assets/images/sad.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/sad.png',
-            Text(
-              'Sad',
-              style: TextStyle(
-                color: Color(0XFFffda6b),
-              ),
-            ),
-          ),
-        );
-      case 'angry':
-        return Reaction(
-          title: buildTitle('Angry'),
-          previewIcon: buildPreviewIcon('assets/images/angry.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/angry.png',
-            Text(
-              'Angry',
-              style: TextStyle(
-                color: Color(0XFFe9710f),
-              ),
-            ),
-          ),
-        );
-      default:
-        return Reaction(
-          title: buildTitle('Like'),
-          previewIcon: buildPreviewIcon('assets/images/likes.gif'),
-          icon: buildReactionsIcon(
-            'assets/images/likes_btn_1.png',
-            Text(
-              'Like',
-              style: TextStyle(
-                color: Color(0XFF50b5ff),
-              ),
-            ),
-          ),
-        );
-    }
   }
 }
 

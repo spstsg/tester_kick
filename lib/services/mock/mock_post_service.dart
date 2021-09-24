@@ -16,7 +16,8 @@ class MockPostService {
       password: 'qwerty1@',
       dob: '1977-09-18 00:00:00.000',
       phoneNumber: '',
-      profilePictureURL: 'https://res.cloudinary.com/ratingapp/image/upload/sunny',
+      profilePictureURL:
+          'https://res.cloudinary.com/ratingapp/image/upload/sunny',
       lowercaseUsername: 'sunny',
       userID: 'DFdraOQMlWc1DGC9cV0E5PHdf6F2',
       uniqueId: 240195658,
@@ -40,7 +41,6 @@ class MockPostService {
       avatarColor: '#e91e63',
       profilePicture: 'https://res.cloudinary.com/ratingapp/image/upload/sunny',
       bgColor: avatarProfileColor,
-      reactions: PostReactions(),
       post: Destiny.string(20),
       gifUrl: '',
       privacy: 'Public',

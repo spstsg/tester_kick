@@ -12,7 +12,8 @@ class SharePostWithinAppScreen extends StatefulWidget {
   SharePostWithinAppScreen({required this.post});
 
   @override
-  SharePostWithinAppScreenState createState() => SharePostWithinAppScreenState();
+  SharePostWithinAppScreenState createState() =>
+      SharePostWithinAppScreenState();
 }
 
 class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
@@ -128,6 +129,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         post: widget.post.post,
         gifUrl: widget.post.gifUrl,
         postMedia: widget.post.postMedia,
+        reactions: widget.post.reactions,
       );
 
       Post post = Post(
@@ -138,7 +140,6 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         avatarColor: MyAppState.currentUser!.avatarColor,
         profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: '#ffffff',
-        reactions: PostReactions(),
         post: _postController.text.trim(),
         gifUrl: '',
         privacy: 'Public',
