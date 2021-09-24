@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -81,7 +83,7 @@ class _ConversationsState extends State<ConversationsScreen> {
 
   Widget _buildConversation() {
     return Padding(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.only(left: 5, right: 10),
       child: StreamBuilder<List<HomeConversationModel>>(
         stream: _conversationsStream,
         initialData: [],
@@ -121,8 +123,7 @@ class _ConversationsState extends State<ConversationsScreen> {
         });
         return GestureDetector(
           onTap: () {
-            if (homeConversationModel.conversationModel!.creatorId ==
-                MyAppState.currentUser!.userID) {
+            if (homeConversationModel.conversationModel!.creatorId == MyAppState.currentUser!.userID) {
               _chatService.markConversationAsRead(homeConversationModel.conversationModel!);
               _chatService.markMessageAsRead(homeConversationModel.conversationModel!);
             }
@@ -137,7 +138,7 @@ class _ConversationsState extends State<ConversationsScreen> {
           child: Column(
             children: <Widget>[
               ListTile(
-                contentPadding: EdgeInsets.only(top: 0, bottom: 0, left: 20),
+                contentPadding: EdgeInsets.only(left: 20),
                 leading: Stack(
                   alignment: Alignment.bottomRight,
                   children: <Widget>[
@@ -227,13 +228,9 @@ class _ConversationsState extends State<ConversationsScreen> {
                     Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
-                        !homeConversationModel.conversationModel!.isRead
-                            ? Icons.check
-                            : MdiIcons.checkAll,
+                        !homeConversationModel.conversationModel!.isRead ? Icons.check : MdiIcons.checkAll,
                         size: 16,
-                        color: !homeConversationModel.conversationModel!.isRead
-                            ? Colors.grey
-                            : Colors.blue,
+                        color: !homeConversationModel.conversationModel!.isRead ? Colors.grey : Colors.blue,
                       ),
                     )
                   ],
@@ -274,8 +271,7 @@ class _ConversationsState extends State<ConversationsScreen> {
                       } else {
                         channelID = user.userID + friend.userID;
                       }
-                      ConversationModel? conversationModel =
-                          await _chatService.getChannelByIdOrNull(channelID);
+                      ConversationModel? conversationModel = await _chatService.getChannelByIdOrNull(channelID);
                       push(
                         context,
                         ChatScreen(
