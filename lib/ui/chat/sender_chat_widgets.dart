@@ -79,7 +79,7 @@ class SenderWidget extends StatelessWidget {
                               },
                               child: messageData.chatImages.length <= 1
                                   ? Hero(
-                                      tag: messageData.chatImages[0],
+                                      tag: getRandomString(20),
                                       child: CachedNetworkImage(
                                         imageUrl: messageData.chatImages[0],
                                         placeholder: (context, url) =>

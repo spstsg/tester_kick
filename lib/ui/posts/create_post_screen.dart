@@ -98,7 +98,9 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: postNotEmpty ? ColorPalette.white : ColorPalette.lightBlue,
+                    color: postNotEmpty
+                        ? ColorPalette.white
+                        : ColorPalette.lightBlue,
                   ),
                 ),
               ),
@@ -132,7 +134,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 controller: _postController,
                                 onChanged: (text) {
                                   setState(() {
-                                    postNotEmpty = text.length > 0 ? true : false;
+                                    postNotEmpty =
+                                        text.length > 0 ? true : false;
                                   });
                                 },
                                 style: TextStyle(
@@ -164,7 +167,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 controller: _postController,
                                 onChanged: (text) {
                                   setState(() {
-                                    postNotEmpty = text.length > 0 ? true : false;
+                                    postNotEmpty =
+                                        text.length > 0 ? true : false;
                                   });
                                 },
                                 style: TextStyle(
@@ -175,7 +179,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                   filled: true,
                                   isDense: true,
                                   border: InputBorder.none,
-                                  hintStyle: TextStyle(color: Colors.grey[700], fontSize: 20),
+                                  hintStyle: TextStyle(
+                                      color: Colors.grey[700], fontSize: 20),
                                   hintText: "What's on your mind?",
                                   fillColor: ColorPalette.white,
                                 ),
@@ -190,7 +195,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                               callback: (color) => setState(
                                 () => {
                                   selectedColor = color,
-                                  _bgColor = '#${color.value.toRadixString(16).substring(2, 8)}'
+                                  _bgColor =
+                                      '#${color.value.toRadixString(16).substring(2, 8)}'
                                 },
                               ),
                             )
@@ -220,7 +226,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                               type: 'file',
                               imageUrls: imageFileList,
                               onImageClicked: (i) => {
-                                _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i, 'single'),
+                                _viewOrDeleteImage(
+                                    mediaFiles.entries.elementAt(i),
+                                    i,
+                                    'single'),
                               },
                               onExpandClicked: (int index) => {
                                 _viewOrDeleteImage(
@@ -239,7 +248,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                     ? Flexible(
                         flex: 2,
                         child: GridView(
-                          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
                             maxCrossAxisExtent: 500,
                             crossAxisSpacing: 1,
                           ),
@@ -379,7 +389,6 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         avatarColor: MyAppState.currentUser!.avatarColor,
         profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: _bgColor,
-        reactions: PostReactions(),
         post: _postController.text.trim(),
         gifUrl: currentGif != null ? currentGif!.images!.original!.url : '',
         privacy: PostAudienceDropdownState.chosenValue,
@@ -408,7 +417,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
-  void _viewOrDeleteImage(MapEntry<String, File> mediaEntry, int index, String type) {
+  void _viewOrDeleteImage(
+      MapEntry<String, File> mediaEntry, int index, String type) {
     final action = CupertinoActionSheet(
       actions: <Widget>[
         Column(
@@ -416,7 +426,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
             CupertinoActionSheetAction(
               onPressed: () async {
                 Navigator.pop(context);
-                mediaFiles.removeWhere((key, value) => value == mediaEntry.value);
+                mediaFiles
+                    .removeWhere((key, value) => value == mediaEntry.value);
                 imageFileList.removeAt(index);
                 setState(() {});
                 if (imageFileList.length == 0) {
@@ -515,7 +526,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
               );
 
               if (result != null) {
-                List<File> files = result.paths.map((path) => File(path!)).toList();
+                List<File> files =
+                    result.paths.map((path) => File(path!)).toList();
                 imageFileList = files;
                 for (int i = 0; i < files.length; i++) {
                   mediaFiles.remove('null');

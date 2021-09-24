@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:kick_chat/services/helper.dart';
 
 class ChatPhotoGrid extends StatefulWidget {
   final int maxImages;
@@ -53,7 +54,7 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
         if (remaining == 0) {
           return GestureDetector(
             child: Hero(
-              tag: imageUrl,
+              tag: getRandomString(20),
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.fitHeight,
@@ -78,7 +79,7 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
               // fit: StackFit.expand,
               children: [
                 Hero(
-                  tag: imageUrl,
+                  tag: getRandomString(20),
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.fitHeight,
@@ -109,7 +110,7 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
       } else {
         return GestureDetector(
           child: Hero(
-            tag: imageUrl,
+            tag: getRandomString(20),
             child: CachedNetworkImage(
               imageUrl: imageUrl,
               fit: BoxFit.fitHeight,

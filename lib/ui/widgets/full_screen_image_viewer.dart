@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kick_chat/services/helper.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -46,7 +47,7 @@ class FullScreenImageViewer extends StatelessWidget {
                 (BuildContext context, int itemIndex, int pageViewIndex) {
               return Container(
                 child: Hero(
-                  tag: imageUrl,
+                  tag: getRandomString(20),
                   child: PhotoView(
                     imageProvider: imageFiles.length == 0
                         ? (imageUrl != ''
