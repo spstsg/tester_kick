@@ -27,8 +27,8 @@ class PostContainerState extends State<PostContainer> {
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
   late Stream<List<Post>> _postsStream;
-  late List<User> userFollowers = [];
-  late List<User> blockedUsers = [];
+  List<User> userFollowers = [];
+  List<User> blockedUsers = [];
   int displayedImageIndex = 0;
   bool noPosts = false;
 

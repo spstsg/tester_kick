@@ -417,7 +417,6 @@ class _ChangePasswordState extends State<ChangePassword> {
 
     if (isValid) {
       try {
-        await Future.delayed(Duration(seconds: 1));
         await user!.updatePassword(_newPassword.text.trim());
         setState(() => isLoading = false);
         var dialogResponse = await showCupertinoAlert(

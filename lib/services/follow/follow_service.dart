@@ -26,7 +26,7 @@ class FollowService {
           .doc(visitedUser.userID)
           .set(otherUser.toJson());
       DocumentReference<Map<String, dynamic>> incrementFollowingCount =
-          firestore.collection(USERS).doc(currentUser.userID);
+          firestore.collection(USERS).doc(MyAppState.currentUser!.userID);
       incrementFollowingCount.update({'followingCount': FieldValue.increment(1)});
 
       User current = User(

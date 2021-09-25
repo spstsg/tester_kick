@@ -71,6 +71,7 @@ class AuthService {
       if (documentSnapshot.exists) {
         user = User.fromJson(documentSnapshot.data() as Map<String, dynamic>);
         user.fcmToken = await firebaseMessaging.getToken() ?? '';
+        user.active = true;
         await _userService.updateCurrentUser(user);
       }
       return user;
@@ -82,50 +83,10 @@ class AuthService {
   Future<String?> firebaseCreateNewUser(User user) async =>
       await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((value) => null, onError: (e) => e);
 
-  // Stream<User> getCurrentUserStream(String userID) async* {
-  //   _userStream = StreamController();
-  //   Stream<QuerySnapshot> result =
-  //       firestore.collection(USERS).where('id', isEqualTo: userID).snapshots();
-
-  //   _userStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
-  //     await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
-  //       try {
-  //         _userStream.sink.add(User.fromJson(post.data() as Map<String, dynamic>));
-  //       } catch (e) {
-  //         print(e);
-  //       }
-  //     });
-  //   }, cancelOnError: true);
-  //   yield* _userStream.stream;
-  // }
-
-  // void disposeCurrentUserStream() {
-  //   _userStream.close();
-  //   _userStreamSubscription.cancel();
-  // }
-
-  // static Future<User?> updateCurrentUser(User user) async {
-  //   return await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((document) {
-  //     return user;
-  //   });
-  // }
-
   Future<bool> checkIfEmailExist(String email) async {
     var userDocument = await FirebaseFirestore.instance.collection(USERS).where('email', isEqualTo: email).get();
     return userDocument.docs.length >= 1 ? true : false;
   }
-
-  // static Future<dynamic> getUserByUsername(String username) async {
-  //   var userDocument = await FirebaseFirestore.instance
-  //       .collection(USERS)
-  //       .where('username', isEqualTo: username)
-  //       .get();
-  //   if (userDocument.docs.length >= 1) {
-  //     return userDocument.docs.first;
-  //   } else {
-  //     return null;
-  //   }
-  // }
 
   Future<bool> checkIfUsernameExist(String username) async {
     var userDocument = await FirebaseFirestore.instance.collection(USERS).where('username', isEqualTo: username).get();

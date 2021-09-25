@@ -124,15 +124,10 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                       textInputAction: TextInputAction.next,
                       controller: _emailController,
                       onChanged: (text) {
-                        var isEmailValid = validateEmail(text);
-                        if (isEmailValid)
-                          setState(() {
-                            validEmail = true;
-                          });
-                        else
-                          setState(() {
-                            validEmail = false;
-                          });
+                        bool isEmailValid = validateEmail(text);
+                        setState(() {
+                          validEmail = isEmailValid;
+                        });
 
                         if (text.length == 0)
                           setState(() {
@@ -348,8 +343,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary:
-                        (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
+                    primary: (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(0.0),

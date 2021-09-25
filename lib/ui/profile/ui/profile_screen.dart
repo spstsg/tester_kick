@@ -670,7 +670,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         GestureDetector(
           onTap: () {
-            push(context, FriendsTabScreen(tabIndex: 0, user: widget.user));
+            push(
+              context,
+              FriendsTabScreen(
+                tabIndex: 0,
+                user: widget.user.userID == MyAppState.currentUser!.userID ? MyAppState.currentUser! : widget.user,
+              ),
+            );
           },
           child: Column(
             children: <Widget>[

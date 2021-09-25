@@ -63,11 +63,13 @@ class _ConversationsState extends State<ConversationsScreen> {
         ),
       ),
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(height: hasConversations ? 10 : 0),
           Expanded(
             child: Container(
               width: double.infinity,
+              height: MediaQuery.of(context).size.height,
               child: ListView(
                 children: [
                   hasConversations ? _followersList() : SizedBox.shrink(),
