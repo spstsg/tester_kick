@@ -9,7 +9,7 @@ import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
-import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/widgets/marquee.dart';
 import 'package:kick_chat/ui/widgets/ripple/circle_painter.dart';
 import 'package:kick_chat/ui/widgets/ripple/curve_wave.dart';
@@ -20,8 +20,7 @@ class UserLiveWidget extends StatefulWidget {
   _UserLiveWidgetState createState() => _UserLiveWidgetState();
 }
 
-class _UserLiveWidgetState extends State<UserLiveWidget>
-    with TickerProviderStateMixin {
+class _UserLiveWidgetState extends State<UserLiveWidget> with TickerProviderStateMixin {
   AudoChatService _audioChatService = AudoChatService();
   Room room = Room();
   late AnimationController _controller;
@@ -62,8 +61,7 @@ class _UserLiveWidgetState extends State<UserLiveWidget>
                 height: 20,
                 width: MediaQuery.of(context).size.width * 0.13,
                 child: CustomPaint(
-                  painter:
-                      CirclePainter(_controller, color: Colors.red.shade200),
+                  painter: CirclePainter(_controller, color: Colors.red.shade200),
                   child: _circleTransition(),
                 ),
               ),
@@ -113,8 +111,7 @@ class _UserLiveWidgetState extends State<UserLiveWidget>
                   ),
                 ),
               ),
-              storeSelectedRoom.creator.username !=
-                      MyAppState.currentUser!.username
+              storeSelectedRoom.creator.username != MyAppState.currentUser!.username
                   ? Container(
                       padding: EdgeInsets.only(right: 10),
                       alignment: Alignment.centerRight,
@@ -155,8 +152,7 @@ class _UserLiveWidgetState extends State<UserLiveWidget>
 
   removeUserFromRoom(Room room) async {
     // AudioRoomScreenState.engine.leaveChannel();
-    room.participants.removeWhere((participant) =>
-        participant['username'] == MyAppState.currentUser!.username);
+    room.participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
     var result = await Future.wait([
       _audioChatService.removeSpeaker(room.id),

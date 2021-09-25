@@ -19,7 +19,7 @@ class _ReactionsWidgetState extends State<ReactionsWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: 6),
       color: Colors.transparent,
       child: GestureDetector(
         onTap: () async {
@@ -29,13 +29,19 @@ class _ReactionsWidgetState extends State<ReactionsWidget> {
           children: <Widget>[
             Image.asset(
               'assets/images/${widget.reactions.name}.png',
-              height: 20,
-              width: 20,
+              height: 15,
+              width: 15,
               fit: BoxFit.cover,
             ),
-            SizedBox(width: 5),
-            Text(NumberFormat.compact().format(widget.reactions.size)),
-            SizedBox(width: 5),
+            Padding(
+              padding: EdgeInsets.only(left: 5),
+              child: Text(
+                NumberFormat.compact().format(widget.reactions.size),
+                style: TextStyle(
+                  fontSize: 13,
+                ),
+              ),
+            ),
           ],
         ),
       ),

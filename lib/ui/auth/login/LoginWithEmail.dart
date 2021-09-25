@@ -118,11 +118,6 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -365,16 +360,13 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                   constraints: BoxConstraints(minWidth: double.infinity),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: (!validEmail && !validPassword)
-                          ? ColorPalette.grey
-                          : ColorPalette.primary,
+                      primary: (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
                       padding: EdgeInsets.only(top: 10, bottom: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(0.0),
                       ),
                     ),
-                    onPressed:
-                        validEmail && validPassword ? () => checkIfEmailExist(callback) : null,
+                    onPressed: validEmail && validPassword ? () => checkIfEmailExist(callback) : null,
                     child: Text(
                       loginButtonText,
                       style: TextStyle(

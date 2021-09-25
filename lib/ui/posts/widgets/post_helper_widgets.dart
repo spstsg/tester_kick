@@ -179,9 +179,7 @@ class PostStatsState extends State<PostStats> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              width: MediaQuery.of(context).size.width * 0.85,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(reactionsData.length, (index) {
                   return ReactionsWidget(reactions: reactionsData[index], post: widget.post);
                 }),

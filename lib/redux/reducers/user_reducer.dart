@@ -17,6 +17,7 @@ User _addUserSuccess(User state, CreateUserAction action) {
     profilePictureURL: action.user.profilePictureURL,
     phoneNumber: action.user.phoneNumber,
     active: action.user.active,
+    emailPasswordLogin: action.user.emailPasswordLogin,
     lastOnlineTimestamp: action.user.lastOnlineTimestamp,
     settings: action.user.settings,
     fcmToken: action.user.fcmToken,

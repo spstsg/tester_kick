@@ -13,15 +13,12 @@ class UserService {
   late dynamic lastDocument = null;
 
   Stream<User> getCurrentUserStream(String userID) async* {
-    Stream<QuerySnapshot> result =
-        firestore.collection(USERS).where('id', isEqualTo: userID).snapshots();
+    Stream<QuerySnapshot> result = firestore.collection(USERS).where('id', isEqualTo: userID).snapshots();
 
-    _userStreamSubscription =
-        result.listen((QuerySnapshot querySnapshot) async {
+    _userStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot user) {
         try {
-          _userStream.sink
-              .add(User.fromJson(user.data() as Map<String, dynamic>));
+          _userStream.sink.add(User.fromJson(user.data() as Map<String, dynamic>));
         } catch (e) {
           print(e);
         }
@@ -36,15 +33,10 @@ class UserService {
     if (lastDocument == null) {
       result = firestore.collection(USERS).limit(limit).snapshots();
     } else {
-      result = firestore
-          .collection(USERS)
-          .startAfterDocument(lastDocument)
-          .limit(limit)
-          .snapshots();
+      result = firestore.collection(USERS).startAfterDocument(lastDocument).limit(limit).snapshots();
     }
 
-    _usersStreamSubscription =
-        result.listen((QuerySnapshot querySnapshot) async {
+    _usersStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _usersList.clear();
       lastDocument = null;
       if (querySnapshot.docs.isNotEmpty) {
@@ -64,11 +56,7 @@ class UserService {
     if (lastDocument == null) {
       result = await firestore.collection(USERS).limit(limit).get();
     } else {
-      result = await firestore
-          .collection(USERS)
-          .startAfterDocument(lastDocument)
-          .limit(limit)
-          .get();
+      result = await firestore.collection(USERS).startAfterDocument(lastDocument).limit(limit).get();
     }
 
     if (result.docs.isNotEmpty) {
@@ -82,8 +70,7 @@ class UserService {
   }
 
   Future<User?> getCurrentUser(String uid) async {
-    DocumentSnapshot userDocument =
-        await firestore.collection(USERS).doc(uid).get();
+    DocumentSnapshot userDocument = await firestore.collection(USERS).doc(uid).get();
     if (userDocument.data() != null && userDocument.exists) {
       return User.fromJson(userDocument.data() as Map<String, dynamic>);
     } else {
@@ -92,20 +79,13 @@ class UserService {
   }
 
   Future<User?> updateCurrentUser(User user) async {
-    return await firestore
-        .collection(USERS)
-        .doc(user.userID)
-        .set(user.toJson())
-        .then((document) {
+    return await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((document) {
       return user;
     });
   }
 
   Future<dynamic> getUserByUsername(String username) async {
-    var userDocument = await FirebaseFirestore.instance
-        .collection(USERS)
-        .where('username', isEqualTo: username)
-        .get();
+    var userDocument = await FirebaseFirestore.instance.collection(USERS).where('username', isEqualTo: username).get();
     if (userDocument.docs.length >= 1) {
       return userDocument.docs.first;
     } else {
@@ -120,6 +100,8 @@ class UserService {
 
   void disposeUsersStream() {
     _usersStream.close();
-    _usersStreamSubscription!.cancel();
+    if (_usersStreamSubscription != null) {
+      _usersStreamSubscription!.cancel();
+    }
   }
 }

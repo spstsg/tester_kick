@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/audio_chat_model.dart';
-import 'package:kick_chat/redux/actions/selected_room_action.dart';
+// import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
-import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/audio/ui/user_live_widget.dart';
 import 'package:kick_chat/ui/audio/widgets/audio_card.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart';
 
 class LiveAudioRooms extends StatefulWidget {
   const LiveAudioRooms({Key? key}) : super(key: key);
@@ -59,8 +59,7 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return PostSkeleton();
-              } else if (!snapshot.hasData ||
-                  (snapshot.data?.isEmpty ?? true)) {
+              } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
                 return ListView.builder(
                   padding: EdgeInsets.zero,
                   physics: ScrollPhysics(),
@@ -78,8 +77,7 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
                   },
                 );
               } else {
-                var liveAudioRooms =
-                    snapshot.data!.where((i) => i.status != 'ended').toList();
+                var liveAudioRooms = snapshot.data!.where((i) => i.status != 'ended').toList();
                 if (liveAudioRooms.isEmpty) {
                   return Container(
                     height: MediaQuery.of(context).size.height * 0.7,
@@ -89,10 +87,8 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
                     ),
                   );
                 }
-                var result = storeSelectedRoom.participants.where(
-                    (participant) =>
-                        participant['username'] ==
-                        MyAppState.currentUser!.username);
+                var result = storeSelectedRoom.participants
+                    .where((participant) => participant['username'] == MyAppState.currentUser!.username);
 
                 return Stack(
                   children: [
@@ -124,8 +120,7 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
                         );
                       },
                     ),
-                    storeSelectedRoom.creator.username.isNotEmpty &&
-                            result.isNotEmpty
+                    storeSelectedRoom.creator.username.isNotEmpty && result.isNotEmpty
                         ? Align(
                             alignment: Alignment.bottomCenter,
                             child: UserLiveWidget(),
@@ -214,10 +209,8 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
   //   }
   // }
 
-  removeUserFromRoom(
-      List participants, String roomCreatorId, String selectedRoomId) {
-    var user = participants.where((participant) =>
-        participant['username'] == MyAppState.currentUser!.username);
+  removeUserFromRoom(List participants, String roomCreatorId, String selectedRoomId) {
+    var user = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
 
     if (user.isNotEmpty && roomCreatorId != MyAppState.currentUser!.userID) {
       _audioChatService.removeSpeaker(selectedRoomId);

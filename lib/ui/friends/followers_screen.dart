@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
@@ -66,12 +65,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                     return Column(
                       children: [
                         ListTile(
-                          contentPadding: EdgeInsets.only(
-                            top: 10,
-                            bottom: 10,
-                            left: 10,
-                            right: 10,
-                          ),
+                          contentPadding: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
                           onTap: () async {
                             User? user = await _userService.getCurrentUser(
                               snapshot.data![index].userID,
@@ -90,7 +84,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
-                              color: ColorPalette.black,
+                              // color: ColorPalette.black,
                             ),
                           ),
                         ),
