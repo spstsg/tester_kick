@@ -50,6 +50,7 @@ class _UserSearchState extends State<UserSearch> {
             Navigator.of(context).pop();
           },
         ),
+        centerTitle: false,
         title: Container(
           width: double.infinity,
           height: 40,
@@ -134,8 +135,7 @@ class _UserSearchState extends State<UserSearch> {
               Text(
                 user.username,
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 16,
                   color: user.username == MyAppState.currentUser!.username ? ColorPalette.grey : ColorPalette.black,
                 ),
               ),

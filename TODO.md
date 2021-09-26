@@ -7,8 +7,6 @@
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 
-- File picker has issue on simulator. If i pick N files, it only selects N - 1 files. (Check this on a real device)
-
 ...........
 - I have done the chat images delete feature
 - I add getRandomString(20) to all Hero tag for image display

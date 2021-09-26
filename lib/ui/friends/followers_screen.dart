@@ -88,8 +88,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             title: Text(
                               snapshot.data![index].username,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                color: ColorPalette.black,
                               ),
                             ),
                             trailing: trailingButtons(snapshot.data!, index),

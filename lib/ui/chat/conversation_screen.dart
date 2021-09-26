@@ -55,7 +55,7 @@ class _ConversationsState extends State<ConversationsScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Chats',
+          'Conversations',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -180,8 +180,7 @@ class _ConversationsState extends State<ConversationsScreen> {
                       child: Text(
                         homeConversationModel.members.first.username,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                           color: ColorPalette.primary,
                         ),
                       ),
@@ -267,21 +266,19 @@ class _ConversationsState extends State<ConversationsScreen> {
                   padding: const EdgeInsets.only(top: 8.0, left: 10, right: 4),
                   child: InkWell(
                     onTap: () async {
-                      String channelID;
-                      if (friend.userID.compareTo(user.userID) < 0) {
-                        channelID = friend.userID + user.userID;
-                      } else {
-                        channelID = user.userID + friend.userID;
-                      }
-                      ConversationModel? conversationModel = await _chatService.getChannelByIdOrNull(channelID);
+                      ConversationModel? conversationModel = await _chatService.getSingleConversation(
+                        MyAppState.currentUser!.userID,
+                        friend.userID,
+                      );
                       push(
                         context,
                         ChatScreen(
-                            homeConversationModel: HomeConversationModel(
-                              members: [friend],
-                              conversationModel: conversationModel,
-                            ),
-                            user: friend),
+                          homeConversationModel: HomeConversationModel(
+                            members: [friend],
+                            conversationModel: conversationModel,
+                          ),
+                          user: widget.user,
+                        ),
                       );
                     },
                     child: Column(

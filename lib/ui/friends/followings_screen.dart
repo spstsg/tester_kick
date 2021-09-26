@@ -88,8 +88,6 @@ class _FollowingsScreenState extends State<FollowingsScreen> {
                             title: Text(
                               snapshot.data![index].username,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
                                 color: ColorPalette.black,
                               ),
                             ),

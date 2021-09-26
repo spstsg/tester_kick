@@ -239,7 +239,7 @@ class PostStatsState extends State<PostStats> {
                             ),
                           ),
                           Text(
-                            NumberFormat.compact().format(12340003403),
+                            NumberFormat.compact().format(widget.post.commentsCount),
                             style: TextStyle(
                               color: ColorPalette.grey,
                               fontSize: 16,
