@@ -12,7 +12,7 @@ import 'package:kick_chat/models/audio_chat_model.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
-import 'package:kick_chat/services/audio/agora_service.dart';
+// import 'package:kick_chat/services/audio/agora_service.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/chat/audio_room_chat.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -38,7 +38,7 @@ class AudioRoomScreen extends StatefulWidget {
 class AudioRoomScreenState extends State<AudioRoomScreen> {
   AudoChatService _audioChatService = AudoChatService();
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
-  AgoraService _agoraService = AgoraService();
+  // AgoraService _agoraService = AgoraService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
   late Stream<List<AudioRoomModel>> _audioChatMessageStream;
   List raisedHands = [];
@@ -55,8 +55,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
 
   @override
   void initState() {
-    _audioChatMessageStream =
-        _audioChatRoomService.getAudioRoomMessages(widget.room.id);
+    _audioChatMessageStream = _audioChatRoomService.getAudioRoomMessages(widget.room.id);
     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(Room()));
     raisedHands = widget.room.raisedHands;
     participants = widget.room.participants;
@@ -112,8 +111,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
           ),
           onPressed: () async {
             removeSpeaker();
-            await _sharedPreferences.setSharedPreferencesString(
-                'roomId', widget.room.id);
+            await _sharedPreferences.setSharedPreferencesString('roomId', widget.room.id);
             await _sharedPreferences.setSharedPreferencesString(
               'roomCreatorId',
               widget.room.creator.userID,
@@ -129,8 +127,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
         actions: [
           appBarActions(),
           Visibility(
-            visible:
-                widget.room.creator.userID == MyAppState.currentUser!.userID,
+            visible: widget.room.creator.userID == MyAppState.currentUser!.userID,
             child: PopupMenuButton(
               padding: EdgeInsets.all(0),
               icon: Icon(
@@ -175,9 +172,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       ),
       body: Column(
         children: [
-          widget.room.creator.userID == MyAppState.currentUser!.userID
-              ? roomInfo()
-              : SizedBox.shrink(),
+          widget.room.creator.userID == MyAppState.currentUser!.userID ? roomInfo() : SizedBox.shrink(),
           Center(
             child: Container(
               height: 40,
@@ -213,8 +208,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return AudioRoomSingleSkeleton();
-                    } else if (!snapshot.hasData ||
-                        (snapshot.data?.isEmpty ?? true)) {
+                    } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
                       return Container(
                         child: Center(
                           child: Text(
@@ -242,8 +236,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                               child: Image(
                                 height: 40.0,
                                 width: 40.0,
-                                image: NetworkImage(
-                                    snapshot.data!.last.profilePicture),
+                                image: NetworkImage(snapshot.data!.last.profilePicture),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -310,8 +303,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                         ),
                         onPressed: () {
                           if (_messageController.text.isNotEmpty) {
-                            _sendMessage(
-                                widget.room.id, _messageController.text);
+                            _sendMessage(widget.room.id, _messageController.text);
                             _messageController.clear();
                             setState(() {});
                           }
@@ -343,8 +335,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       username: user.username,
       profilePicture: user.profilePictureURL,
     );
-    bool isSuccessful =
-        await _audioChatRoomService.addAudioRoomMessage(conversation);
+    bool isSuccessful = await _audioChatRoomService.addAudioRoomMessage(conversation);
     if (isSuccessful) {
       setState(() {});
     }
@@ -421,9 +412,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       participants = selectedRoom.participants;
       raisedHands = selectedRoom.raisedHands;
       speakers = selectedRoom.speakers;
-      var result = raisedHands
-          .where((user) => user == MyAppState.currentUser!.username)
-          .toList();
+      var result = raisedHands.where((user) => user == MyAppState.currentUser!.username).toList();
       isHandRaised = result.isNotEmpty;
     });
   }
@@ -434,8 +423,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
   }
 
   muteAndUnmuteSpeaker(String username) {
-    var result =
-        speakers.where((user) => user['username'] == username).toList();
+    var result = speakers.where((user) => user['username'] == username).toList();
     return result.isNotEmpty;
   }
 
@@ -497,8 +485,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
         // }
       });
     } else {
-      final snackBar =
-          SnackBar(content: Text('Error unmuting yourself. Try again'));
+      final snackBar = SnackBar(content: Text('Error unmuting yourself. Try again'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
@@ -517,8 +504,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       endTime: widget.room.endTime,
     );
     if (room.speakers.isNotEmpty) {
-      room.speakers.removeWhere(
-          (speaker) => speaker['username'] == MyAppState.currentUser!.username);
+      room.speakers.removeWhere((speaker) => speaker['username'] == MyAppState.currentUser!.username);
     }
     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
     var result = await _audioChatService.removeSpeaker(widget.room.id);
@@ -531,8 +517,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
         // }
       });
     } else {
-      final snackBar =
-          SnackBar(content: Text('Error muting yourself. Try again'));
+      final snackBar = SnackBar(content: Text('Error muting yourself. Try again'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
@@ -550,8 +535,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       startTime: widget.room.startTime,
       endTime: widget.room.endTime,
     );
-    room.participants.removeWhere((participant) =>
-        participant['username'] == MyAppState.currentUser!.username);
+    room.participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
     if (!roomIsEnded) {
       MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
     } else {
@@ -588,9 +572,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
   Widget appBarActions() {
     return Container(
       padding: EdgeInsets.only(
-        right: widget.room.creator.userID == MyAppState.currentUser!.userID
-            ? 0
-            : 20,
+        right: widget.room.creator.userID == MyAppState.currentUser!.userID ? 0 : 20,
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints.tightFor(height: 50),
@@ -604,19 +586,16 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                     MyAppState.currentUser!.username,
                   );
                   if (result != null) {
-                    final snackBar = SnackBar(
-                        content: Text('Error raising hand. Try again'));
+                    final snackBar = SnackBar(content: Text('Error raising hand. Try again'));
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }
                 } else {
-                  var result =
-                      await _audioChatService.removeUserFromRaisedHands(
+                  var result = await _audioChatService.removeUserFromRaisedHands(
                     widget.room.id,
                     MyAppState.currentUser!.username,
                   );
                   if (result != null) {
-                    final snackBar = SnackBar(
-                        content: Text('Error removing hand. Try again'));
+                    final snackBar = SnackBar(content: Text('Error removing hand. Try again'));
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }
                 }
@@ -630,8 +609,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                 child: Icon(
                   CupertinoIcons.hand_raised,
                   size: 25.0,
-                  color:
-                      isHandRaised ? ColorPalette.white : ColorPalette.primary,
+                  color: isHandRaised ? ColorPalette.white : ColorPalette.primary,
                 ),
               ),
             ),
@@ -657,8 +635,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                     onPressed: () async {
                       // engine.leaveChannel();
                       _sharedPreferences.deleteSharedPreferencesItem('roomId');
-                      _sharedPreferences
-                          .deleteSharedPreferencesItem('roomCreatorId');
+                      _sharedPreferences.deleteSharedPreferencesItem('roomCreatorId');
                       removeUserFromRoom(false);
                     },
                     style: ElevatedButton.styleFrom(
@@ -738,13 +715,11 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                         isMuted: muteAndUnmuteSpeaker(data['username']),
                         onPressed: () {
                           participants.removeWhere(
-                            (participant) =>
-                                participant['username'] == data['username'],
+                            (participant) => participant['username'] == data['username'],
                           );
                           widget.room.participants = participants;
 
-                          MyAppState.reduxStore!
-                              .dispatch(CreateSelectedRoomAction(widget.room));
+                          MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(widget.room));
 
                           var participant = {
                             'id': data['id'],
@@ -786,9 +761,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
               true,
             );
             if (dialogResponse) {
-              if (participants.length == 1 &&
-                  participants[0]['username'] ==
-                      MyAppState.currentUser!.username) {
+              if (participants.length == 1 && participants[0]['username'] == MyAppState.currentUser!.username) {
                 _sharedPreferences.deleteSharedPreferencesItem('roomId');
                 _sharedPreferences.deleteSharedPreferencesItem('roomCreatorId');
                 removeUserFromRoom(true);

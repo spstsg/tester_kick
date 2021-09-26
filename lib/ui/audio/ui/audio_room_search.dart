@@ -5,14 +5,14 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/audio_chat_model.dart';
-import 'package:kick_chat/redux/actions/selected_room_action.dart';
+// import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/search/search_service.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
-import 'package:kick_chat/ui/audio/ui/audio_room.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+// import 'package:permission_handler/permission_handler.dart';
 
 class AudioRoomSearch extends StatefulWidget {
   const AudioRoomSearch({Key? key}) : super(key: key);
@@ -62,8 +62,7 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
               controller: _searchController,
               onChanged: (input) async {
                 if (input.isNotEmpty) {
-                  var roomList =
-                      await _searchService.searchLiveAudioRooms(input);
+                  var roomList = await _searchService.searchLiveAudioRooms(input);
                   setState(() {
                     rooms = roomList;
                   });
@@ -105,9 +104,7 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
                 itemCount: rooms.length,
                 itemBuilder: (context, index) {
                   SchedulerBinding.instance!.addPostFrameCallback((_) {
-                    _audioChatService
-                        .getLiveRoom(rooms[index].id)
-                        .listen((event) {
+                    _audioChatService.getLiveRoom(rooms[index].id).listen((event) {
                       roomParticipants = [...event.participants];
                       roomSpeakers = [...event.speakers];
                       raisedHands = [...event.raisedHands];
@@ -127,8 +124,7 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
   }
 
   Widget searchResults(Room room, Room storeSelectedRoom) {
-    var result = room.participants.where((participant) =>
-        participant['username'] == MyAppState.currentUser!.username);
+    var result = room.participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
     hasParticipant = result.isNotEmpty ? true : false;
     return Column(
       children: [
@@ -189,18 +185,13 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
             },
             style: ElevatedButton.styleFrom(
               elevation: 0.0,
-              primary:
-                  !hasParticipant ? ColorPalette.primary : Colors.blue.shade200,
+              primary: !hasParticipant ? ColorPalette.primary : Colors.blue.shade200,
               textStyle: TextStyle(
-                color: !hasParticipant
-                    ? ColorPalette.primary
-                    : Colors.blue.shade200,
+                color: !hasParticipant ? ColorPalette.primary : Colors.blue.shade200,
               ),
               shape: RoundedRectangleBorder(
                 side: BorderSide(
-                  color: !hasParticipant
-                      ? ColorPalette.primary
-                      : Colors.blue.shade200,
+                  color: !hasParticipant ? ColorPalette.primary : Colors.blue.shade200,
                 ),
                 borderRadius: BorderRadius.circular(40),
               ),
@@ -291,10 +282,8 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
   //   }
   // }
 
-  removeUserFromRoom(
-      List participants, String roomCreatorId, String selectedRoomId) {
-    var user = participants.where((participant) =>
-        participant['username'] == MyAppState.currentUser!.username);
+  removeUserFromRoom(List participants, String roomCreatorId, String selectedRoomId) {
+    var user = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
 
     if (user.isNotEmpty && roomCreatorId != MyAppState.currentUser!.userID) {
       _audioChatService.removeSpeaker(selectedRoomId);

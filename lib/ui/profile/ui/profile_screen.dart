@@ -12,6 +12,7 @@ import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/friends/friends_tab_screen.dart';
 import 'package:kick_chat/ui/profile/ui/edit_profile.dart';
+import 'package:kick_chat/ui/profile/ui/settings_screen.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -56,8 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Stream<bool> checkIfUserIsFollowed() async* {
     userExistStream = new StreamController<bool>();
-    bool isFollowingThisUser =
-        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
     if (!userExistStream.isClosed) {
       userExistStream.sink.add(isFollowingThisUser);
     }
@@ -65,8 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   userIsFollowed() async {
-    bool isFollowingThisUser =
-        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
     setState(() {
       _isFollowing = isFollowingThisUser;
     });
@@ -132,6 +131,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Text("View Best Eleven"),
                 ),
               ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    new MaterialPageRoute<Null>(
+                      builder: (BuildContext context) {
+                        return new SettingScreen();
+                      },
+                      fullscreenDialog: true,
+                    ),
+                  );
+                },
+                child: Visibility(
+                  visible: widget.user.username == MyAppState.currentUser!.username,
+                  child: Container(
+                    margin: EdgeInsets.only(right: 20),
+                    child: Icon(
+                      Icons.settings,
+                      color: ColorPalette.primary,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -159,14 +180,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 70,
                               width: 70,
                               child: ProfileAvatar(
-                                imageUrl: imageFileList.isEmpty
-                                    ? widget.user.profilePictureURL
-                                    : imageFileList[0],
+                                imageUrl: imageFileList.isEmpty ? widget.user.profilePictureURL : imageFileList[0],
                                 username: widget.user.username,
                                 avatarColor: widget.user.avatarColor,
                                 showIcon:
-                                    widget.user.username == MyAppState.currentUser!.username &&
-                                        imageFileList.isEmpty,
+                                    widget.user.username == MyAppState.currentUser!.username && imageFileList.isEmpty,
                                 radius: 70,
                                 fontSize: 30,
                                 onPressed: () => selectImage(),
@@ -234,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Container(
                   child: DefaultTabController(
-                    length: 4,
+                    length: 2,
                     initialIndex: 0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -246,8 +264,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             tabs: [
                               Tab(icon: Icon(MdiIcons.grid)),
                               Tab(icon: Icon(MdiIcons.imageMultipleOutline)),
-                              Tab(icon: Icon(MdiIcons.cardPlusOutline)),
-                              Tab(icon: Icon(MdiIcons.accountMultipleOutline)),
+                              // Tab(icon: Icon(MdiIcons.cardPlusOutline)),
+                              // Tab(icon: Icon(MdiIcons.accountMultipleOutline)),
                             ],
                           ),
                         ),
@@ -258,8 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               storeUser.postCount > 0 || widget.user.postCount > 0
                                   ? ProfilePost(user: widget.user)
                                   : Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 32.0, vertical: 150),
+                                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
                                       child: Center(
                                         child: showEmptyState(
                                           'No Posts Found',
@@ -268,28 +285,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                     ),
                               ProfileImages(user: widget.user),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    'Display Tab 3',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    'Display Tab 4',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Container(
+                              //   child: Center(
+                              //     child: Text(
+                              //       'Display Tab 3',
+                              //       style: TextStyle(
+                              //         fontSize: 22,
+                              //         fontWeight: FontWeight.bold,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
+                              // Container(
+                              //   child: Center(
+                              //     child: Text(
+                              //       'Display Tab 4',
+                              //       style: TextStyle(
+                              //         fontSize: 22,
+                              //         fontWeight: FontWeight.bold,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         )
@@ -370,7 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 right: 10,
               ),
               child: Text(
-                "EDIT PROFILE",
+                "EDIT BIO",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: ColorPalette.white,
@@ -382,30 +399,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         SizedBox(width: 5),
-        Container(
-          width: 120,
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 5,
-              bottom: 5,
-              left: 10,
-              right: 10,
-            ),
-            child: Text(
-              "EDIT INTERESTS",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: ColorPalette.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        )
+        // Container(
+        //   width: 120,
+        //   decoration: BoxDecoration(
+        //     color: Colors.red,
+        //     borderRadius: BorderRadius.circular(10.0),
+        //   ),
+        //   child: Padding(
+        //     padding: const EdgeInsets.only(
+        //       top: 5,
+        //       bottom: 5,
+        //       left: 10,
+        //       right: 10,
+        //     ),
+        //     child: Text(
+        //       "EDIT INTERESTS",
+        //       textAlign: TextAlign.center,
+        //       style: TextStyle(
+        //         color: ColorPalette.white,
+        //         fontWeight: FontWeight.bold,
+        //         fontSize: 12,
+        //       ),
+        //     ),
+        //   ),
+        // )
       ],
     );
   }
@@ -428,8 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             } else {
                               channelID = MyAppState.currentUser!.userID + friend.userID;
                             }
-                            ConversationModel? conversationModel =
-                                await _chatService.getChannelByIdOrNull(channelID);
+                            ConversationModel? conversationModel = await _chatService.getChannelByIdOrNull(channelID);
                             push(
                               context,
                               ChatScreen(
@@ -559,8 +575,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? GestureDetector(
                 onTap: () async {
                   if (widget.user.userID != MyAppState.currentUser!.userID) {
-                    bool isSuccessful =
-                        await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
+                    bool isSuccessful = await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
                     if (!isSuccessful) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -655,7 +670,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         GestureDetector(
           onTap: () {
-            push(context, FriendsTabScreen(tabIndex: 0, user: widget.user));
+            push(
+              context,
+              FriendsTabScreen(
+                tabIndex: 0,
+                user: widget.user.userID == MyAppState.currentUser!.userID ? MyAppState.currentUser! : widget.user,
+              ),
+            );
           },
           child: Column(
             children: <Widget>[

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -98,9 +99,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: postNotEmpty
-                        ? ColorPalette.white
-                        : ColorPalette.lightBlue,
+                    color: postNotEmpty ? ColorPalette.white : ColorPalette.lightBlue,
                   ),
                 ),
               ),
@@ -134,8 +133,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 controller: _postController,
                                 onChanged: (text) {
                                   setState(() {
-                                    postNotEmpty =
-                                        text.length > 0 ? true : false;
+                                    postNotEmpty = text.length > 0 ? true : false;
                                   });
                                 },
                                 style: TextStyle(
@@ -167,8 +165,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 controller: _postController,
                                 onChanged: (text) {
                                   setState(() {
-                                    postNotEmpty =
-                                        text.length > 0 ? true : false;
+                                    postNotEmpty = text.length > 0 ? true : false;
                                   });
                                 },
                                 style: TextStyle(
@@ -179,8 +176,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                   filled: true,
                                   isDense: true,
                                   border: InputBorder.none,
-                                  hintStyle: TextStyle(
-                                      color: Colors.grey[700], fontSize: 20),
+                                  hintStyle: TextStyle(color: Colors.grey[700], fontSize: 20),
                                   hintText: "What's on your mind?",
                                   fillColor: ColorPalette.white,
                                 ),
@@ -195,8 +191,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                               callback: (color) => setState(
                                 () => {
                                   selectedColor = color,
-                                  _bgColor =
-                                      '#${color.value.toRadixString(16).substring(2, 8)}'
+                                  _bgColor = '#${color.value.toRadixString(16).substring(2, 8)}'
                                 },
                               ),
                             )
@@ -210,93 +205,93 @@ class CreatePostScreenState extends State<CreatePostScreen> {
           Expanded(
             child: Column(
               children: [
-                hasPhotos
-                    ? Flexible(
-                        flex: 2,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: imageFileList.length == 1
-                                ? 400
-                                : imageFileList.length == 2
-                                    ? 210
-                                    : 140,
-                          ),
-                          child: Container(
-                            child: PhotoGrid(
-                              type: 'file',
-                              imageUrls: imageFileList,
-                              onImageClicked: (i) => {
-                                _viewOrDeleteImage(
-                                    mediaFiles.entries.elementAt(i),
-                                    i,
-                                    'single'),
-                              },
-                              onExpandClicked: (int index) => {
-                                _viewOrDeleteImage(
-                                  mediaFiles.entries.elementAt(index),
-                                  index,
-                                  'multiple',
-                                )
-                              },
-                              maxImages: 3,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Flexible(child: Text('')),
-                hasGifSelected
-                    ? Flexible(
-                        flex: 2,
-                        child: GridView(
-                          gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 500,
-                            crossAxisSpacing: 1,
-                          ),
-                          children: [
-                            currentGif != null
-                                ? GestureDetector(
-                                    onTap: () {
-                                      if (currentGif != null) {
-                                        _viewGif(
-                                          currentGif!.images!.original!.url,
-                                        );
-                                      }
-                                    },
-                                    child: Image.network(
-                                      currentGif!.images!.original!.url,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : Text('')
-                          ],
-                        ),
-                      )
-                    : Flexible(child: Text('')),
-                Flexible(
-                  flex: 2,
-                  child: Container(
-                    margin: EdgeInsets.only(left: 10, right: 10),
-                    child: GridView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: options.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 5.0,
-                        crossAxisSpacing: 5.0,
+                Visibility(
+                  visible: hasPhotos,
+                  child: Expanded(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: 400,
                       ),
-                      itemBuilder: (context, index) => GestureDetector(
-                        onTap: () async {
-                          if (options[index].title == 'Image') {
-                            _pickImage();
-                          }
+                      child: Container(
+                        height: 1000,
+                        child: PhotoGrid(
+                          type: 'file',
+                          imageUrls: imageFileList,
+                          onImageClicked: (i) => {
+                            _viewOrDeleteImage(
+                              mediaFiles.entries.elementAt(i),
+                              i,
+                            ),
+                          },
+                          onExpandClicked: (int index) =>
+                              {_viewOrDeleteImage(mediaFiles.entries.elementAt(index), index)},
+                          maxImages: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: hasGifSelected,
+                  child: Expanded(
+                    child: GridView(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 500,
+                        crossAxisSpacing: 1,
+                      ),
+                      children: [
+                        currentGif != null
+                            ? GestureDetector(
+                                onTap: () {
+                                  if (currentGif != null) {
+                                    _viewGif(
+                                      currentGif!.images!.original!.url,
+                                    );
+                                  }
+                                },
+                                child: Image.network(
+                                  currentGif!.images!.original!.url,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Text('')
+                      ],
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: imageFileList.isNotEmpty,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: smallGridElements(),
+                  ),
+                ),
+                Visibility(
+                  visible: imageFileList.isEmpty,
+                  child: Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10, right: 10, top: 10),
+                      child: GridView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: options.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 5.0,
+                          crossAxisSpacing: 5.0,
+                        ),
+                        itemBuilder: (context, index) => GestureDetector(
+                          onTap: () async {
+                            if (options[index].title == 'Image') {
+                              _pickImage();
+                            }
 
-                          if (options[index].title == 'Gif') {
-                            await _openGifWidget();
-                          }
-                        },
-                        child: GridOptions(
-                          layout: options[index],
+                            if (options[index].title == 'Gif') {
+                              await _openGifWidget();
+                            }
+                          },
+                          child: GridOptions(
+                            layout: options[index],
+                          ),
                         ),
                       ),
                     ),
@@ -306,6 +301,72 @@ class CreatePostScreenState extends State<CreatePostScreen> {
             ),
           )
         ],
+      ),
+    );
+  }
+
+  Widget smallGridElements() {
+    List items = [
+      {'title': 'Image', 'image': 'assets/images/image-icon.png'},
+      {'title': 'Gif', 'image': 'assets/images/gif.png'},
+    ];
+    return Container(
+      height: 90.0,
+      alignment: Alignment.center,
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20),
+          topLeft: Radius.circular(20),
+        ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset(0.0, 1.0),
+            blurRadius: 6.0,
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(
+          horizontal: 10.0,
+        ),
+        scrollDirection: Axis.horizontal,
+        physics: ClampingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    if (items[index]['title'] == 'Image') {
+                      _pickImage();
+                    }
+
+                    if (items[index]['title'] == 'Gif') {
+                      await _openGifWidget();
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    margin: EdgeInsets.only(right: 30, left: 30, bottom: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      image: DecorationImage(
+                        image: AssetImage(items[index]['image']),
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -322,6 +383,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         hasGifSelected = true;
         hasPhotos = false;
         selectedColor = Color(0xFFFFFFFF);
+        imageFileList = [new File(currentGif!.images!.original!.url)];
       });
     }
   }
@@ -417,8 +479,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
-  void _viewOrDeleteImage(
-      MapEntry<String, File> mediaEntry, int index, String type) {
+  void _viewOrDeleteImage(MapEntry<String, File> mediaEntry, int index) {
     final action = CupertinoActionSheet(
       actions: <Widget>[
         Column(
@@ -426,8 +487,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
             CupertinoActionSheetAction(
               onPressed: () async {
                 Navigator.pop(context);
-                mediaFiles
-                    .removeWhere((key, value) => value == mediaEntry.value);
+                mediaFiles.removeWhere((key, value) => value == mediaEntry.value);
                 imageFileList.removeAt(index);
                 setState(() {});
                 if (imageFileList.length == 0) {
@@ -476,6 +536,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
             setState(() {
               currentGif = null;
               hasGifSelected = false;
+              imageFileList = [];
             });
           },
           child: Text("Remove Media"),
@@ -526,21 +587,30 @@ class CreatePostScreenState extends State<CreatePostScreen> {
               );
 
               if (result != null) {
-                List<File> files =
-                    result.paths.map((path) => File(path!)).toList();
+                List<File> files = result.paths.map((path) => File(path!)).toList();
                 imageFileList = files;
                 for (int i = 0; i < files.length; i++) {
                   mediaFiles.remove('null');
                   mediaFiles['image ${files[i].path}'] = File(files[i].path);
                 }
+                setState(() {
+                  hasPhotos = true;
+                  selectedColor = Color(0xFFFFFFFF);
+                });
+              } else {
+                setState(() {
+                  hasPhotos = false;
+                  hasGifSelected = false;
+                  selectedColor = Color(0xFFFFFFFF);
+                });
               }
-
-              setState(() {
-                hasPhotos = true;
-                selectedColor = Color(0xFFFFFFFF);
-              });
             } on Exception catch (e) {
               print(e);
+              setState(() {
+                hasPhotos = false;
+                hasGifSelected = false;
+                selectedColor = Color(0xFFFFFFFF);
+              });
             }
           },
         ),

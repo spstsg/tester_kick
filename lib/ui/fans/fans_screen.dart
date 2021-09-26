@@ -17,19 +17,17 @@ import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class FanScreen extends StatefulWidget {
-  const FanScreen({Key? key}) : super(key: key);
-
   @override
   _FanScreenState createState() => _FanScreenState();
 }
 
 class _FanScreenState extends State<FanScreen> {
-  TextEditingController _searchController = TextEditingController();
-  TextEditingController _searchFilterController = TextEditingController();
   SearchService _searchService = SearchService();
   UserService _userService = UserService();
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
+  TextEditingController _searchController = TextEditingController();
+  TextEditingController _searchFilterController = TextEditingController();
   List<User> users = [];
   StreamController<bool> _userExistStream = StreamController<bool>();
   late Stream<List<User>> _usersStream;
@@ -79,28 +77,30 @@ class _FanScreenState extends State<FanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 1.0,
-          title: Container(
-            width: double.infinity,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: !isFilterButton ? searchByUsername() : filterByClubName(),
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        centerTitle: false,
+        title: Container(
+          width: double.infinity,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(5),
           ),
-          actions: [
-            CircleButton(
-              icon: !isFilterButton ? MdiIcons.filter : MdiIcons.filterOff,
-              iconSize: 30.0,
-              onPressed: () {
-                setState(() {
-                  isFilterButton = !isFilterButton;
-                });
-              },
-            )
-          ]),
+          child: !isFilterButton ? searchByUsername() : filterByClubName(),
+        ),
+        actions: [
+          CircleButton(
+            icon: !isFilterButton ? MdiIcons.filter : MdiIcons.filterOff,
+            iconSize: 30.0,
+            onPressed: () {
+              setState(() {
+                isFilterButton = !isFilterButton;
+              });
+            },
+          )
+        ],
+      ),
       body: StreamBuilder<List<User>>(
         stream: _usersStream,
         initialData: [],
@@ -163,8 +163,7 @@ class _FanScreenState extends State<FanScreen> {
               Text(
                 user.username,
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 16,
                   color: user.username == MyAppState.currentUser!.username ? ColorPalette.grey : ColorPalette.black,
                 ),
               ),
@@ -245,8 +244,10 @@ class _FanScreenState extends State<FanScreen> {
 
   Widget searchByUsername() {
     return Center(
-      child: TextField(
+      child: TextFormField(
         controller: _searchController,
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
         onChanged: (input) async {
           if (input.isNotEmpty) {
             List<User> allUsers = await _searchService.searchUsers(input);
@@ -278,6 +279,8 @@ class _FanScreenState extends State<FanScreen> {
     return Center(
       child: TextField(
         controller: _searchFilterController,
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
         onChanged: (input) async {
           if (input.isNotEmpty) {
             List<User> allUsers = await _searchService.filterByClubName(input);

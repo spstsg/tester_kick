@@ -215,16 +215,13 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                       constraints: BoxConstraints(minWidth: double.infinity),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: _searchController.text.isNotEmpty
-                              ? ColorPalette.primary
-                              : ColorPalette.grey,
+                          primary: _searchController.text.isNotEmpty ? ColorPalette.primary : ColorPalette.grey,
                           padding: EdgeInsets.only(top: 10, bottom: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                        onPressed:
-                            _searchController.text.isNotEmpty ? () => _authentication() : null,
+                        onPressed: _searchController.text.isNotEmpty ? () => _authentication() : null,
                         child: Text(
                           usernameSignupButton,
                           style: TextStyle(
@@ -305,6 +302,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           '$cloudinaryAppEndpoint/${imageUrl.publicId}',
           avatarProfileColor,
           _searchController.text.trim(),
+          false,
           widget.result,
         );
 
@@ -355,6 +353,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           '$cloudinaryAppEndpoint/${imageUrl.publicId}',
           avatarProfileColor,
           _searchController.text.trim(),
+          true,
           result,
         );
         if (user is User) {

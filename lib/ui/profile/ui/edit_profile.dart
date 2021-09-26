@@ -42,7 +42,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Edit profile',
+          'Edit bio',
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),

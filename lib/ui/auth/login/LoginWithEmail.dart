@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
-import 'package:kick_chat/redux/actions/user_action.dart';
-import 'package:kick_chat/redux/app_state.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:kick_chat/services/auth/auth_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
-import 'package:kick_chat/ui/auth/password/RequestPasswordResetToken.dart';
+import 'package:kick_chat/ui/auth/password/request_password_reset_email.dart';
 import 'package:kick_chat/ui/home/nav_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:redux/redux.dart';
 
 class LoginWithEmail extends StatefulWidget {
   const LoginWithEmail({Key? key}) : super(key: key);
@@ -43,15 +39,13 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
     return _sharedPreferences.setSharedPreferencesBool(FINISHED_ON_BOARDING, true);
   }
 
-  Future<void> checkIfEmailExist(callback) async {
+  Future<void> checkIfEmailExist() async {
     setState(() {
       userEmailDoesNotExist = false;
     });
-    bool emailExist = await _authService.checkIfEmailExist(
-      _emailController.text.trim(),
-    );
+    bool emailExist = await _authService.checkIfEmailExist(_emailController.text.trim());
     if (emailExist) {
-      _loginWithEmail(callback);
+      _loginWithEmail();
     } else {
       setState(() {
         userEmailDoesNotExist = true;
@@ -60,7 +54,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
     }
   }
 
-  Future _loginWithEmail(callback) async {
+  Future _loginWithEmail() async {
     setState(() {
       userPasswordDoesNotExist = false;
     });
@@ -69,11 +63,8 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      User user = await _authService.loginWithEmailAndPassword(
-        result.user?.uid ?? '',
-      );
+      User user = await _authService.loginWithEmailAndPassword(result.user?.uid ?? '');
       if (user is User) {
-        callback(user); // add user to redux store
         MyAppState.currentUser = user;
         setFinishedOnBoarding();
         pushAndRemoveUntil(
@@ -118,11 +109,6 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -148,246 +134,236 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
           onPressed: () => pushAndRemoveUntil(context, LoginScreen(), false, false),
         ),
       ),
-      body: StoreConnector<AppState, Function(User)>(
-        converter: (Store<AppState> store) => (user) => store.dispatch(CreateUserAction(user)),
-        builder: (context, callback) => Form(
-          child: ListView(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 25, right: 25, top: 16),
-                child: Text(
-                  'Log in',
-                  style: TextStyle(
-                    color: ColorPalette.black,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+      body: Form(
+        child: ListView(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: 25, right: 25, top: 16),
+              child: Text(
+                'Log in',
+                style: TextStyle(
+                  color: ColorPalette.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              ConstrainedBox(
-                constraints: BoxConstraints(minWidth: double.infinity),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 32.0,
-                    right: 24.0,
-                    left: 24.0,
-                  ),
-                  child: TextFormField(
-                    textAlignVertical: TextAlignVertical.center,
-                    textInputAction: TextInputAction.next,
-                    controller: _emailController,
-                    onChanged: (text) {
-                      bool isEmailValid = validateEmail(text);
-                      if (isEmailValid) {
-                        setState(() {
-                          validEmail = true;
-                        });
-                      } else {
-                        setState(() {
-                          validEmail = false;
-                        });
-                      }
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: double.infinity),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 32.0, right: 24.0, left: 24.0),
+                child: TextFormField(
+                  textAlignVertical: TextAlignVertical.center,
+                  textInputAction: TextInputAction.next,
+                  controller: _emailController,
+                  onChanged: (text) {
+                    bool isEmailValid = validateEmail(text);
+                    if (isEmailValid) {
+                      setState(() {
+                        validEmail = true;
+                      });
+                    } else {
+                      setState(() {
+                        validEmail = false;
+                      });
+                    }
 
-                      if (text.length == 0) {
-                        setState(() {
-                          validEmail = false;
-                        });
-                      }
-                    },
-                    style: TextStyle(fontSize: 17),
-                    keyboardType: TextInputType.text,
-                    cursorColor: ColorPalette.primary,
-                    decoration: InputDecoration(
-                      contentPadding: new EdgeInsets.only(left: 16, right: 16),
-                      suffixIcon: !validEmail
-                          ? null
-                          : Icon(
-                              Icons.check,
-                              color: ColorPalette.primary,
-                            ),
-                      hintText: 'Email',
-                      hintStyle: TextStyle(fontSize: 17),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(0.0),
-                        borderSide: BorderSide(
-                          color: ColorPalette.primary,
-                          width: 2.0,
-                        ),
+                    if (text.length == 0) {
+                      setState(() {
+                        validEmail = false;
+                      });
+                    }
+                  },
+                  style: TextStyle(fontSize: 17),
+                  keyboardType: TextInputType.text,
+                  cursorColor: ColorPalette.primary,
+                  decoration: InputDecoration(
+                    contentPadding: new EdgeInsets.only(left: 16, right: 16),
+                    suffixIcon: !validEmail
+                        ? null
+                        : Icon(
+                            Icons.check,
+                            color: ColorPalette.primary,
+                          ),
+                    hintText: 'Email',
+                    hintStyle: TextStyle(fontSize: 17),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(0.0),
+                      borderSide: BorderSide(
+                        color: ColorPalette.primary,
+                        width: 2.0,
                       ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Theme.of(context).errorColor),
-                        borderRadius: BorderRadius.circular(0.0),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Theme.of(context).errorColor),
-                        borderRadius: BorderRadius.circular(0.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                        borderRadius: BorderRadius.circular(0.0),
-                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).errorColor),
+                      borderRadius: BorderRadius.circular(0.0),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).errorColor),
+                      borderRadius: BorderRadius.circular(0.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(0.0),
                     ),
                   ),
                 ),
               ),
-              ConstrainedBox(
-                constraints: BoxConstraints(minWidth: double.infinity),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
-                  child: userEmailDoesNotExist
-                      ? Text(
-                          'Email does not exist',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
-                          ),
-                        )
-                      : Text(''),
-                ),
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: double.infinity),
+              child: Padding(
+                padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
+                child: userEmailDoesNotExist
+                    ? Text(
+                        'Email does not exist',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                        ),
+                      )
+                    : Text(''),
               ),
-              ConstrainedBox(
-                constraints: BoxConstraints(minWidth: double.infinity),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 32.0, right: 24.0, left: 24.0),
-                  child: TextFormField(
-                    textAlignVertical: TextAlignVertical.center,
-                    obscureText: !togglePassword,
-                    controller: _passwordController,
-                    onChanged: (text) {
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: double.infinity),
+              child: Padding(
+                padding: EdgeInsets.only(top: 32.0, right: 24.0, left: 24.0),
+                child: TextFormField(
+                  textAlignVertical: TextAlignVertical.center,
+                  obscureText: !togglePassword,
+                  controller: _passwordController,
+                  onChanged: (text) {
+                    setState(() {
+                      passwordLength = text.length;
+                      validPassword = false;
+                    });
+                    var isValidPassword = validatePassword(text);
+                    if (isValidPassword == true)
                       setState(() {
-                        passwordLength = text.length;
+                        validPassword = true;
+                      });
+                    if (text.length == 0)
+                      setState(() {
                         validPassword = false;
                       });
-                      var isValidPassword = validatePassword(text);
-                      if (isValidPassword == true)
+                    if (text.length < 8)
+                      setState(() {
+                        validPassword = false;
+                      });
+                  },
+                  onFieldSubmitted: (password) {},
+                  textInputAction: TextInputAction.done,
+                  style: TextStyle(fontSize: 17),
+                  cursorColor: ColorPalette.primary,
+                  decoration: InputDecoration(
+                    contentPadding: new EdgeInsets.only(left: 16, right: 16),
+                    suffixIcon: IconButton(
+                      splashColor: Colors.transparent,
+                      icon: Icon(
+                        !togglePassword ? MdiIcons.eyeOffOutline : MdiIcons.eyeOutline,
+                        color: ColorPalette.grey,
+                      ),
+                      onPressed: () {
                         setState(() {
-                          validPassword = true;
+                          togglePassword = !togglePassword;
                         });
-                      if (text.length == 0)
-                        setState(() {
-                          validPassword = false;
-                        });
-                      if (text.length < 8)
-                        setState(() {
-                          validPassword = false;
-                        });
-                    },
-                    onFieldSubmitted: (password) {},
-                    textInputAction: TextInputAction.done,
-                    style: TextStyle(fontSize: 17),
-                    cursorColor: ColorPalette.primary,
-                    decoration: InputDecoration(
-                      contentPadding: new EdgeInsets.only(left: 16, right: 16),
-                      suffixIcon: IconButton(
-                        splashColor: Colors.transparent,
-                        icon: Icon(
-                          !togglePassword ? MdiIcons.eyeOffOutline : MdiIcons.eyeOutline,
-                          color: ColorPalette.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            togglePassword = !togglePassword;
-                          });
-                        },
+                      },
+                    ),
+                    hintText: 'Password',
+                    hintStyle: TextStyle(fontSize: 17),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(0.0),
+                      borderSide: BorderSide(
+                        color: ColorPalette.primary,
+                        width: 2.0,
                       ),
-                      hintText: 'Password',
-                      hintStyle: TextStyle(fontSize: 17),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(0.0),
-                        borderSide: BorderSide(
-                          color: ColorPalette.primary,
-                          width: 2.0,
-                        ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).errorColor,
                       ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).errorColor,
-                        ),
-                        borderRadius: BorderRadius.circular(0.0),
+                      borderRadius: BorderRadius.circular(0.0),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).errorColor,
                       ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).errorColor,
-                        ),
-                        borderRadius: BorderRadius.circular(0.0),
+                      borderRadius: BorderRadius.circular(0.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade200,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade200,
-                        ),
-                        borderRadius: BorderRadius.circular(0.0),
-                      ),
+                      borderRadius: BorderRadius.circular(0.0),
                     ),
                   ),
                 ),
               ),
-              ConstrainedBox(
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: double.infinity),
+              child: Padding(
+                padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
+                child: userPasswordDoesNotExist
+                    ? Text(
+                        'Password is invalid',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                        ),
+                      )
+                    : Text(''),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16, right: 24),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => RequestPasswordResetEmail()),
+                    );
+                  },
+                  child: Text(
+                    'Forgot password?',
+                    style: TextStyle(
+                      color: Colors.lightBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 40, left: 25, right: 25),
+              child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: double.infinity),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
-                  child: userPasswordDoesNotExist
-                      ? Text(
-                          'Password is invalid',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
-                          ),
-                        )
-                      : Text(''),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16, right: 24),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => RequestPasswordResetToken()),
-                      );
-                    },
-                    child: Text(
-                      'Forgot password?',
-                      style: TextStyle(
-                        color: Colors.lightBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1,
-                      ),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
+                    padding: EdgeInsets.only(top: 10, bottom: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(0.0),
+                    ),
+                  ),
+                  onPressed: validEmail && validPassword ? () => checkIfEmailExist() : null,
+                  child: Text(
+                    loginButtonText,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ColorPalette.white,
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 40, left: 25, right: 25),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: double.infinity),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: (!validEmail && !validPassword)
-                          ? ColorPalette.grey
-                          : ColorPalette.primary,
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0.0),
-                      ),
-                    ),
-                    onPressed:
-                        validEmail && validPassword ? () => checkIfEmailExist(callback) : null,
-                    child: Text(
-                      loginButtonText,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: ColorPalette.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

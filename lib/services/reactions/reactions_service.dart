@@ -46,7 +46,7 @@ class ReactionService {
         'like': reactions['like'],
         'love': reactions['love'],
         'happy': reactions['happy'],
-        'angry': reactions['like'],
+        'angry': reactions['angry'],
         'sad': reactions['sad'],
         'wow': reactions['wow'],
       });

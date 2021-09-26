@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/ui/friends/followers_screen.dart';
 import 'package:kick_chat/ui/friends/followings_screen.dart';
@@ -41,8 +42,12 @@ class FriendsTabScreen extends StatelessWidget {
               fontSize: 15,
             ),
             tabs: [
-              Tab(text: 'FOLLOWING (${NumberFormat.compact().format(user.followingCount)})'),
-              Tab(text: 'FOLLOWERS (${NumberFormat.compact().format(user.followersCount)})'),
+              Tab(
+                  text:
+                      'FOLLOWING (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followingCount : MyAppState.currentUser!.followingCount)})'),
+              Tab(
+                  text:
+                      'FOLLOWERS (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followersCount : MyAppState.currentUser!.followersCount)})'),
             ],
           ),
         ),

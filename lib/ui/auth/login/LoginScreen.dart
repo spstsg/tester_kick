@@ -51,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (result != null && result is User) {
         result.active = true;
         result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
         _userService.updateCurrentUser(result);
         MyAppState.currentUser = result;
         MyAppState.reduxStore!.dispatch(CreateUserAction(result));
@@ -93,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (result != null && result is User) {
         result.active = true;
         result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
         _userService.updateCurrentUser(result);
         MyAppState.currentUser = result;
         MyAppState.reduxStore!.dispatch(CreateUserAction(result));
@@ -130,26 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.white,
-      // drawer: Drawer(
-      //   // color: Colors.red,
-      //   child: ReduxDevTools(MyAppState.reduxStore!),
-      // ),
-      // appBar: AppBar(
-      //   iconTheme: IconThemeData(color: Colors.black),
-      //   backgroundColor: Colors.transparent,
-      //   elevation: 0.0,
-      //   title: Text(
-      //     "Home",
-      //     style: TextStyle(color: Colors.black),
-      //   ),
-      //   actions: [
-      //     IconButton(
-      //       icon: Icon(Icons.power_settings_new_outlined),
-      //       onPressed: () async {},
-      //     )
-      //   ],
-      // ),
       body: StoreConnector<AppState, Function(User)>(
         converter: (Store<AppState> store) => (user) => store.dispatch(CreateUserAction(user)),
         builder: (context, callback) => Container(
