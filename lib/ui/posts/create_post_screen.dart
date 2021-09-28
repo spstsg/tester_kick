@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:path/path.dart' as path;
 
 import 'package:kick_chat/redux/actions/created_post_action.dart';
 import 'package:file_picker/file_picker.dart';
@@ -28,7 +27,12 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 class CreatePostScreen extends StatefulWidget {
   final bool openGif;
   final bool openImagePicker;
-  CreatePostScreen({this.openGif: false, this.openImagePicker: false});
+  final bool openVideoPicker;
+  CreatePostScreen({
+    this.openGif: false,
+    this.openImagePicker: false,
+    this.openVideoPicker: false,
+  });
 
   @override
   CreatePostScreenState createState() => CreatePostScreenState();
@@ -50,8 +54,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   GiphyClient? client;
   String giphyApiKey = dotenv.get('GIPHY_API_KEY');
   bool hasGifSelected = false;
-  bool isImageUpload = false;
-  bool isVideoUpload = false;
+  bool hasVideos = false;
   List<GridLayout> options = [
     GridLayout(
       title: 'Image',
@@ -78,6 +81,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
       if (widget.openImagePicker && mounted) {
         _pickImage();
       }
+
+      if (widget.openVideoPicker && mounted) {
+        _pickVideo();
+      }
     });
     super.initState();
   }
@@ -101,10 +108,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         centerTitle: true,
         actions: [
           GestureDetector(
-            onTap: (postNotEmpty || hasPhotos || hasGifSelected) && !isVideoUpload
+            onTap: (postNotEmpty || hasPhotos || hasGifSelected) && !hasVideos
                 ? () => _publishPost(context)
-                : (postNotEmpty || isVideoUpload)
-                    ? () => uploadVideos(context)
+                : (postNotEmpty || hasVideos)
+                    ? () => _publishPostWithVideo(context)
                     : null,
             child: Padding(
               padding: const EdgeInsets.only(right: 15),
@@ -114,7 +121,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: postNotEmpty || hasPhotos || hasGifSelected || isVideoUpload
+                    color: postNotEmpty || hasPhotos || hasGifSelected || hasVideos
                         ? ColorPalette.white
                         : ColorPalette.lightBlue,
                   ),
@@ -342,6 +349,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     List items = [
       {'title': 'Image', 'image': 'assets/images/image-icon.png'},
       {'title': 'Gif', 'image': 'assets/images/gif.png'},
+      {'title': 'Video', 'image': 'assets/images/video-upload.png'},
     ];
     return Container(
       height: 90.0,
@@ -382,6 +390,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                     if (items[index]['title'] == 'Gif') {
                       await _openGifWidget();
                     }
+
+                    if (items[index]['title'] == 'Video') {
+                      _pickVideo();
+                    }
                   },
                   child: Container(
                     width: 30,
@@ -415,7 +427,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         currentGif = gif;
         hasGifSelected = true;
         hasPhotos = false;
-        postNotEmpty = true;
+        postNotEmpty = false;
+        hasVideos = false;
         selectedColor = Color(0xFFFFFFFF);
         imageFileList = [new File(currentGif!.images!.original!.url)];
       });
@@ -423,7 +436,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future uploadImages() async {
-    if (imageFileList.length == 1) {
+    if (imageFileList.length == 1 && hasPhotos) {
       var response = await _fileService.uploadSingleFile(
         imageFileList[0].path,
         getRandomString(20).toLowerCase(),
@@ -447,7 +460,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         );
         return;
       }
-    } else if (imageFileList.length > 1) {
+    } else if (imageFileList.length > 1 && hasPhotos) {
       var responses = await _fileService.uploadMultipleFiles(imageFileList);
       responses.map((response) async {
         if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
@@ -473,20 +486,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
-  Future uploadVideos(BuildContext context) async {
-    // _fileService.taskSnapshotStream.stream.listen((event) {
-    //   // print(event.bytesTransferred);
-    //   double progress = (100.0 * event.bytesTransferred) / event.totalBytes;
-    //   // DownloadLoadingOverlay.of(context).show('Uploading...', progress.toInt());
-    // });
-
-    // Map videoUrl = await _fileService.uploadPostVideo(
-    //   context,
-    //   mediaFiles.entries.elementAt(0).value,
-    //   File(mediaFiles.entries.elementAt(0).key),
-    // );
-    // mediaFilesURLs.add(videoUrl);
-    // List data = [mediaFiles, _postController.text.trim()];
+  Future _publishPostWithVideo(BuildContext context) async {
     Post post = Post(
       author: MyAppState.currentUser,
       authorId: MyAppState.currentUser!.userID,
@@ -498,7 +498,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
       post: _postController.text.trim(),
       gifUrl: '',
       privacy: PostAudienceDropdownState.chosenValue,
-      postMedia: urlPhotos,
+      postMedia: [],
       postVideo: [mediaFiles],
     );
     MyAppState.reduxStore!.dispatch(CreatedPostAction(post));
@@ -653,7 +653,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   void _pickImage() {
     final action = CupertinoActionSheet(
       message: Text(
-        "Add Image To Post",
+        "Add image to post",
         style: TextStyle(fontSize: 16.0),
       ),
       actions: <Widget>[
@@ -678,27 +678,23 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                 setState(() {
                   hasPhotos = true;
                   postNotEmpty = true;
-                  isImageUpload = true;
-                  isVideoUpload = false;
+                  hasVideos = false;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               } else {
                 setState(() {
                   hasPhotos = false;
                   postNotEmpty = postNotEmpty ? true : false;
-                  isImageUpload = false;
-                  isVideoUpload = false;
+                  hasVideos = false;
                   hasGifSelected = false;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               }
-            } on Exception catch (e) {
-              print(e);
+            } catch (e) {
               setState(() {
                 hasPhotos = false;
                 postNotEmpty = postNotEmpty ? true : false;
-                isImageUpload = false;
-                isVideoUpload = false;
+                hasVideos = false;
                 hasGifSelected = false;
                 selectedColor = Color(0xFFFFFFFF);
               });
@@ -719,7 +715,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   void _pickVideo() {
     final action = CupertinoActionSheet(
       message: Text(
-        "Add Video To Post",
+        "Add video to post",
         style: TextStyle(fontSize: 16.0),
       ),
       actions: <Widget>[
@@ -729,6 +725,8 @@ class CreatePostScreenState extends State<CreatePostScreen> {
           onPressed: () async {
             Navigator.pop(context);
             try {
+              imageFileList.clear();
+              mediaFiles.clear();
               FilePickerResult? result = await FilePicker.platform.pickFiles(
                 type: FileType.video,
                 allowMultiple: false,
@@ -737,7 +735,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
               if (result != null) {
                 List<File> files = result.paths.map((path) => File(path!)).toList();
                 if (files.isEmpty) return;
-                var newFilePath = await _changeFileNameOnly(
+                var newFilePath = await changeFileNameOnly(
                   File(files[0].path),
                   getRandomString(20).toLowerCase(),
                 );
@@ -752,27 +750,23 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                 setState(() {
                   hasPhotos = true;
                   postNotEmpty = true;
-                  isImageUpload = false;
-                  isVideoUpload = true;
+                  hasVideos = true;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               } else {
                 setState(() {
                   hasPhotos = false;
                   postNotEmpty = postNotEmpty ? true : false;
-                  isImageUpload = false;
-                  isVideoUpload = false;
+                  hasVideos = false;
                   hasGifSelected = false;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               }
-            } on Exception catch (e) {
-              print(e);
+            } catch (e) {
               setState(() {
                 hasPhotos = false;
                 postNotEmpty = postNotEmpty ? true : false;
-                isImageUpload = false;
-                isVideoUpload = false;
+                hasVideos = false;
                 hasGifSelected = false;
                 selectedColor = Color(0xFFFFFFFF);
               });
@@ -788,14 +782,6 @@ class CreatePostScreenState extends State<CreatePostScreen> {
       ),
     );
     showCupertinoModalPopup(context: context, builder: (context) => action);
-  }
-
-  Future<File> _changeFileNameOnly(File file, String newFileName) {
-    var filePath = file.path;
-    var lastSeparator = filePath.lastIndexOf(Platform.pathSeparator);
-    final extension = path.extension(filePath);
-    var newPath = filePath.substring(0, lastSeparator + 1) + newFileName;
-    return file.rename(newPath + extension);
   }
 }
 

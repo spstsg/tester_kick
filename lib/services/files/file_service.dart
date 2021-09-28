@@ -14,15 +14,16 @@ import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:uuid/uuid.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:video_compress/video_compress.dart';
 
 class FileService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  static Reference storage = FirebaseStorage.instance.ref();
+  Reference storage = FirebaseStorage.instance.ref();
   UserService _userService = UserService();
-  late StreamController<ImageModel> _userImageStream;
+  StreamController<ImageModel> _userImageStream = StreamController();
   late StreamSubscription<QuerySnapshot> _userImageSubscription;
+  StreamController<List<Map<String, dynamic>>> _userVideoStream = StreamController();
+  late StreamSubscription<QuerySnapshot> _userVideoSubscription;
 
   final cloudinary = Cloudinary(
     dotenv.get('CLOUD_API_KEY'),
@@ -99,7 +100,91 @@ class FileService {
     }
   }
 
-  Future<Map> uploadPostVideo(BuildContext context, File video, File thumbnail) async {
+  Future<void> addUserVideoFile(String id, String url, String thumbnail) async {
+    try {
+      Map<String, dynamic> videos = {
+        'id': id,
+        'userId': MyAppState.currentUser!.userID,
+        'mime': 'video',
+        'url': url,
+        'videoThumbnail': thumbnail,
+        'hide': false,
+      };
+      var ref = firestore.collection(USER_VIDEOS).doc(MyAppState.currentUser!.userID).collection(USER_VIDEOS).doc();
+      ref.set(videos);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future permanentlyHideVideo(String videoId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> result = await firestore
+          .collection(USER_VIDEOS)
+          .doc(MyAppState.currentUser!.userID)
+          .collection(USER_VIDEOS)
+          .where('id', isEqualTo: videoId)
+          .get();
+      await Future.forEach(result.docs, (DocumentSnapshot video) {
+        video.reference.update({'hide': true});
+      });
+      return true;
+    } on Exception catch (e) {
+      throw e;
+    }
+  }
+
+  Future permanentlyDeleteVideo(String videoId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> result = await firestore
+          .collection(USER_VIDEOS)
+          .doc(MyAppState.currentUser!.userID)
+          .collection(USER_VIDEOS)
+          .where('id', isEqualTo: videoId)
+          .get();
+      await Future.forEach(result.docs, (DocumentSnapshot video) {
+        video.reference.delete();
+      });
+      return true;
+    } on Exception catch (e) {
+      throw e;
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> getUserVideoFiles(String userId) async* {
+    try {
+      List<Map<String, dynamic>> videos = [];
+      Stream<QuerySnapshot> result = firestore.collection(USER_VIDEOS).doc(userId).collection(USER_VIDEOS).snapshots();
+      _userVideoSubscription = result.listen((QuerySnapshot querySnapshot) async {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot video) {
+          videos.add(video.data() as Map<String, dynamic>);
+        });
+        _userVideoStream.sink.add(videos);
+      });
+      yield* _userVideoStream.stream;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Stream<ImageModel> getUserImages(String userID) async* {
+    _userImageStream = StreamController();
+    Stream<QuerySnapshot> result = firestore.collection(SOCIAL_FILES).where('userId', isEqualTo: userID).snapshots();
+
+    _userImageSubscription = result.listen((QuerySnapshot querySnapshot) async {
+      if (querySnapshot.docs.isNotEmpty) {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot image) {
+          ImageModel imageModel = ImageModel.fromJson(image.data() as Map<String, dynamic>);
+          _userImageStream.sink.add(imageModel);
+        });
+      } else {
+        _userImageStream.sink.add(ImageModel(userId: userID, profilePicture: '', images: []));
+      }
+    });
+    yield* _userImageStream.stream;
+  }
+
+  Future<Map> uploadPostVideo(BuildContext context, String videoId, File video, File thumbnail) async {
     try {
       var uniqueID = Uuid().v4();
       Reference upload = storage.child("flutter/social_network/videos/$uniqueID.mp4");
@@ -109,7 +194,15 @@ class FileService {
       var downloadUrl = await storageRef.getDownloadURL();
 
       String thumbnailDownloadUrl = await uploadPostVideoThumbnail(thumbnail);
-      return {'count': 0, 'url': downloadUrl.toString(), 'mime': 'video', 'videoThumbnail': thumbnailDownloadUrl};
+      await addUserVideoFile(videoId, downloadUrl.toString(), thumbnailDownloadUrl);
+      return {
+        'id': videoId,
+        'userId': MyAppState.currentUser!.userID,
+        'count': 0,
+        'url': downloadUrl.toString(),
+        'mime': 'video',
+        'videoThumbnail': thumbnailDownloadUrl,
+      };
     } catch (e) {
       throw e;
     }
@@ -146,11 +239,11 @@ class FileService {
   /// @param file the video file that will be compressed
   /// @return File a new compressed file with smaller size
   Future<File> compressVideo(BuildContext context, File file) async {
-    int sdkInt = -1;
-    if (Platform.isAndroid) {
-      var androidInfo = await DeviceInfoPlugin().androidInfo;
-      sdkInt = androidInfo.version.sdkInt as int;
-    }
+    // int sdkInt = -1;
+    // if (Platform.isAndroid) {
+    //   var androidInfo = await DeviceInfoPlugin().androidInfo;
+    //   sdkInt = androidInfo.version.sdkInt as int;
+    // }
     if (VideoCompress.compressProgress$.notSubscribed) {
       await VideoCompress.compressProgress$.subscribe((event) {});
     }
@@ -164,25 +257,13 @@ class FileService {
     return compressedVideo;
   }
 
-  Stream<ImageModel> getUserImages(String userID) async* {
-    _userImageStream = StreamController();
-    Stream<QuerySnapshot> result = firestore.collection(SOCIAL_FILES).where('userId', isEqualTo: userID).snapshots();
-
-    _userImageSubscription = result.listen((QuerySnapshot querySnapshot) async {
-      if (querySnapshot.docs.isNotEmpty) {
-        await Future.forEach(querySnapshot.docs, (DocumentSnapshot image) {
-          ImageModel imageModel = ImageModel.fromJson(image.data() as Map<String, dynamic>);
-          _userImageStream.sink.add(imageModel);
-        });
-      } else {
-        _userImageStream.sink.add(ImageModel(userId: userID, profilePicture: '', images: []));
-      }
-    });
-    yield* _userImageStream.stream;
-  }
-
   void disposeUserImagesStream() {
     _userImageStream.close();
     _userImageSubscription.cancel();
+  }
+
+  void disposeUserVideoStream() {
+    _userVideoStream.close();
+    _userVideoSubscription.cancel();
   }
 }

@@ -97,7 +97,7 @@ class _ConversationsState extends State<ConversationsScreen> {
               height: MediaQuery.of(context).size.height * 0.7,
               child: Center(
                 child: showEmptyState(
-                  'No Conversations Found.',
+                  'No conversations found.',
                   'All your conversations will show up here',
                 ),
               ),

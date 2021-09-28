@@ -14,10 +14,13 @@ import 'package:kick_chat/models/post_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
 import 'package:kick_chat/ui/posts/widgets/background_selector.dart';
+import 'package:kick_chat/ui/widgets/fullscreen_video_viewer.dart';
 import 'package:kick_chat/ui/widgets/grid_layout.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/multi_photo_display.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class EditPostScreen extends StatefulWidget {
   final Post post;
@@ -44,7 +47,9 @@ class EditPostScreenState extends State<EditPostScreen> {
   GiphyClient? client;
   String giphyApiKey = dotenv.get('GIPHY_API_KEY');
   bool hasGifSelected = false;
+  bool hasVideos = false;
   bool removeSharedPost = true;
+  List postVideo = [];
   List<GridLayout> options = [
     GridLayout(
       title: 'Image',
@@ -53,6 +58,10 @@ class EditPostScreenState extends State<EditPostScreen> {
     GridLayout(
       title: 'Gif',
       image: 'assets/images/gif.png',
+    ),
+    GridLayout(
+      title: 'Video',
+      image: 'assets/images/video-upload.png',
     ),
   ];
 
@@ -72,6 +81,13 @@ class EditPostScreenState extends State<EditPostScreen> {
     }
     if (widget.post.sharedPost.authorId != '') {
       removeSharedPost = false;
+    }
+
+    if (widget.post.postVideo.isNotEmpty) {
+      hasVideos = true;
+      hasPhotos = true;
+      postVideo = [...widget.post.postVideo];
+      imageStringList = [widget.post.postVideo[0]['videoThumbnail']];
     }
 
     WidgetsBinding.instance!.addPostFrameCallback((_) {
@@ -242,116 +258,125 @@ class EditPostScreenState extends State<EditPostScreen> {
               ? Expanded(
                   child: Column(
                     children: [
-                      hasPhotos
-                          ? (imageFileList.length > 0)
-                              ? Flexible(
-                                  flex: 3,
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: imageFileList.length == 1
-                                          ? 400
-                                          : imageFileList.length == 2
-                                              ? 210
-                                              : 140,
-                                    ),
-                                    child: Container(
-                                      child: PhotoGrid(
-                                        type: 'file',
-                                        imageUrls: imageFileList,
-                                        onImageClicked: (i) => {
-                                          _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i, 'single'),
-                                        },
-                                        onExpandClicked: (int index) => {
-                                          _viewOrDeleteImage(
-                                            mediaFiles.entries.elementAt(index),
-                                            index,
-                                            'multiple',
-                                          )
-                                        },
-                                        maxImages: 3,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Flexible(
-                                  flex: 3,
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: imageStringList.length == 1
-                                          ? 400
-                                          : imageStringList.length == 2
-                                              ? 210
-                                              : 140,
-                                    ),
-                                    child: Container(
-                                      child: PhotoGrid(
-                                        type: 'string',
-                                        imageUrls: imageStringList,
-                                        onImageClicked: (i) => {
-                                          _viewOrDeleteImage(imageStringList[i], i, 'single'),
-                                        },
-                                        onExpandClicked: (int index) => {
-                                          _viewOrDeleteImage(
-                                            imageStringList[index],
-                                            index,
-                                            'multiple',
-                                          )
-                                        },
-                                        maxImages: 3,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                          : Flexible(child: Text('')),
-                      hasGifSelected
-                          ? Flexible(
-                              flex: 2,
-                              child: GridView(
-                                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 500,
-                                  crossAxisSpacing: 1,
-                                ),
-                                children: [
-                                  currentGif != ''
-                                      ? GestureDetector(
-                                          onTap: () {
-                                            if (currentGif != '') {
-                                              _viewGif(currentGif);
-                                            }
-                                          },
-                                          child: Image.network(
-                                            currentGif,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                      : Text('')
-                                ],
-                              ),
-                            )
-                          : Flexible(child: Text('')),
-                      Flexible(
-                        child: Container(
-                          margin: EdgeInsets.only(left: 10, right: 10),
-                          child: GridView.builder(
-                            padding: EdgeInsets.zero,
-                            itemCount: options.length,
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 5.0,
-                              crossAxisSpacing: 5.0,
+                      Visibility(
+                        visible: hasPhotos && imageFileList.length > 0,
+                        child: Expanded(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: 400,
                             ),
-                            itemBuilder: (context, index) => GestureDetector(
-                              onTap: () async {
-                                if (options[index].title == 'Image') {
-                                  _pickImage();
-                                }
+                            child: Container(
+                              height: 1000,
+                              child: PhotoGrid(
+                                type: 'file',
+                                imageUrls: imageFileList,
+                                onImageClicked: (i) => {
+                                  _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i, 'single'),
+                                },
+                                onExpandClicked: (int index) => {
+                                  _viewOrDeleteImage(
+                                    mediaFiles.entries.elementAt(index),
+                                    index,
+                                    'multiple',
+                                  )
+                                },
+                                maxImages: 3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: hasPhotos && imageStringList.isNotEmpty,
+                        child: Expanded(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: 400,
+                            ),
+                            child: Container(
+                              height: 1000,
+                              child: PhotoGrid(
+                                type: 'string',
+                                imageUrls: imageStringList,
+                                onImageClicked: (i) => {
+                                  _viewOrDeleteImage(imageStringList[i], i, 'single'),
+                                },
+                                onExpandClicked: (int index) => {
+                                  _viewOrDeleteImage(
+                                    imageStringList[index],
+                                    index,
+                                    'multiple',
+                                  )
+                                },
+                                maxImages: 3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: hasGifSelected,
+                        child: Expanded(
+                          child: GridView(
+                            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 500,
+                              crossAxisSpacing: 1,
+                            ),
+                            children: [
+                              currentGif != ''
+                                  ? GestureDetector(
+                                      onTap: () {
+                                        if (currentGif != '') {
+                                          _viewGif(currentGif);
+                                        }
+                                      },
+                                      child: Image.network(
+                                        currentGif,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Text('')
+                            ],
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: hasVideos,
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: smallGridElements(),
+                        ),
+                      ),
+                      Visibility(
+                        visible: !hasPhotos && !hasGifSelected && !hasVideos,
+                        child: Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(left: 10, right: 10),
+                            child: GridView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: options.length,
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 5.0,
+                                crossAxisSpacing: 5.0,
+                              ),
+                              itemBuilder: (context, index) => GestureDetector(
+                                onTap: () async {
+                                  if (options[index].title == 'Image') {
+                                    _pickImage();
+                                  }
 
-                                if (options[index].title == 'Gif') {
-                                  await _openGifWidget();
-                                }
-                              },
-                              child: GridOptions(
-                                layout: options[index],
+                                  if (options[index].title == 'Gif') {
+                                    await _openGifWidget();
+                                  }
+
+                                  if (options[index].title == 'Video') {
+                                    _pickVideo();
+                                  }
+                                },
+                                child: GridOptions(
+                                  layout: options[index],
+                                ),
                               ),
                             ),
                           ),
@@ -360,8 +385,79 @@ class EditPostScreenState extends State<EditPostScreen> {
                     ],
                   ),
                 )
-              : Container()
+              : SizedBox.shrink()
         ],
+      ),
+    );
+  }
+
+  Widget smallGridElements() {
+    List items = [
+      {'title': 'Image', 'image': 'assets/images/image-icon.png'},
+      {'title': 'Gif', 'image': 'assets/images/gif.png'},
+      {'title': 'Video', 'image': 'assets/images/video-upload.png'},
+    ];
+    return Container(
+      height: 90.0,
+      alignment: Alignment.center,
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20),
+          topLeft: Radius.circular(20),
+        ),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset(0.0, 1.0),
+            blurRadius: 6.0,
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(
+          horizontal: 10.0,
+        ),
+        scrollDirection: Axis.horizontal,
+        physics: ClampingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    if (items[index]['title'] == 'Image') {
+                      _pickImage();
+                    }
+
+                    if (items[index]['title'] == 'Gif') {
+                      await _openGifWidget();
+                    }
+
+                    if (items[index]['title'] == 'Video') {
+                      _pickVideo();
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    margin: EdgeInsets.only(right: 30, left: 30, bottom: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      image: DecorationImage(
+                        image: AssetImage(items[index]['image']),
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -377,12 +473,15 @@ class EditPostScreenState extends State<EditPostScreen> {
         currentGif = gif.images!.original!.url;
         hasGifSelected = true;
         hasPhotos = false;
+        hasVideos = false;
+        postVideo = [];
         selectedColor = Color(0xFFFFFFFF);
         postNotEmpty = true;
       });
     }
   }
 
+  // I have stopped here. I will continue tomorrow
   Future<void> _editPost(BuildContext context, Post currentPost) async {
     LoadingOverlay.of(context).show();
     try {
@@ -489,7 +588,9 @@ class EditPostScreenState extends State<EditPostScreen> {
                   setState(() {});
                   if (imageFileList.length == 0) {
                     setState(() {
-                      hasPhotos = !hasPhotos;
+                      hasPhotos = false;
+                      hasGifSelected = false;
+                      hasVideos = false;
                       if (_editPostController.text == '') {
                         postNotEmpty = false;
                       }
@@ -500,7 +601,9 @@ class EditPostScreenState extends State<EditPostScreen> {
                   setState(() {});
                   if (imageStringList.length == 0) {
                     setState(() {
-                      hasPhotos = !hasPhotos;
+                      hasPhotos = false;
+                      hasGifSelected = false;
+                      hasVideos = false;
                       if (_editPostController.text == '') {
                         postNotEmpty = false;
                       }
@@ -516,14 +619,35 @@ class EditPostScreenState extends State<EditPostScreen> {
         CupertinoActionSheetAction(
           onPressed: () async {
             Navigator.pop(context);
-            push(
-              context,
-              FullScreen(
-                imageUrl: 'preview',
-                imageFiles: imageFileList,
-                index: index,
-              ),
-            );
+            if (postVideo.isEmpty) {
+              mediaEntry.key.startsWith('image')
+                  ? push(
+                      context,
+                      FullScreen(
+                        imageUrl: 'preview',
+                        imageFiles: imageFileList,
+                        index: index,
+                      ),
+                    )
+                  : push(
+                      context,
+                      FullScreenVideoViewer(
+                        videoUrl: mediaEntry.key,
+                        heroTag: 'videoPreview',
+                        videoFile: mediaEntry.value,
+                      ),
+                    );
+            }
+            if (postVideo.isNotEmpty) {
+              push(
+                context,
+                FullScreenVideoViewer(
+                  videoUrl: postVideo[0]['url'],
+                  heroTag: 'videoPreview',
+                  videoFile: null,
+                ),
+              );
+            }
           },
           isDefaultAction: true,
           child: Text('View Media'),
@@ -548,6 +672,8 @@ class EditPostScreenState extends State<EditPostScreen> {
             setState(() {
               currentGif = '';
               hasGifSelected = false;
+              hasPhotos = false;
+              hasVideos = false;
               if (_editPostController.text == '') {
                 postNotEmpty = false;
               }
@@ -584,7 +710,7 @@ class EditPostScreenState extends State<EditPostScreen> {
 
   void _pickImage() {
     final action = CupertinoActionSheet(
-      message: Text("Add Media To Post", style: TextStyle(fontSize: 16.0)),
+      message: Text("Add image to post", style: TextStyle(fontSize: 16.0)),
       actions: <Widget>[
         CupertinoActionSheetAction(
           child: Text("Choose from gallery"),
@@ -596,7 +722,6 @@ class EditPostScreenState extends State<EditPostScreen> {
                 type: FileType.image,
                 allowMultiple: true,
               );
-
               bool proceed = true;
               if (imageStringList.length > 0) {
                 proceed = await showCupertinoAlert(
@@ -605,6 +730,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                   'Adding new file(s) will remove the previous ones. Would you like to proceed?',
                   'OK',
                   'Cancel',
+                  '',
                   true,
                 );
               }
@@ -630,8 +756,108 @@ class EditPostScreenState extends State<EditPostScreen> {
                   postNotEmpty = true;
                 });
               }
-            } on Exception catch (e) {
-              print(e);
+            } catch (e) {
+              setState(() {
+                hasPhotos = false;
+                postNotEmpty = postNotEmpty ? true : false;
+                hasVideos = false;
+                hasGifSelected = false;
+                selectedColor = Color(0xFFFFFFFF);
+              });
+            }
+          },
+        ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        child: Text("Cancel"),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+    showCupertinoModalPopup(context: context, builder: (context) => action);
+  }
+
+  void _pickVideo() {
+    final action = CupertinoActionSheet(
+      message: Text(
+        "Add video to post",
+        style: TextStyle(fontSize: 16.0),
+      ),
+      actions: <Widget>[
+        CupertinoActionSheetAction(
+          child: Text("Choose from gallery"),
+          isDefaultAction: false,
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              imageFileList.clear();
+              mediaFiles.clear();
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.video,
+                allowMultiple: false,
+              );
+
+              bool proceed = true;
+              if (imageStringList.length > 0) {
+                proceed = await showCupertinoAlert(
+                  context,
+                  'Alert',
+                  'Adding new file(s) will remove the previous ones. Would you like to proceed?',
+                  'OK',
+                  'Cancel',
+                  '',
+                  true,
+                );
+              }
+
+              if (!proceed) {
+                return;
+              } else {
+                setState(() {
+                  imageStringList = [];
+                });
+                if (result != null) {
+                  postVideo.clear();
+                  List<File> files = result.paths.map((path) => File(path!)).toList();
+                  if (files.isEmpty) return;
+                  var newFilePath = await changeFileNameOnly(
+                    File(files[0].path),
+                    getRandomString(20).toLowerCase(),
+                  );
+                  String? videoThumbnail = await VideoThumbnail.thumbnailFile(
+                    video: newFilePath.path,
+                    thumbnailPath: (await getTemporaryDirectory()).path,
+                    imageFormat: ImageFormat.PNG,
+                  );
+                  imageFileList.add(File(videoThumbnail!));
+                  // postVideo.add(File(videoThumbnail));
+                  mediaFiles.remove('null');
+                  mediaFiles[videoThumbnail] = File(newFilePath.path);
+                  setState(() {
+                    hasPhotos = true;
+                    postNotEmpty = true;
+                    hasVideos = true;
+                    selectedColor = Color(0xFFFFFFFF);
+                  });
+                } else {
+                  setState(() {
+                    hasPhotos = false;
+                    postNotEmpty = postNotEmpty ? true : false;
+                    hasVideos = false;
+                    hasGifSelected = false;
+                    selectedColor = Color(0xFFFFFFFF);
+                  });
+                }
+              }
+            } catch (e) {
+              setState(() {
+                hasPhotos = false;
+                postNotEmpty = postNotEmpty ? true : false;
+                hasVideos = false;
+                hasGifSelected = false;
+                selectedColor = Color(0xFFFFFFFF);
+              });
             }
           },
         ),

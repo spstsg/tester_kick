@@ -8,13 +8,12 @@ import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
-import 'package:kick_chat/ui/posts/create_post_screen.dart';
 import 'package:kick_chat/ui/posts/widgets/post_helper_widgets.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/posts/widgets/shared_post_container.dart';
+import 'package:kick_chat/ui/posts/widgets/video_display_widget.dart';
 import 'package:kick_chat/ui/widgets/full_screen_image_viewer.dart';
 import 'package:kick_chat/ui/widgets/expanded_text.dart';
-import 'package:kick_chat/ui/widgets/fullscreen_video_viewer.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -71,20 +70,13 @@ class PostContainerState extends State<PostContainer> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             noPosts = true;
             return Center(
-              child: showEmptyState(
-                'No Posts Found',
-                'All posts will show up here',
-                buttonTitle: 'Create new post',
-                action: () {
-                  Navigator.of(context).push(
-                    new MaterialPageRoute<Null>(
-                      builder: (BuildContext context) {
-                        return new CreatePostScreen();
-                      },
-                      fullscreenDialog: true,
-                    ),
-                  );
-                },
+              child: Container(
+                height: MediaQuery.of(context).size.height - 170,
+                child: showEmptyState(
+                  'No posts found',
+                  'All posts will show up here',
+                  buttonTitle: 'Create new post',
+                ),
               ),
             );
           } else {
@@ -241,7 +233,9 @@ class PostContainerState extends State<PostContainer> {
                     ),
                   )
                 : SizedBox.shrink(),
-            post.postVideo.isNotEmpty ? videoDisplay(post) : SizedBox.shrink(),
+            post.postVideo.isNotEmpty
+                ? videoDisplay(context, post, _postService.updateVideoViewCount)
+                : SizedBox.shrink(),
             post.postMedia.isEmpty && post.gifUrl != ''
                 ? Container(
                     height: 250,
@@ -258,39 +252,6 @@ class PostContainerState extends State<PostContainer> {
               child: PostStats(post: post),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget videoDisplay(Post post) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.25,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        image: post.postVideo[0]['videoThumbnail'] != null && post.postVideo[0]['videoThumbnail']!.isNotEmpty
-            ? DecorationImage(
-                fit: BoxFit.fill,
-                image: Image.network(
-                  post.postVideo[0]['videoThumbnail']!,
-                ).image)
-            : null,
-      ),
-      child: Center(
-        child: FloatingActionButton(
-          child: Icon(CupertinoIcons.play_arrow_solid),
-          backgroundColor: Colors.white54,
-          heroTag: getRandomString(10),
-          onPressed: () {
-            _postService.updateVideoViewCount(post);
-            push(
-              context,
-              FullScreenVideoViewer(
-                videoUrl: post.postVideo[0]['url'],
-                heroTag: getRandomString(10),
-              ),
-            );
-          },
         ),
       ),
     );

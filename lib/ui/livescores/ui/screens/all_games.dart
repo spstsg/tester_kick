@@ -67,9 +67,7 @@ class AllGamesScreenState extends State<AllGamesScreen> {
             height: MediaQuery.of(context).size.height,
             child: MatchesSkeleton(),
           );
-        } else if (!snapshot.hasData ||
-            (snapshot.data?.isEmpty ?? true) ||
-            snapshot.data['response'].isEmpty) {
+        } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true) || snapshot.data['response'].isEmpty) {
           return Center(
             child: Center(
               child: showEmptyState(
@@ -84,9 +82,8 @@ class AllGamesScreenState extends State<AllGamesScreen> {
             groupKeys = groupedData.keys.toList();
           } else {
             getCountryFilter().then((getCountryName) {
-              var filtered = snapshot.data!['response']
-                  .where((i) => i['league']!['country'] == getCountryName)
-                  .toList();
+              var filtered =
+                  snapshot.data!['response'].where((i) => i['league']!['country'] == getCountryName).toList();
               groupedData = groupBy(
                 filtered,
                 (dynamic obj) => obj['league']['id'],
@@ -234,6 +231,7 @@ class AllGamesScreenState extends State<AllGamesScreen> {
                 'Would you like to save your selection?',
                 'Save',
                 'Do not save',
+                '',
                 true,
               );
               setState(() {

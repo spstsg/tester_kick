@@ -7,11 +7,13 @@
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 
-* The gif select for post create is not working
+* The gif select for post create is not working - done
 * Work on edit post with video
-* Display user's added videos on profile page
-* If a user wants to delete a video, ask them if the want to permanently delete the video or make it private so only them can see it
+* Display user's added videos on profile page - done
+* If a user wants to delete a video, ask them if the want to permanently delete the video or make it private so only them can see it - done
 * Change the "flutter/social_network/videos/" storage url used for the video to something better and also for thumbnails
+* It seems if a video on profile page has hide set to false, the videos are not aligned in the grid properly. Login another user to check this out properly - done
+* Remove the create new post button from the post container - done
 
 ...........
 - I have done the chat images delete feature

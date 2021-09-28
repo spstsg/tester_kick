@@ -13,6 +13,7 @@ import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/friends/friends_tab_screen.dart';
 import 'package:kick_chat/ui/profile/ui/edit_profile.dart';
 import 'package:kick_chat/ui/profile/ui/settings_screen.dart';
+import 'package:kick_chat/ui/profile/widgets/profile_videos.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -167,7 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 Container(
-                  height: widget.user.bio.isNotEmpty ? 260 : 210,
+                  height: widget.user.bio.isNotEmpty ? 240 : 210,
                   child: Column(
                     children: <Widget>[
                       imageFileList.isNotEmpty ? profileImageSaveBtns() : SizedBox.shrink(),
@@ -252,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Container(
                   child: DefaultTabController(
-                    length: 2,
+                    length: 3,
                     initialIndex: 0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -264,8 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             tabs: [
                               Tab(icon: Icon(MdiIcons.grid)),
                               Tab(icon: Icon(MdiIcons.imageMultipleOutline)),
-                              // Tab(icon: Icon(MdiIcons.cardPlusOutline)),
-                              // Tab(icon: Icon(MdiIcons.accountMultipleOutline)),
+                              Tab(icon: Icon(MdiIcons.videoOutline)),
                             ],
                           ),
                         ),
@@ -279,34 +279,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
                                       child: Center(
                                         child: showEmptyState(
-                                          'No Posts Found',
+                                          'No posts found',
                                           'All posts will show up here',
                                         ),
                                       ),
                                     ),
                               ProfileImages(user: widget.user),
-                              // Container(
-                              //   child: Center(
-                              //     child: Text(
-                              //       'Display Tab 3',
-                              //       style: TextStyle(
-                              //         fontSize: 22,
-                              //         fontWeight: FontWeight.bold,
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
-                              // Container(
-                              //   child: Center(
-                              //     child: Text(
-                              //       'Display Tab 4',
-                              //       style: TextStyle(
-                              //         fontSize: 22,
-                              //         fontWeight: FontWeight.bold,
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
+                              ProfileVideos(user: widget.user),
                             ],
                           ),
                         )
@@ -771,6 +750,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'Alert',
             'The added profile picture will take some time to propagate. You can continue using the app.',
             'OK',
+            '',
             '',
             false,
           );

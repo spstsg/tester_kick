@@ -425,6 +425,7 @@ class _ChangePasswordState extends State<ChangePassword> {
           'You will be logged out so you can login with your new password.',
           'OK',
           '',
+          '',
           false,
         );
         _currentPassword.text = '';
@@ -442,6 +443,7 @@ class _ChangePasswordState extends State<ChangePassword> {
             'No user found for that email.',
             'OK',
             '',
+            '',
             false,
           );
         } else if (e.code == 'wrong-password') {
@@ -450,6 +452,7 @@ class _ChangePasswordState extends State<ChangePassword> {
             'Error',
             'Wrong password provided for user.',
             'OK',
+            '',
             '',
             false,
           );

@@ -27,13 +27,14 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
   Post postWithVideo = Post();
   List mediaFilesURLs = [];
   String uploadText = 'Uploading...';
+  bool isCreated = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       MyAppState.reduxStore!.onChange.listen((state) {
-        if (state.createdPost.postVideo.isNotEmpty) {
+        if (state.createdPost.postVideo.isNotEmpty && !isCreated) {
           setState(() {
             postWithVideo = state.createdPost;
           });
@@ -88,6 +89,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
       }
       Map videoUrl = await _fileService.uploadPostVideo(
         context,
+        getRandomString(28),
         postWithVideo.postVideo[0].entries.elementAt(0).value,
         File(postWithVideo.postVideo[0].entries.elementAt(0).key),
       );
@@ -109,37 +111,42 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
       );
       String? errorMessage = await _postService.publishPost(post);
       if (errorMessage == null) {
-        dispatchEmptyPost();
+        dispatchEmptyPost(true);
       } else {
-        dispatchEmptyPost();
+        dispatchEmptyPost(true);
         await showCupertinoAlert(
           context,
           'Error',
           'Creating post. Try again later.',
           'OK',
           '',
+          '',
           false,
         );
       }
     } catch (e) {
-      dispatchEmptyPost();
+      dispatchEmptyPost(true);
       await showCupertinoAlert(
         context,
         'Error',
         'Uploading video or creating post. Try again later.',
         'OK',
         '',
+        '',
         false,
       );
     }
   }
 
-  void dispatchEmptyPost() {
+  void dispatchEmptyPost(bool postCreated) {
     Post emptyPost = Post();
+    mediaFilesURLs.clear();
     setState(() {
+      uploadText = 'Uploading...';
+      isCreated = postCreated;
       postWithVideo = Post();
+      MyAppState.reduxStore!.dispatch(CreatedPostAction(emptyPost));
     });
-    MyAppState.reduxStore!.dispatch(CreatedPostAction(emptyPost));
   }
 
   Widget postContainer(User storeUser) {
@@ -157,6 +164,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
             children: [
               GestureDetector(
                 onTap: () {
+                  dispatchEmptyPost(false);
                   Navigator.of(context).push(
                     new MaterialPageRoute<Null>(
                       builder: (BuildContext context) {
@@ -192,7 +200,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                   ),
                 ),
               ),
-              const Divider(height: 10.0, thickness: 0.5),
+              Divider(height: 10.0, thickness: 0.5),
               SizedBox(height: 10),
               Container(
                 height: 40.0,
@@ -202,6 +210,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
+                        dispatchEmptyPost(false);
                         Navigator.of(context).push(
                           new MaterialPageRoute<Null>(
                             builder: (BuildContext context) {
@@ -219,7 +228,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                         ),
                         child: Icon(
                           Icons.photo_library,
-                          color: Colors.red,
+                          color: Colors.blue,
                           size: 18,
                         ),
                       ),
@@ -227,16 +236,16 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                         'Photo',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
+                          color: Colors.blueAccent,
                           fontSize: 14,
                         ),
                       ),
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.red[100]),
+                        backgroundColor: MaterialStateProperty.all(Colors.blue[100]),
                         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.0),
-                            side: BorderSide(color: Colors.red.shade100),
+                            side: BorderSide(color: Colors.blue.shade100),
                           ),
                         ),
                       ),
@@ -244,6 +253,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                     SizedBox(width: 15),
                     ElevatedButton.icon(
                       onPressed: () {
+                        dispatchEmptyPost(false);
                         Navigator.of(context).push(
                           new MaterialPageRoute<Null>(
                             builder: (BuildContext context) {
@@ -279,6 +289,49 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.0),
                             side: BorderSide(color: Colors.orange.shade100),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        dispatchEmptyPost(false);
+                        Navigator.of(context).push(
+                          new MaterialPageRoute<Null>(
+                            builder: (BuildContext context) {
+                              return new CreatePostScreen(openVideoPicker: true);
+                            },
+                            fullscreenDialog: true,
+                          ),
+                        );
+                      },
+                      icon: Container(
+                        padding: const EdgeInsets.all(2.0),
+                        decoration: BoxDecoration(
+                          color: ColorPalette.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          MdiIcons.video,
+                          color: Colors.red,
+                          size: 18,
+                        ),
+                      ),
+                      label: Text(
+                        'Video',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                          fontSize: 14,
+                        ),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.red[100]),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                            side: BorderSide(color: Colors.red.shade100),
                           ),
                         ),
                       ),
