@@ -191,6 +191,21 @@ class PostStatsState extends State<PostStats> {
         Divider(),
         Row(
           children: [
+            widget.post.postVideo.isNotEmpty && widget.post.postVideo[0]['count'] > 0
+                ? Container(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.remove_red_eye_outlined,
+                          size: 15,
+                        ),
+                        SizedBox(width: 5),
+                        Text(NumberFormat.compact().format(widget.post.postVideo[0]['count'])),
+                        SizedBox(width: 20),
+                      ],
+                    ),
+                  )
+                : SizedBox.shrink(),
             Flexible(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5),

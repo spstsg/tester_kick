@@ -21,6 +21,7 @@ class Post with ChangeNotifier {
   Timestamp createdAt;
   Map reactions;
   List postMedia;
+  List postVideo;
   int shareCount;
   SharedPost sharedPost;
 
@@ -35,6 +36,7 @@ class Post with ChangeNotifier {
     this.bgColor = '',
     this.commentsCount = 0,
     this.postMedia = const [],
+    this.postVideo = const [],
     createdAt,
     this.post = '',
     this.gifUrl = '',
@@ -59,10 +61,9 @@ class Post with ChangeNotifier {
 
   factory Post.fromJson(Map<String, dynamic> parsedJson) {
     List _postMedia = parsedJson['postMedia'] ?? [];
+    List _postVideo = parsedJson['postVideo'] ?? [];
     return new Post(
-      author: parsedJson.containsKey('author')
-          ? User.fromJson(parsedJson['author'])
-          : User(),
+      author: parsedJson.containsKey('author') ? User.fromJson(parsedJson['author']) : User(),
       id: parsedJson['id'] ?? '',
       authorId: parsedJson['authorId'] ?? '',
       username: parsedJson['username'] ?? '',
@@ -73,14 +74,13 @@ class Post with ChangeNotifier {
       createdAt: parsedJson['createdAt'] ?? Timestamp.now(),
       commentsCount: parsedJson['commentsCount'] ?? 0,
       shareCount: parsedJson['shareCount'] ?? 0,
-      sharedPost: parsedJson.containsKey('sharedPost')
-          ? SharedPost.fromJson(parsedJson['sharedPost'])
-          : SharedPost(),
+      sharedPost: parsedJson.containsKey('sharedPost') ? SharedPost.fromJson(parsedJson['sharedPost']) : SharedPost(),
       post: parsedJson['post'] ?? '',
       gifUrl: parsedJson['gifUrl'] ?? '',
       privacy: parsedJson['privacy'] ?? '',
       reactionsCount: parsedJson['reactionsCount'] ?? 0,
       postMedia: _postMedia,
+      postVideo: _postVideo,
       reactions: parsedJson['reactions'] ??
           {
             'angry': 0,
@@ -113,6 +113,7 @@ class Post with ChangeNotifier {
       'reactionsCount': this.reactionsCount,
       'reactions': this.reactions,
       "postMedia": this.postMedia,
+      "postVideo": this.postVideo,
     };
   }
 
@@ -132,6 +133,7 @@ class Post with ChangeNotifier {
     int? reactionsCount,
     Timestamp? createdAt,
     List? postMedia,
+    List? postVideo,
     int? shareCount,
     SharedPost? sharedPost,
     Map? reactions,
@@ -152,6 +154,7 @@ class Post with ChangeNotifier {
       reactionsCount: reactionsCount ?? this.reactionsCount,
       createdAt: createdAt ?? this.createdAt,
       postMedia: postMedia ?? this.postMedia,
+      postVideo: postVideo ?? this.postVideo,
       shareCount: shareCount ?? this.shareCount,
       sharedPost: sharedPost ?? this.sharedPost,
       reactions: reactions ?? this.reactions,
@@ -178,9 +181,9 @@ class Post with ChangeNotifier {
         other.reactionsCount == reactionsCount &&
         other.createdAt == createdAt &&
         listEquals(other.postMedia, postMedia) &&
+        listEquals(other.postVideo, postVideo) &&
         other.shareCount == shareCount &&
-        DeepCollectionEquality()
-            .equals(other.sharedPost.toJson(), sharedPost.toJson()) &&
+        DeepCollectionEquality().equals(other.sharedPost.toJson(), sharedPost.toJson()) &&
         DeepCollectionEquality().equals(other.reactions, reactions);
   }
 
@@ -201,6 +204,7 @@ class Post with ChangeNotifier {
         reactionsCount.hashCode ^
         createdAt.hashCode ^
         postMedia.hashCode ^
+        postVideo.hashCode ^
         reactions.hashCode ^
         shareCount.hashCode ^
         sharedPost.hashCode;
@@ -218,6 +222,7 @@ class SharedPost {
   String gifUrl;
   Timestamp createdAt;
   List postMedia;
+  List postVideo;
   Map reactions;
 
   SharedPost({
@@ -231,6 +236,7 @@ class SharedPost {
     this.gifUrl = '',
     createdAt,
     this.postMedia = const [],
+    this.postVideo = const [],
     reactions,
   })  : this.createdAt = createdAt ?? Timestamp.now(),
         this.reactions = reactions ??
@@ -245,6 +251,7 @@ class SharedPost {
 
   factory SharedPost.fromJson(Map<String, dynamic> parsedJson) {
     List _postMedia = parsedJson['postMedia'] ?? [];
+    List _postVideo = parsedJson['postVideo'] ?? [];
     return new SharedPost(
       id: parsedJson['id'] ?? '',
       authorId: parsedJson['authorId'] ?? '',
@@ -265,6 +272,7 @@ class SharedPost {
             'sad': 0,
           },
       postMedia: _postMedia,
+      postVideo: _postVideo,
     );
   }
 
@@ -280,6 +288,7 @@ class SharedPost {
       'post': this.post,
       'gifUrl': this.gifUrl,
       "postMedia": this.postMedia,
+      "postVideo": this.postVideo,
       "reactions": this.reactions,
     };
   }

@@ -259,8 +259,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                                         type: 'file',
                                         imageUrls: imageFileList,
                                         onImageClicked: (i) => {
-                                          _viewOrDeleteImage(
-                                              mediaFiles.entries.elementAt(i), i, 'single'),
+                                          _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i, 'single'),
                                         },
                                         onExpandClicked: (int index) => {
                                           _viewOrDeleteImage(
@@ -445,6 +444,7 @@ class EditPostScreenState extends State<EditPostScreen> {
         gifUrl: currentGif,
         privacy: PostAudienceDropdownState.chosenValue,
         postMedia: imageFileList.length > 0 ? urlPhotos : currentPost.postMedia,
+        postVideo: currentPost.postVideo,
         commentsCount: currentPost.commentsCount,
         reactionsCount: currentPost.reactionsCount,
         createdAt: currentPost.createdAt,
