@@ -19,8 +19,6 @@ import 'package:kick_chat/ui/widgets/grid_layout.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/multi_photo_display.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 class EditPostScreen extends StatefulWidget {
   final Post post;
@@ -271,13 +269,12 @@ class EditPostScreenState extends State<EditPostScreen> {
                                 type: 'file',
                                 imageUrls: imageFileList,
                                 onImageClicked: (i) => {
-                                  _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i, 'single'),
+                                  _viewOrDeleteImage(mediaFiles.entries.elementAt(i), i),
                                 },
                                 onExpandClicked: (int index) => {
                                   _viewOrDeleteImage(
                                     mediaFiles.entries.elementAt(index),
                                     index,
-                                    'multiple',
                                   )
                                 },
                                 maxImages: 3,
@@ -299,13 +296,12 @@ class EditPostScreenState extends State<EditPostScreen> {
                                 type: 'string',
                                 imageUrls: imageStringList,
                                 onImageClicked: (i) => {
-                                  _viewOrDeleteImage(imageStringList[i], i, 'single'),
+                                  _viewOrDeleteImage(imageStringList[i], i),
                                 },
                                 onExpandClicked: (int index) => {
                                   _viewOrDeleteImage(
                                     imageStringList[index],
                                     index,
-                                    'multiple',
                                   )
                                 },
                                 maxImages: 3,
@@ -341,7 +337,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                         ),
                       ),
                       Visibility(
-                        visible: hasVideos,
+                        visible: hasVideos || hasPhotos || hasGifSelected,
                         child: Align(
                           alignment: Alignment.bottomCenter,
                           child: smallGridElements(),
@@ -371,7 +367,15 @@ class EditPostScreenState extends State<EditPostScreen> {
                                   }
 
                                   if (options[index].title == 'Video') {
-                                    _pickVideo();
+                                    await showCupertinoAlert(
+                                      context,
+                                      'Alert',
+                                      'You cannot add a new video. You can only edit its post. Please delete the complete post and then create a new post with video.',
+                                      'OK',
+                                      '',
+                                      '',
+                                      false,
+                                    );
                                   }
                                 },
                                 child: GridOptions(
@@ -438,7 +442,15 @@ class EditPostScreenState extends State<EditPostScreen> {
                     }
 
                     if (items[index]['title'] == 'Video') {
-                      _pickVideo();
+                      await showCupertinoAlert(
+                        context,
+                        'Alert',
+                        'You cannot add a new video. Please delete the post and then create a new post with video.',
+                        'OK',
+                        '',
+                        '',
+                        false,
+                      );
                     }
                   },
                   child: Container(
@@ -481,12 +493,14 @@ class EditPostScreenState extends State<EditPostScreen> {
     }
   }
 
-  // I have stopped here. I will continue tomorrow
   Future<void> _editPost(BuildContext context, Post currentPost) async {
     LoadingOverlay.of(context).show();
     try {
-      if (imageFileList.length == 1) {
-        var response = await _fileService.uploadSingleFile(imageFileList[0].path);
+      if (imageFileList.length == 1 && hasPhotos) {
+        var response = await _fileService.uploadSingleFile(
+          imageFileList[0].path,
+          getRandomString(20).toLowerCase(),
+        );
         if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
           urlPhotos.add(response.secureUrl!);
         } else {
@@ -501,7 +515,7 @@ class EditPostScreenState extends State<EditPostScreen> {
           );
           return;
         }
-      } else if (imageFileList.length > 1) {
+      } else if (imageFileList.length > 1 && hasPhotos) {
         var responses = await _fileService.uploadMultipleFiles(imageFileList);
         responses.map((response) async {
           if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
@@ -574,7 +588,7 @@ class EditPostScreenState extends State<EditPostScreen> {
     }
   }
 
-  void _viewOrDeleteImage(dynamic mediaEntry, int index, String type) {
+  void _viewOrDeleteImage(dynamic mediaEntry, int index) {
     final action = CupertinoActionSheet(
       actions: <Widget>[
         Column(
@@ -597,6 +611,18 @@ class EditPostScreenState extends State<EditPostScreen> {
                     });
                   }
                 } else {
+                  if (hasPhotos && hasVideos) {
+                    await showCupertinoAlert(
+                      context,
+                      'Alert',
+                      'You cannot remove this video. In other to do so, delete the complete post.',
+                      'OK',
+                      '',
+                      '',
+                      false,
+                    );
+                    return;
+                  }
                   imageStringList.removeAt(index);
                   setState(() {});
                   if (imageStringList.length == 0) {
@@ -755,100 +781,6 @@ class EditPostScreenState extends State<EditPostScreen> {
                   selectedColor = Color(0xFFFFFFFF);
                   postNotEmpty = true;
                 });
-              }
-            } catch (e) {
-              setState(() {
-                hasPhotos = false;
-                postNotEmpty = postNotEmpty ? true : false;
-                hasVideos = false;
-                hasGifSelected = false;
-                selectedColor = Color(0xFFFFFFFF);
-              });
-            }
-          },
-        ),
-      ],
-      cancelButton: CupertinoActionSheetAction(
-        child: Text("Cancel"),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
-    );
-    showCupertinoModalPopup(context: context, builder: (context) => action);
-  }
-
-  void _pickVideo() {
-    final action = CupertinoActionSheet(
-      message: Text(
-        "Add video to post",
-        style: TextStyle(fontSize: 16.0),
-      ),
-      actions: <Widget>[
-        CupertinoActionSheetAction(
-          child: Text("Choose from gallery"),
-          isDefaultAction: false,
-          onPressed: () async {
-            Navigator.pop(context);
-            try {
-              imageFileList.clear();
-              mediaFiles.clear();
-              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                type: FileType.video,
-                allowMultiple: false,
-              );
-
-              bool proceed = true;
-              if (imageStringList.length > 0) {
-                proceed = await showCupertinoAlert(
-                  context,
-                  'Alert',
-                  'Adding new file(s) will remove the previous ones. Would you like to proceed?',
-                  'OK',
-                  'Cancel',
-                  '',
-                  true,
-                );
-              }
-
-              if (!proceed) {
-                return;
-              } else {
-                setState(() {
-                  imageStringList = [];
-                });
-                if (result != null) {
-                  postVideo.clear();
-                  List<File> files = result.paths.map((path) => File(path!)).toList();
-                  if (files.isEmpty) return;
-                  var newFilePath = await changeFileNameOnly(
-                    File(files[0].path),
-                    getRandomString(20).toLowerCase(),
-                  );
-                  String? videoThumbnail = await VideoThumbnail.thumbnailFile(
-                    video: newFilePath.path,
-                    thumbnailPath: (await getTemporaryDirectory()).path,
-                    imageFormat: ImageFormat.PNG,
-                  );
-                  imageFileList.add(File(videoThumbnail!));
-                  // postVideo.add(File(videoThumbnail));
-                  mediaFiles.remove('null');
-                  mediaFiles[videoThumbnail] = File(newFilePath.path);
-                  setState(() {
-                    hasPhotos = true;
-                    postNotEmpty = true;
-                    hasVideos = true;
-                    selectedColor = Color(0xFFFFFFFF);
-                  });
-                } else {
-                  setState(() {
-                    hasPhotos = false;
-                    postNotEmpty = postNotEmpty ? true : false;
-                    hasVideos = false;
-                    hasGifSelected = false;
-                    selectedColor = Color(0xFFFFFFFF);
-                  });
-                }
               }
             } catch (e) {
               setState(() {

@@ -24,12 +24,46 @@ class FileService {
   late StreamSubscription<QuerySnapshot> _userImageSubscription;
   StreamController<List<Map<String, dynamic>>> _userVideoStream = StreamController();
   late StreamSubscription<QuerySnapshot> _userVideoSubscription;
+  String storageUrl = 'kickchat/app';
 
   final cloudinary = Cloudinary(
     dotenv.get('CLOUD_API_KEY'),
     dotenv.get('CLOUD_API_SECRET'),
     dotenv.get('CLOUD_NAME'),
   );
+
+  Stream<List<Map<String, dynamic>>> getUserVideoFiles(String userId) async* {
+    try {
+      List<Map<String, dynamic>> videos = [];
+      Stream<QuerySnapshot> result = firestore.collection(USER_VIDEOS).doc(userId).collection(USER_VIDEOS).snapshots();
+      _userVideoSubscription = result.listen((QuerySnapshot querySnapshot) async {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot video) {
+          videos.add(video.data() as Map<String, dynamic>);
+        });
+        _userVideoStream.sink.add(videos);
+      });
+      yield* _userVideoStream.stream;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Stream<ImageModel> getUserImages(String userID) async* {
+    _userImageStream = StreamController();
+    Stream<QuerySnapshot> result = firestore.collection(SOCIAL_FILES).where('userId', isEqualTo: userID).snapshots();
+
+    _userImageSubscription = result.listen((QuerySnapshot querySnapshot) async {
+      if (querySnapshot.docs.isNotEmpty) {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot image) {
+          ImageModel imageModel = ImageModel.fromJson(image.data() as Map<String, dynamic>);
+          _userImageStream.sink.add(imageModel);
+        });
+      } else {
+        _userImageStream.sink.add(ImageModel(userId: userID, profilePicture: '', images: []));
+      }
+    });
+    yield* _userImageStream.stream;
+  }
 
   Future<CloudinaryResponse> uploadSingleFile(
     imagePath, [
@@ -151,43 +185,10 @@ class FileService {
     }
   }
 
-  Stream<List<Map<String, dynamic>>> getUserVideoFiles(String userId) async* {
-    try {
-      List<Map<String, dynamic>> videos = [];
-      Stream<QuerySnapshot> result = firestore.collection(USER_VIDEOS).doc(userId).collection(USER_VIDEOS).snapshots();
-      _userVideoSubscription = result.listen((QuerySnapshot querySnapshot) async {
-        await Future.forEach(querySnapshot.docs, (DocumentSnapshot video) {
-          videos.add(video.data() as Map<String, dynamic>);
-        });
-        _userVideoStream.sink.add(videos);
-      });
-      yield* _userVideoStream.stream;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  Stream<ImageModel> getUserImages(String userID) async* {
-    _userImageStream = StreamController();
-    Stream<QuerySnapshot> result = firestore.collection(SOCIAL_FILES).where('userId', isEqualTo: userID).snapshots();
-
-    _userImageSubscription = result.listen((QuerySnapshot querySnapshot) async {
-      if (querySnapshot.docs.isNotEmpty) {
-        await Future.forEach(querySnapshot.docs, (DocumentSnapshot image) {
-          ImageModel imageModel = ImageModel.fromJson(image.data() as Map<String, dynamic>);
-          _userImageStream.sink.add(imageModel);
-        });
-      } else {
-        _userImageStream.sink.add(ImageModel(userId: userID, profilePicture: '', images: []));
-      }
-    });
-    yield* _userImageStream.stream;
-  }
-
   Future<Map> uploadPostVideo(BuildContext context, String videoId, File video, File thumbnail) async {
     try {
       var uniqueID = Uuid().v4();
-      Reference upload = storage.child("flutter/social_network/videos/$uniqueID.mp4");
+      Reference upload = storage.child("$storageUrl/videos/$uniqueID.mp4");
       SettableMetadata metadata = new SettableMetadata(contentType: 'video');
       UploadTask uploadTask = upload.putFile(video, metadata);
       var storageRef = (await uploadTask.whenComplete(() {})).ref;
@@ -215,13 +216,12 @@ class FileService {
     try {
       var uniqueID = Uuid().v4();
       File compressedImage = await _compressImage(file);
-      Reference upload = storage.child("flutter/social_network/video_thumbnails/$uniqueID.png");
+      Reference upload = storage.child("$storageUrl/video_thumbnails/$uniqueID.png");
       UploadTask uploadTask = upload.putFile(compressedImage);
       var downloadUrl = await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
       return downloadUrl.toString();
-    } catch (e, s) {
-      print('FireStoreUtils.uploadPostVideoThumbnail $e $s');
-      return 'no_thumbnail';
+    } catch (e) {
+      return 'No thumbnail created';
     }
   }
 
@@ -239,11 +239,6 @@ class FileService {
   /// @param file the video file that will be compressed
   /// @return File a new compressed file with smaller size
   Future<File> compressVideo(BuildContext context, File file) async {
-    // int sdkInt = -1;
-    // if (Platform.isAndroid) {
-    //   var androidInfo = await DeviceInfoPlugin().androidInfo;
-    //   sdkInt = androidInfo.version.sdkInt as int;
-    // }
     if (VideoCompress.compressProgress$.notSubscribed) {
       await VideoCompress.compressProgress$.subscribe((event) {});
     }
