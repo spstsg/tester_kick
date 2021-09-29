@@ -198,6 +198,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
         'An email has been sent to you, Click the link provided to complete password reset',
         'OK',
         '',
+        '',
         false,
       );
     } catch (e) {
@@ -208,6 +209,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
         'Error',
         'An error occured. Please try again later.',
         'OK',
+        '',
         '',
         false,
       );

@@ -12,8 +12,7 @@ class SharePostWithinAppScreen extends StatefulWidget {
   SharePostWithinAppScreen({required this.post});
 
   @override
-  SharePostWithinAppScreenState createState() =>
-      SharePostWithinAppScreenState();
+  SharePostWithinAppScreenState createState() => SharePostWithinAppScreenState();
 }
 
 class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
@@ -129,6 +128,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         post: widget.post.post,
         gifUrl: widget.post.gifUrl,
         postMedia: widget.post.postMedia,
+        postVideo: widget.post.postVideo,
         reactions: widget.post.reactions,
       );
 
@@ -144,6 +144,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         gifUrl: '',
         privacy: 'Public',
         postMedia: [],
+        postVideo: [],
         sharedPost: sharedPost,
       );
       String? errorMessage = await _postService.publishPost(post);

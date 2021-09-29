@@ -35,6 +35,7 @@ class SenderWidget extends StatelessWidget {
             'Are you sure you want to delete this image?',
             'Delete',
             'Cancel',
+            '',
             true,
           );
           if (dialogResponse) {
@@ -44,8 +45,7 @@ class SenderWidget extends StatelessWidget {
                 messageData.messageID,
               );
             } catch (e) {
-              showSnackBar(
-                  context, 'Error deleting the image. Try again later');
+              showSnackBar(context, 'Error deleting the image. Try again later');
             }
           } else {
             return;
@@ -82,13 +82,11 @@ class SenderWidget extends StatelessWidget {
                                       tag: getRandomString(20),
                                       child: CachedNetworkImage(
                                         imageUrl: messageData.chatImages[0],
-                                        placeholder: (context, url) =>
-                                            Image.asset(
+                                        placeholder: (context, url) => Image.asset(
                                           'assets/images/img_placeholder'
                                           '.png',
                                         ),
-                                        errorWidget: (context, url, error) =>
-                                            Image.asset(
+                                        errorWidget: (context, url, error) => Image.asset(
                                           'assets/images/error_image'
                                           '.png',
                                         ),
@@ -99,8 +97,7 @@ class SenderWidget extends StatelessWidget {
                                       imageUrls: messageData.chatImages,
                                       onImageClicked: (i) => {},
                                       onExpandClicked: (int index) =>
-                                          _viewImage(context,
-                                              messageData.chatImages, index),
+                                          _viewImage(context, messageData.chatImages, index),
                                       maxImages: 1,
                                     ),
                             ),
@@ -164,9 +161,7 @@ class SenderWidget extends StatelessWidget {
           ],
         ),
       );
-    } else if (messageData.chatImages.isEmpty &&
-        messageData.content.isEmpty &&
-        messageData.gifUrl.isNotEmpty) {
+    } else if (messageData.chatImages.isEmpty && messageData.content.isEmpty && messageData.gifUrl.isNotEmpty) {
       return GestureDetector(
         onLongPress: () async {
           if (messageData.messageDeleted) return;
@@ -176,6 +171,7 @@ class SenderWidget extends StatelessWidget {
             'Are you sure you want to delete this gif?',
             'Delete',
             'Cancel',
+            '',
             true,
           );
           if (dialogResponse) {
@@ -220,12 +216,10 @@ class SenderWidget extends StatelessWidget {
                               tag: getRandomString(20),
                               child: CachedNetworkImage(
                                 imageUrl: messageData.gifUrl,
-                                placeholder: (context, url) =>
-                                    Image.asset('assets/images/img_placeholder'
-                                        '.png'),
-                                errorWidget: (context, url, error) =>
-                                    Image.asset('assets/images/error_image'
-                                        '.png'),
+                                placeholder: (context, url) => Image.asset('assets/images/img_placeholder'
+                                    '.png'),
+                                errorWidget: (context, url, error) => Image.asset('assets/images/error_image'
+                                    '.png'),
                               ),
                             ),
                           ),
@@ -253,8 +247,7 @@ class SenderWidget extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.only(top: 6, left: 6),
+                                    padding: const EdgeInsets.only(top: 6, left: 6),
                                     child: Text(
                                       'message deleted',
                                       textAlign: TextAlign.start,
@@ -289,9 +282,7 @@ class SenderWidget extends StatelessWidget {
           ],
         ),
       );
-    } else if (messageData.chatImages.isEmpty &&
-        messageData.content.isNotEmpty &&
-        messageData.gifUrl.isEmpty) {
+    } else if (messageData.chatImages.isEmpty && messageData.content.isNotEmpty && messageData.gifUrl.isEmpty) {
       return GestureDetector(
         onLongPress: () async {
           if (messageData.messageDeleted) return;
@@ -301,6 +292,7 @@ class SenderWidget extends StatelessWidget {
             'Are you sure you want to delete this message?',
             'Delete',
             'Cancel',
+            '',
             true,
           );
           if (dialogResponse) {
@@ -310,8 +302,7 @@ class SenderWidget extends StatelessWidget {
                 messageData.messageID,
               );
             } catch (e) {
-              showSnackBar(
-                  context, 'Error deleting the message. Try again later');
+              showSnackBar(context, 'Error deleting the message. Try again later');
             }
           } else {
             return;
@@ -322,9 +313,7 @@ class SenderWidget extends StatelessWidget {
           children: [
             Stack(
               clipBehavior: Clip.none,
-              alignment: Directionality.of(context) == TextDirection.ltr
-                  ? Alignment.bottomRight
-                  : Alignment.bottomLeft,
+              alignment: Directionality.of(context) == TextDirection.ltr ? Alignment.bottomRight : Alignment.bottomLeft,
               children: <Widget>[
                 Positioned.directional(
                   textDirection: Directionality.of(context),
@@ -345,15 +334,12 @@ class SenderWidget extends StatelessWidget {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: !messageData.messageDeleted
-                          ? ColorPalette.primary
-                          : Colors.blue.shade300,
+                      color: !messageData.messageDeleted ? ColorPalette.primary : Colors.blue.shade300,
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 4, bottom: 10, left: 4, right: 4),
+                      padding: const EdgeInsets.only(top: 4, bottom: 10, left: 4, right: 4),
                       child: Stack(
                         children: <Widget>[
                           Column(
@@ -362,17 +348,13 @@ class SenderWidget extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(top: 6, left: 6),
                                 child: Text(
-                                  !messageData.messageDeleted
-                                      ? messageData.content
-                                      : 'message deleted',
+                                  !messageData.messageDeleted ? messageData.content : 'message deleted',
                                   textAlign: TextAlign.start,
                                   textDirection: TextDirection.ltr,
                                   style: TextStyle(
                                     color: ColorPalette.white,
                                     fontSize: 16,
-                                    fontStyle: !messageData.messageDeleted
-                                        ? FontStyle.normal
-                                        : FontStyle.italic,
+                                    fontStyle: !messageData.messageDeleted ? FontStyle.normal : FontStyle.italic,
                                   ),
                                 ),
                               ),

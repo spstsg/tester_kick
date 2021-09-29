@@ -228,6 +228,7 @@ class _AudioHomeScreenState extends State<AudioHomeScreen> {
         'Sorry, you cannot create another live room because you still have one open.',
         'Close',
         '',
+        '',
         false,
       );
     }
@@ -235,12 +236,10 @@ class _AudioHomeScreenState extends State<AudioHomeScreen> {
 
   checkParticipant(Room room) {
     var participants = room.participants;
-    var user = participants
-        .where((participant) => participant['username'] == MyAppState.currentUser!.username)
-        .toList();
+    var user =
+        participants.where((participant) => participant['username'] == MyAppState.currentUser!.username).toList();
     if (user.isNotEmpty && room.creator.username != user[0]['username']) {
-      participants.removeWhere(
-          (participant) => participant['username'] == MyAppState.currentUser!.username);
+      participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
       MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
       _audioChatService.removeSpeaker(room.id);
       _audioChatService.removeParticipant(

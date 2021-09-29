@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:path/path.dart' as path;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -405,6 +406,7 @@ Future showCupertinoAlert(
   String description,
   String text,
   String cancel,
+  String other,
   bool showCancel,
 ) {
   return showCupertinoDialog(
@@ -415,6 +417,7 @@ Future showCupertinoAlert(
         descriptions: description,
         okay: text,
         cancel: cancel,
+        other: other,
         showCancel: showCancel,
       );
     },
@@ -523,6 +526,14 @@ Future convertSocialProfileUrlToImage(String urlString) async {
   final image = File('${directory.path}/flutter.png');
   image.writeAsBytesSync(response.bodyBytes);
   return image;
+}
+
+Future<File> changeFileNameOnly(File file, String newFileName) {
+  var filePath = file.path;
+  var lastSeparator = filePath.lastIndexOf(Platform.pathSeparator);
+  final extension = path.extension(filePath);
+  var newPath = filePath.substring(0, lastSeparator + 1) + newFileName;
+  return file.rename(newPath + extension);
 }
 
 matchStatus(status, elapsed, timestamp) {

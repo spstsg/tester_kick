@@ -23,6 +23,7 @@ Post _addCreatedPostSuccess(Post state, CreatedPostAction action) {
     reactionsCount: action.createdPost.reactionsCount,
     createdAt: action.createdPost.createdAt,
     postMedia: action.createdPost.postMedia,
+    postVideo: action.createdPost.postVideo,
     shareCount: action.createdPost.shareCount,
     sharedPost: action.createdPost.sharedPost,
     reactions: action.createdPost.reactions,

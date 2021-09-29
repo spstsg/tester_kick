@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:kick_chat/redux/actions/created_post_action.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,15 +16,23 @@ import 'package:kick_chat/models/post_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
 import 'package:kick_chat/ui/posts/widgets/background_selector.dart';
+import 'package:kick_chat/ui/widgets/fullscreen_video_viewer.dart';
 import 'package:kick_chat/ui/widgets/grid_layout.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/multi_photo_display.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final bool openGif;
   final bool openImagePicker;
-  CreatePostScreen({this.openGif: false, this.openImagePicker: false});
+  final bool openVideoPicker;
+  CreatePostScreen({
+    this.openGif: false,
+    this.openImagePicker: false,
+    this.openVideoPicker: false,
+  });
 
   @override
   CreatePostScreenState createState() => CreatePostScreenState();
@@ -31,7 +40,6 @@ class CreatePostScreen extends StatefulWidget {
 
 class CreatePostScreenState extends State<CreatePostScreen> {
   TextEditingController _postController = TextEditingController();
-
   PostService _postService = PostService();
   FileService _fileService = FileService();
   Map<String, File> mediaFiles = Map.fromEntries([MapEntry('null', File(''))]);
@@ -41,10 +49,12 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   String _bgColor = '#ffffff';
   bool postNotEmpty = false;
   List<String> urlPhotos = [];
+  List mediaFilesURLs = [];
   GiphyGif? currentGif;
   GiphyClient? client;
   String giphyApiKey = dotenv.get('GIPHY_API_KEY');
   bool hasGifSelected = false;
+  bool hasVideos = false;
   List<GridLayout> options = [
     GridLayout(
       title: 'Image',
@@ -53,6 +63,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     GridLayout(
       title: 'Gif',
       image: 'assets/images/gif.png',
+    ),
+    GridLayout(
+      title: 'Video',
+      image: 'assets/images/video-upload.png',
     ),
   ];
 
@@ -66,6 +80,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
 
       if (widget.openImagePicker && mounted) {
         _pickImage();
+      }
+
+      if (widget.openVideoPicker && mounted) {
+        _pickVideo();
       }
     });
     super.initState();
@@ -90,7 +108,11 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         centerTitle: true,
         actions: [
           GestureDetector(
-            onTap: postNotEmpty ? () => _publishPost(context) : null,
+            onTap: (postNotEmpty || hasPhotos || hasGifSelected) && !hasVideos
+                ? () => _publishPost(context)
+                : (postNotEmpty || hasVideos)
+                    ? () => _publishPostWithVideo(context)
+                    : null,
             child: Padding(
               padding: const EdgeInsets.only(right: 15),
               child: Center(
@@ -99,7 +121,9 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: postNotEmpty ? ColorPalette.white : ColorPalette.lightBlue,
+                    color: postNotEmpty || hasPhotos || hasGifSelected || hasVideos
+                        ? ColorPalette.white
+                        : ColorPalette.lightBlue,
                   ),
                 ),
               ),
@@ -134,6 +158,12 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 onChanged: (text) {
                                   setState(() {
                                     postNotEmpty = text.length > 0 ? true : false;
+                                    if (currentGif != null && text.length == 0) {
+                                      hasGifSelected = true;
+                                    }
+                                    if (imageFileList.isNotEmpty && text.length == 0) {
+                                      hasPhotos = true;
+                                    }
                                   });
                                 },
                                 style: TextStyle(
@@ -166,6 +196,12 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                                 onChanged: (text) {
                                   setState(() {
                                     postNotEmpty = text.length > 0 ? true : false;
+                                    if (currentGif != null && text.length == 0) {
+                                      hasGifSelected = true;
+                                    }
+                                    if (imageFileList.isNotEmpty && text.length == 0) {
+                                      hasPhotos = true;
+                                    }
                                   });
                                 },
                                 style: TextStyle(
@@ -288,6 +324,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                             if (options[index].title == 'Gif') {
                               await _openGifWidget();
                             }
+
+                            if (options[index].title == 'Video') {
+                              _pickVideo();
+                            }
                           },
                           child: GridOptions(
                             layout: options[index],
@@ -309,6 +349,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
     List items = [
       {'title': 'Image', 'image': 'assets/images/image-icon.png'},
       {'title': 'Gif', 'image': 'assets/images/gif.png'},
+      {'title': 'Video', 'image': 'assets/images/video-upload.png'},
     ];
     return Container(
       height: 90.0,
@@ -349,6 +390,10 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                     if (items[index]['title'] == 'Gif') {
                       await _openGifWidget();
                     }
+
+                    if (items[index]['title'] == 'Video') {
+                      _pickVideo();
+                    }
                   },
                   child: Container(
                     width: 30,
@@ -382,23 +427,42 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         currentGif = gif;
         hasGifSelected = true;
         hasPhotos = false;
+        postNotEmpty = false;
+        hasVideos = false;
         selectedColor = Color(0xFFFFFFFF);
         imageFileList = [new File(currentGif!.images!.original!.url)];
       });
     }
   }
 
-  Future<void> _publishPost(BuildContext context) async {
-    setState(() {
-      postNotEmpty = true;
-    });
-    LoadingOverlay.of(context).show();
-    try {
-      if (imageFileList.length == 1) {
-        var response = await _fileService.uploadSingleFile(
-          imageFileList[0].path,
-          getRandomString(20).toLowerCase(),
+  Future uploadImages() async {
+    if (imageFileList.length == 1 && hasPhotos) {
+      var response = await _fileService.uploadSingleFile(
+        imageFileList[0].path,
+        getRandomString(20).toLowerCase(),
+      );
+      if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
+        urlPhotos.add(response.secureUrl!);
+        ImageModel userImage = ImageModel(
+          userId: MyAppState.currentUser!.userID,
+          profilePicture: '',
         );
+        await _fileService.addUserImageFile(userImage, response.secureUrl!);
+      } else {
+        LoadingOverlay.of(context).hide();
+        setState(() {
+          postNotEmpty = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading files. Try again.'),
+          ),
+        );
+        return;
+      }
+    } else if (imageFileList.length > 1 && hasPhotos) {
+      var responses = await _fileService.uploadMultipleFiles(imageFileList);
+      responses.map((response) async {
         if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
           urlPhotos.add(response.secureUrl!);
           ImageModel userImage = ImageModel(
@@ -418,30 +482,36 @@ class CreatePostScreenState extends State<CreatePostScreen> {
           );
           return;
         }
-      } else if (imageFileList.length > 1) {
-        var responses = await _fileService.uploadMultipleFiles(imageFileList);
-        responses.map((response) async {
-          if (response.isSuccessful && response.secureUrl!.isNotEmpty) {
-            urlPhotos.add(response.secureUrl!);
-            ImageModel userImage = ImageModel(
-              userId: MyAppState.currentUser!.userID,
-              profilePicture: '',
-            );
-            await _fileService.addUserImageFile(userImage, response.secureUrl!);
-          } else {
-            LoadingOverlay.of(context).hide();
-            setState(() {
-              postNotEmpty = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error uploading files. Try again.'),
-              ),
-            );
-            return;
-          }
-        }).toList();
-      }
+      }).toList();
+    }
+  }
+
+  Future _publishPostWithVideo(BuildContext context) async {
+    Post post = Post(
+      author: MyAppState.currentUser,
+      authorId: MyAppState.currentUser!.userID,
+      username: MyAppState.currentUser!.username,
+      email: MyAppState.currentUser!.email,
+      avatarColor: MyAppState.currentUser!.avatarColor,
+      profilePicture: MyAppState.currentUser!.profilePictureURL,
+      bgColor: _bgColor,
+      post: _postController.text.trim(),
+      gifUrl: '',
+      privacy: PostAudienceDropdownState.chosenValue,
+      postMedia: [],
+      postVideo: [mediaFiles],
+    );
+    MyAppState.reduxStore!.dispatch(CreatedPostAction(post));
+    Navigator.pop(context);
+  }
+
+  Future<void> _publishPost(BuildContext context) async {
+    setState(() {
+      postNotEmpty = true;
+    });
+    LoadingOverlay.of(context).show();
+    try {
+      await uploadImages();
 
       Post post = Post(
         author: MyAppState.currentUser,
@@ -455,7 +525,9 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         gifUrl: currentGif != null ? currentGif!.images!.original!.url : '',
         privacy: PostAudienceDropdownState.chosenValue,
         postMedia: urlPhotos,
+        postVideo: [],
       );
+
       String? errorMessage = await _postService.publishPost(post);
       LoadingOverlay.of(context).hide();
       if (errorMessage == null) {
@@ -467,6 +539,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         });
       }
     } catch (e) {
+      print(e);
       LoadingOverlay.of(context).hide();
       setState(() {
         postNotEmpty = false;
@@ -504,14 +577,23 @@ class CreatePostScreenState extends State<CreatePostScreen> {
         CupertinoActionSheetAction(
           onPressed: () async {
             Navigator.pop(context);
-            push(
-              context,
-              FullScreen(
-                imageUrl: 'preview',
-                imageFiles: imageFileList,
-                index: index,
-              ),
-            );
+            mediaEntry.key.startsWith('image')
+                ? push(
+                    context,
+                    FullScreen(
+                      imageUrl: 'preview',
+                      imageFiles: imageFileList,
+                      index: index,
+                    ),
+                  )
+                : push(
+                    context,
+                    FullScreenVideoViewer(
+                      videoUrl: mediaEntry.key,
+                      heroTag: 'videoPreview',
+                      videoFile: mediaEntry.value,
+                    ),
+                  );
           },
           isDefaultAction: true,
           child: Text('View Media'),
@@ -571,7 +653,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
   void _pickImage() {
     final action = CupertinoActionSheet(
       message: Text(
-        "Add Media To Post",
+        "Add image to post",
         style: TextStyle(fontSize: 16.0),
       ),
       actions: <Widget>[
@@ -595,19 +677,96 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                 }
                 setState(() {
                   hasPhotos = true;
+                  postNotEmpty = true;
+                  hasVideos = false;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               } else {
                 setState(() {
                   hasPhotos = false;
+                  postNotEmpty = postNotEmpty ? true : false;
+                  hasVideos = false;
                   hasGifSelected = false;
                   selectedColor = Color(0xFFFFFFFF);
                 });
               }
-            } on Exception catch (e) {
-              print(e);
+            } catch (e) {
               setState(() {
                 hasPhotos = false;
+                postNotEmpty = postNotEmpty ? true : false;
+                hasVideos = false;
+                hasGifSelected = false;
+                selectedColor = Color(0xFFFFFFFF);
+              });
+            }
+          },
+        ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        child: Text("Cancel"),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+    showCupertinoModalPopup(context: context, builder: (context) => action);
+  }
+
+  void _pickVideo() {
+    final action = CupertinoActionSheet(
+      message: Text(
+        "Add video to post",
+        style: TextStyle(fontSize: 16.0),
+      ),
+      actions: <Widget>[
+        CupertinoActionSheetAction(
+          child: Text("Choose from gallery"),
+          isDefaultAction: false,
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              imageFileList.clear();
+              mediaFiles.clear();
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.video,
+                allowMultiple: false,
+              );
+
+              if (result != null) {
+                List<File> files = result.paths.map((path) => File(path!)).toList();
+                if (files.isEmpty) return;
+                var newFilePath = await changeFileNameOnly(
+                  File(files[0].path),
+                  getRandomString(20).toLowerCase(),
+                );
+                String? videoThumbnail = await VideoThumbnail.thumbnailFile(
+                  video: newFilePath.path,
+                  thumbnailPath: (await getTemporaryDirectory()).path,
+                  imageFormat: ImageFormat.PNG,
+                );
+                imageFileList.add(File(videoThumbnail!));
+                mediaFiles.remove('null');
+                mediaFiles[videoThumbnail] = File(newFilePath.path);
+                setState(() {
+                  hasPhotos = true;
+                  postNotEmpty = true;
+                  hasVideos = true;
+                  selectedColor = Color(0xFFFFFFFF);
+                });
+              } else {
+                setState(() {
+                  hasPhotos = false;
+                  postNotEmpty = postNotEmpty ? true : false;
+                  hasVideos = false;
+                  hasGifSelected = false;
+                  selectedColor = Color(0xFFFFFFFF);
+                });
+              }
+            } catch (e) {
+              setState(() {
+                hasPhotos = false;
+                postNotEmpty = postNotEmpty ? true : false;
+                hasVideos = false;
                 hasGifSelected = false;
                 selectedColor = Color(0xFFFFFFFF);
               });

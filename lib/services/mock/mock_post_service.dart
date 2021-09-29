@@ -16,8 +16,7 @@ class MockPostService {
       password: 'qwerty1@',
       dob: '1977-09-18 00:00:00.000',
       phoneNumber: '',
-      profilePictureURL:
-          'https://res.cloudinary.com/ratingapp/image/upload/sunny',
+      profilePictureURL: 'https://res.cloudinary.com/ratingapp/image/upload/sunny',
       lowercaseUsername: 'sunny',
       userID: 'DFdraOQMlWc1DGC9cV0E5PHdf6F2',
       uniqueId: 240195658,
@@ -45,6 +44,7 @@ class MockPostService {
       gifUrl: '',
       privacy: 'Public',
       postMedia: [],
+      postVideo: [],
     );
     await _postService.publishPost(post);
   }

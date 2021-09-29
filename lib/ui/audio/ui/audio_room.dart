@@ -758,6 +758,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
               'Do you really want to end this room?',
               'OK',
               'Cancel',
+              '',
               true,
             );
             if (dialogResponse) {
@@ -773,6 +774,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                   'Alert',
                   'Sorry, you cannot end this room because there is still at least one other participant.',
                   'OK',
+                  '',
                   '',
                   false,
                 );

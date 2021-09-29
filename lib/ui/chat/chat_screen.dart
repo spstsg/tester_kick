@@ -434,6 +434,7 @@ class _ChatScreenState extends State<ChatScreen> {
             'Sorry, at this point you can only upload maximum of 4 files',
             'OK',
             '',
+            '',
             false,
           );
         }

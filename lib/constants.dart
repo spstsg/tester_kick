@@ -29,6 +29,7 @@ const FOLLOWING = 'following';
 const LIVESCORES_CHAT = 'livescores_chat';
 const AUDIO_LIVE_ROOMS = 'audio_live_rooms';
 const AUDIO_ROOM_CHAT = 'audio_rooms_messages';
+const USER_VIDEOS = 'videos';
 
 /// helpful formatting constants
 const SECOND_MILLIS = 1000;
@@ -36,8 +37,7 @@ const MINUTE_MILLIS = 60 * SECOND_MILLIS;
 const HOUR_MILLIS = 60 * MINUTE_MILLIS;
 
 /// an empty avatar url
-const DEFAULT_AVATAR_URL =
-    'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg';
+const DEFAULT_AVATAR_URL = 'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg';
 
 /// google api key, this is required when using google services such as
 /// google maps, google places etc...

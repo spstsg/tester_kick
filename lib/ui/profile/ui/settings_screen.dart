@@ -66,6 +66,7 @@ class SettingScreen extends StatelessWidget {
               'Could not launch terms of service url. Try again later.',
               'OK',
               '',
+              '',
               false,
             );
           }
@@ -84,6 +85,7 @@ class SettingScreen extends StatelessWidget {
               'Error',
               'Could not launch privacy policy url. Try again later.',
               'OK',
+              '',
               '',
               false,
             );

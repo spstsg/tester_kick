@@ -5,6 +5,7 @@ import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
+import 'package:kick_chat/services/files/file_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
@@ -39,8 +40,9 @@ class PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    PostService postService = PostService();
+    PostService _postService = PostService();
     UserService _userService = UserService();
+    FileService _fileService = FileService();
 
     return Container(
       margin: EdgeInsets.only(bottom: 15),
@@ -129,22 +131,10 @@ class PostHeader extends StatelessWidget {
                             alignment: Alignment.topRight,
                             padding: EdgeInsets.only(top: 8),
                             onPressed: () async {
-                              bool proceed = await showCupertinoAlert(
-                                context,
-                                'Delete Post',
-                                'Are you sure you want to delete this post?',
-                                'Delete',
-                                'Cancel',
-                                true,
-                              );
-                              if (!proceed) {
-                                return;
+                              if (post.postVideo.isEmpty) {
+                                deletePostWithoutVideo(context, _postService);
                               } else {
-                                try {
-                                  await postService.deletePost(post);
-                                } on Exception catch (e) {
-                                  print(e);
-                                }
+                                deletePostWithVideo(context, _postService, _fileService);
                               }
                             },
                             icon: Icon(MdiIcons.trashCan, color: Colors.red),
@@ -156,6 +146,73 @@ class PostHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  deletePostWithoutVideo(BuildContext context, PostService postService) async {
+    try {
+      bool proceed = await showCupertinoAlert(
+        context,
+        'Delete Post',
+        'Are you sure you want to delete this post?',
+        'Delete',
+        'Cancel',
+        '',
+        true,
+      );
+      if (!proceed) {
+        return;
+      } else {
+        await postService.deletePost(post);
+      }
+    } catch (e) {
+      await showCupertinoAlert(
+        context,
+        'Error',
+        'Deleting post. Try again later.',
+        'Ok',
+        '',
+        '',
+        false,
+      );
+    }
+  }
+
+  deletePostWithVideo(
+    BuildContext context,
+    PostService postService,
+    FileService fileService,
+  ) async {
+    try {
+      dynamic proceed = await showCupertinoAlert(
+        context,
+        'Delete Post & Video',
+        'Do you want to delete or hide video from other users?. Hiding will delete post but video will only be seen on your profile by you.',
+        'Delete video & post',
+        'Cancel',
+        'Hide video & delete post',
+        true,
+      );
+      if (proceed is bool && !proceed) {
+        return;
+      } else if (proceed is List<bool> && proceed[0] == true) {
+        fileService.permanentlyHideVideo(post.postVideo[0]['id']);
+        await postService.deletePost(post);
+      } else {
+        fileService.permanentlyDeleteVideo(post.postVideo[0]['id']);
+        await postService.deletePost(post);
+      }
+    } catch (e) {
+      print(e);
+      await showCupertinoAlert(
+        context,
+        'Error',
+        'Deleting post. Try again later.',
+        'Ok',
+        '',
+        '',
+        false,
+      );
+    }
   }
 }
 
@@ -191,6 +248,21 @@ class PostStatsState extends State<PostStats> {
         Divider(),
         Row(
           children: [
+            widget.post.postVideo.isNotEmpty && widget.post.postVideo[0]['count'] > 0
+                ? Container(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.remove_red_eye_outlined,
+                          size: 15,
+                        ),
+                        SizedBox(width: 5),
+                        Text(NumberFormat.compact().format(widget.post.postVideo[0]['count'])),
+                        SizedBox(width: 20),
+                      ],
+                    ),
+                  )
+                : SizedBox.shrink(),
             Flexible(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5),
