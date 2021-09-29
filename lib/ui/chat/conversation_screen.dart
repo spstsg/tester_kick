@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -53,7 +55,7 @@ class _ConversationsState extends State<ConversationsScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Chats',
+          'Conversations',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -61,11 +63,13 @@ class _ConversationsState extends State<ConversationsScreen> {
         ),
       ),
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(height: hasConversations ? 10 : 0),
           Expanded(
             child: Container(
               width: double.infinity,
+              height: MediaQuery.of(context).size.height,
               child: ListView(
                 children: [
                   hasConversations ? _followersList() : SizedBox.shrink(),
@@ -81,7 +85,7 @@ class _ConversationsState extends State<ConversationsScreen> {
 
   Widget _buildConversation() {
     return Padding(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.only(left: 5, right: 10),
       child: StreamBuilder<List<HomeConversationModel>>(
         stream: _conversationsStream,
         initialData: [],
@@ -93,7 +97,7 @@ class _ConversationsState extends State<ConversationsScreen> {
               height: MediaQuery.of(context).size.height * 0.7,
               child: Center(
                 child: showEmptyState(
-                  'No Conversations Found.',
+                  'No conversations found.',
                   'All your conversations will show up here',
                 ),
               ),
@@ -121,8 +125,7 @@ class _ConversationsState extends State<ConversationsScreen> {
         });
         return GestureDetector(
           onTap: () {
-            if (homeConversationModel.conversationModel!.creatorId ==
-                MyAppState.currentUser!.userID) {
+            if (homeConversationModel.conversationModel!.creatorId == MyAppState.currentUser!.userID) {
               _chatService.markConversationAsRead(homeConversationModel.conversationModel!);
               _chatService.markMessageAsRead(homeConversationModel.conversationModel!);
             }
@@ -137,7 +140,7 @@ class _ConversationsState extends State<ConversationsScreen> {
           child: Column(
             children: <Widget>[
               ListTile(
-                contentPadding: EdgeInsets.only(top: 0, bottom: 0, left: 20),
+                contentPadding: EdgeInsets.only(left: 20),
                 leading: Stack(
                   alignment: Alignment.bottomRight,
                   children: <Widget>[
@@ -177,8 +180,7 @@ class _ConversationsState extends State<ConversationsScreen> {
                       child: Text(
                         homeConversationModel.members.first.username,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                           color: ColorPalette.primary,
                         ),
                       ),
@@ -227,13 +229,9 @@ class _ConversationsState extends State<ConversationsScreen> {
                     Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
-                        !homeConversationModel.conversationModel!.isRead
-                            ? Icons.check
-                            : MdiIcons.checkAll,
+                        !homeConversationModel.conversationModel!.isRead ? Icons.check : MdiIcons.checkAll,
                         size: 16,
-                        color: !homeConversationModel.conversationModel!.isRead
-                            ? Colors.grey
-                            : Colors.blue,
+                        color: !homeConversationModel.conversationModel!.isRead ? Colors.grey : Colors.blue,
                       ),
                     )
                   ],
@@ -268,22 +266,19 @@ class _ConversationsState extends State<ConversationsScreen> {
                   padding: const EdgeInsets.only(top: 8.0, left: 10, right: 4),
                   child: InkWell(
                     onTap: () async {
-                      String channelID;
-                      if (friend.userID.compareTo(user.userID) < 0) {
-                        channelID = friend.userID + user.userID;
-                      } else {
-                        channelID = user.userID + friend.userID;
-                      }
-                      ConversationModel? conversationModel =
-                          await _chatService.getChannelByIdOrNull(channelID);
+                      ConversationModel? conversationModel = await _chatService.getSingleConversation(
+                        MyAppState.currentUser!.userID,
+                        friend.userID,
+                      );
                       push(
                         context,
                         ChatScreen(
-                            homeConversationModel: HomeConversationModel(
-                              members: [friend],
-                              conversationModel: conversationModel,
-                            ),
-                            user: friend),
+                          homeConversationModel: HomeConversationModel(
+                            members: [friend],
+                            conversationModel: conversationModel,
+                          ),
+                          user: widget.user,
+                        ),
                       );
                     },
                     child: Column(

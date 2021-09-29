@@ -62,9 +62,7 @@ class _LiveGamesScreenState extends State<LiveGamesScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return MatchesSkeleton();
-        } else if (!snapshot.hasData ||
-            (snapshot.data?.isEmpty ?? true) ||
-            snapshot.data['response'].isEmpty) {
+        } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true) || snapshot.data['response'].isEmpty) {
           return Center(
             child: showEmptyState(
               '',
@@ -77,9 +75,8 @@ class _LiveGamesScreenState extends State<LiveGamesScreen> {
             groupKeys = groupedData.keys.toList();
           } else {
             getCountryFilter().then((getCountryName) {
-              var filtered = snapshot.data!['response']
-                  .where((i) => i['league']!['country'] == getCountryName)
-                  .toList();
+              var filtered =
+                  snapshot.data!['response'].where((i) => i['league']!['country'] == getCountryName).toList();
               groupedData = groupBy(
                 filtered,
                 (dynamic obj) => obj['league']['id'],
@@ -172,8 +169,7 @@ class _LiveGamesScreenState extends State<LiveGamesScreen> {
   }
 
   getCountryFilter() async {
-    String liveGamesCountry =
-        await _sharedPreferences.getSharedPreferencesString('LiveGamesCountry');
+    String liveGamesCountry = await _sharedPreferences.getSharedPreferencesString('LiveGamesCountry');
     setState(() {});
     return liveGamesCountry;
   }
@@ -219,8 +215,7 @@ class _LiveGamesScreenState extends State<LiveGamesScreen> {
             );
           }).toList(),
           onChanged: (String? newValue) async {
-            String getCountryName =
-                await _sharedPreferences.getSharedPreferencesString('LiveGamesCountry');
+            String getCountryName = await _sharedPreferences.getSharedPreferencesString('LiveGamesCountry');
             if (getCountryName.isEmpty || getCountryName == '') {
               showCupertinoAlert(
                 context,
@@ -228,6 +223,7 @@ class _LiveGamesScreenState extends State<LiveGamesScreen> {
                 'Would you like to save your selection?',
                 'Save',
                 'Do not save',
+                '',
                 true,
               );
               setState(() {

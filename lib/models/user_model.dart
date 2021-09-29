@@ -25,6 +25,7 @@ class User with ChangeNotifier {
   int followingCount;
   String team;
   String lowercaseTeam;
+  bool emailPasswordLogin;
 
   //internal use only, don't save to db
   bool selected = false;
@@ -50,8 +51,10 @@ class User with ChangeNotifier {
     this.postCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
+    emailPasswordLogin,
   })  : this.lastOnlineTimestamp = lastOnlineTimestamp ?? Timestamp.now(),
-        this.settings = settings ?? UserSettings();
+        this.settings = settings ?? UserSettings(),
+        this.emailPasswordLogin = emailPasswordLogin ?? false;
 
   User copyWith({
     String? username,
@@ -74,6 +77,7 @@ class User with ChangeNotifier {
     String? bio,
     String? team,
     String? lowercaseTeam,
+    bool? emailPasswordLogin,
   }) {
     return new User(
       username: username ?? this.username,
@@ -96,6 +100,7 @@ class User with ChangeNotifier {
       bio: bio ?? this.bio,
       team: team ?? this.team,
       lowercaseTeam: lowercaseTeam ?? this.lowercaseTeam,
+      emailPasswordLogin: emailPasswordLogin ?? this.emailPasswordLogin,
     );
   }
 
@@ -105,10 +110,9 @@ class User with ChangeNotifier {
       lowercaseUsername: parsedJson['lowercaseUsername'] ?? '',
       email: parsedJson['email'] ?? '',
       active: parsedJson['active'] ?? false,
+      emailPasswordLogin: parsedJson['emailPasswordLogin'] ?? false,
       lastOnlineTimestamp: parsedJson['lastOnlineTimestamp'],
-      settings: parsedJson.containsKey('settings')
-          ? UserSettings.fromJson(parsedJson['settings'])
-          : UserSettings(),
+      settings: parsedJson.containsKey('settings') ? UserSettings.fromJson(parsedJson['settings']) : UserSettings(),
       phoneNumber: parsedJson['phoneNumber'] ?? '',
       userID: parsedJson['id'] ?? parsedJson['userID'] ?? '',
       profilePictureURL: parsedJson['profilePictureURL'] ?? '',
@@ -131,10 +135,9 @@ class User with ChangeNotifier {
       lowercaseUsername: parsedJson['lowercaseUsername'] ?? '',
       email: parsedJson['email'] ?? '',
       active: parsedJson['active'] ?? false,
+      emailPasswordLogin: parsedJson['emailPasswordLogin'] ?? false,
       lastOnlineTimestamp: Timestamp.fromMillisecondsSinceEpoch(parsedJson['lastOnlineTimestamp']),
-      settings: parsedJson.containsKey('settings')
-          ? UserSettings.fromJson(parsedJson['settings'])
-          : UserSettings(),
+      settings: parsedJson.containsKey('settings') ? UserSettings.fromJson(parsedJson['settings']) : UserSettings(),
       phoneNumber: parsedJson['phoneNumber'] ?? '',
       userID: parsedJson['id'] ?? parsedJson['userID'] ?? '',
       uniqueId: parsedJson['uniqueId'] ?? parsedJson['uniqueId'] ?? 0,
@@ -161,6 +164,7 @@ class User with ChangeNotifier {
       'id': this.userID,
       'uniqueId': this.uniqueId,
       'active': this.active,
+      'emailPasswordLogin': this.emailPasswordLogin,
       'lastOnlineTimestamp': this.lastOnlineTimestamp,
       'profilePictureURL': this.profilePictureURL,
       'appIdentifier': this.appIdentifier,
@@ -185,6 +189,7 @@ class User with ChangeNotifier {
       'phoneNumber': this.phoneNumber,
       'id': this.userID,
       'active': this.active,
+      'emailPasswordLogin': this.emailPasswordLogin,
       'lastOnlineTimestamp': this.lastOnlineTimestamp.millisecondsSinceEpoch,
       'profilePictureURL': this.profilePictureURL,
       'appIdentifier': this.appIdentifier,
@@ -209,6 +214,7 @@ class User with ChangeNotifier {
         other.password == password &&
         other.phoneNumber == phoneNumber &&
         other.active == active &&
+        other.emailPasswordLogin == emailPasswordLogin &&
         other.lastOnlineTimestamp == lastOnlineTimestamp &&
         other.userID == userID &&
         other.uniqueId == uniqueId &&
@@ -233,6 +239,7 @@ class User with ChangeNotifier {
         password.hashCode ^
         phoneNumber.hashCode ^
         active.hashCode ^
+        emailPasswordLogin.hashCode ^
         lastOnlineTimestamp.hashCode ^
         userID.hashCode ^
         uniqueId.hashCode ^

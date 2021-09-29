@@ -3,17 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
-import 'package:kick_chat/models/reactions_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
-import 'package:kick_chat/services/reactions/reactions_service.dart';
-import 'package:kick_chat/ui/posts/create_post_screen.dart';
 import 'package:kick_chat/ui/posts/widgets/post_helper_widgets.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/posts/widgets/shared_post_container.dart';
+import 'package:kick_chat/ui/posts/widgets/video_display_widget.dart';
 import 'package:kick_chat/ui/widgets/full_screen_image_viewer.dart';
 import 'package:kick_chat/ui/widgets/expanded_text.dart';
 import 'package:screenshot/screenshot.dart';
@@ -26,14 +24,11 @@ class PostContainer extends StatefulWidget {
 
 class PostContainerState extends State<PostContainer> {
   PostService _postService = PostService();
-  ReactionService _reactionService = ReactionService();
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
   late Stream<List<Post>> _postsStream;
-  late List<User> userFollowers = [];
-  late List<User> blockedUsers = [];
-  static late Future<List<Reactions>> myReactions;
-  static late List<Reactions> reactionsList = [];
+  List<User> userFollowers = [];
+  List<User> blockedUsers = [];
   int displayedImageIndex = 0;
   bool noPosts = false;
 
@@ -41,23 +36,14 @@ class PostContainerState extends State<PostContainer> {
   void initState() {
     super.initState();
     _postsStream = _postService.getPostsStream();
-    myReactions = _reactionService.getMyReactions()
-      ..then((value) {
-        reactionsList.addAll(value);
-      });
-
     _postService.getPosts()
       ..then((value) {
         noPosts = value.isEmpty;
       });
 
-    _followService
-        .getUserFollowings(MyAppState.currentUser!.userID)
-        .then((value) => {userFollowers = value});
+    _followService.getUserFollowings(MyAppState.currentUser!.userID).then((value) => {userFollowers = value});
 
-    _blockedUserService
-        .getBlockedByUsers(MyAppState.currentUser!.userID)
-        .then((value) => {blockedUsers = value});
+    _blockedUserService.getBlockedByUsers(MyAppState.currentUser!.userID).then((value) => {blockedUsers = value});
   }
 
   @override
@@ -67,8 +53,7 @@ class PostContainerState extends State<PostContainer> {
   }
 
   bool checkFollowing(String username) {
-    var followers =
-        userFollowers.firstWhere((element) => element.username == username, orElse: () => User());
+    var followers = userFollowers.firstWhere((element) => element.username == username, orElse: () => User());
     return followers.username.isNotEmpty;
   }
 
@@ -85,20 +70,13 @@ class PostContainerState extends State<PostContainer> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             noPosts = true;
             return Center(
-              child: showEmptyState(
-                'No Posts Found',
-                'All posts will show up here',
-                buttonTitle: 'Create new post',
-                action: () {
-                  Navigator.of(context).push(
-                    new MaterialPageRoute<Null>(
-                      builder: (BuildContext context) {
-                        return new CreatePostScreen();
-                      },
-                      fullscreenDialog: true,
-                    ),
-                  );
-                },
+              child: Container(
+                height: MediaQuery.of(context).size.height - 170,
+                child: showEmptyState(
+                  'No posts found',
+                  'All posts will show up here',
+                  buttonTitle: 'Create new post',
+                ),
               ),
             );
           } else {
@@ -207,9 +185,7 @@ class PostContainerState extends State<PostContainer> {
                     : SizedBox(height: 0.0),
               ],
             ),
-            post.sharedPost.authorId != ''
-                ? SharedPostContainer(post: post.sharedPost)
-                : SizedBox.shrink(),
+            post.sharedPost.authorId != '' ? SharedPostContainer(post: post.sharedPost) : SizedBox.shrink(),
             post.postMedia.isNotEmpty && post.gifUrl == ''
                 ? Container(
                     height: 350,
@@ -256,6 +232,9 @@ class PostContainerState extends State<PostContainer> {
                       ],
                     ),
                   )
+                : SizedBox.shrink(),
+            post.postVideo.isNotEmpty
+                ? videoDisplay(context, post, _postService.updateVideoViewCount)
                 : SizedBox.shrink(),
             post.postMedia.isEmpty && post.gifUrl != ''
                 ? Container(

@@ -128,6 +128,8 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         post: widget.post.post,
         gifUrl: widget.post.gifUrl,
         postMedia: widget.post.postMedia,
+        postVideo: widget.post.postVideo,
+        reactions: widget.post.reactions,
       );
 
       Post post = Post(
@@ -138,11 +140,11 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
         avatarColor: MyAppState.currentUser!.avatarColor,
         profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: '#ffffff',
-        reactions: PostReactions(),
         post: _postController.text.trim(),
         gifUrl: '',
         privacy: 'Public',
         postMedia: [],
+        postVideo: [],
         sharedPost: sharedPost,
       );
       String? errorMessage = await _postService.publishPost(post);

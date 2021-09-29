@@ -1,12 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kick_chat/colors/color_palette.dart';
-import 'package:kick_chat/main.dart';
-import 'package:kick_chat/services/helper.dart';
-import 'package:kick_chat/services/user/user_service.dart';
-import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/home/user_search.dart';
 import 'package:kick_chat/ui/toberemoved/add_clubs.dart';
 import 'package:kick_chat/ui/widgets/circle_button.dart';
@@ -22,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  UserService _userService = UserService();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,35 +23,18 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: null,
         slivers: [
           SliverAppBar(
-            leading: Padding(
-              padding: const EdgeInsets.only(right: 15),
-              child: GestureDetector(
-                onTap: () async {
-                  MyAppState.currentUser!.active = false;
-                  MyAppState.currentUser!.lastOnlineTimestamp = Timestamp.now();
-                  await _userService.updateCurrentUser(
-                    MyAppState.currentUser!,
-                  );
-                  await FirebaseAuth.instance.signOut();
-                  MyAppState.currentUser = null;
-                  pushAndRemoveUntil(context, LoginScreen(), false, false);
-                },
-                child: Icon(
-                  Icons.menu,
-                  size: 25.0,
-                  color: ColorPalette.primary,
-                ),
-              ),
-            ),
             systemOverlayStyle: SystemUiOverlayStyle.light,
             backgroundColor: ColorPalette.white,
-            title: Text(
-              'KICKCHAT',
-              style: TextStyle(
-                color: ColorPalette.primary,
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -1.8,
+            title: Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: Text(
+                'KICKCHAT',
+                style: TextStyle(
+                  color: ColorPalette.primary,
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -1.8,
+                ),
               ),
             ),
             centerTitle: false,

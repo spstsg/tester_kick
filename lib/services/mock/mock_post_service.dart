@@ -40,11 +40,11 @@ class MockPostService {
       avatarColor: '#e91e63',
       profilePicture: 'https://res.cloudinary.com/ratingapp/image/upload/sunny',
       bgColor: avatarProfileColor,
-      reactions: PostReactions(),
       post: Destiny.string(20),
       gifUrl: '',
       privacy: 'Public',
       postMedia: [],
+      postVideo: [],
     );
     await _postService.publishPost(post);
   }

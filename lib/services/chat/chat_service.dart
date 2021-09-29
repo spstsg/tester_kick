@@ -27,15 +27,13 @@ class ChatService {
         userStreamController.sink.add(userModel);
       } catch (e) {
         print(e);
-        print(
-            'FireStoreUtils.getUserByID failed to parse user object ${user.id}');
+        print('FireStoreUtils.getUserByID failed to parse user object ${user.id}');
       }
     });
     yield* userStreamController.stream;
   }
 
-  Stream<ChatModel> getChatMessages(
-      HomeConversationModel homeConversationModel) async* {
+  Stream<ChatModel> getChatMessages(HomeConversationModel homeConversationModel) async* {
     // ignore: close_sinks
     StreamController<ChatModel> chatModelStreamController = StreamController();
     ChatModel chatModel = ChatModel();
@@ -69,13 +67,8 @@ class ChatService {
     yield* chatModelStreamController.stream;
   }
 
-  Future<void> sendMessage(List<User> members, MessageData message,
-      ConversationModel conversationModel) async {
-    var ref = firestore
-        .collection(CHANNELS)
-        .doc(conversationModel.id)
-        .collection(THREAD)
-        .doc();
+  Future<void> sendMessage(List<User> members, MessageData message, ConversationModel conversationModel) async {
+    var ref = firestore.collection(CHANNELS).doc(conversationModel.id).collection(THREAD).doc();
     message.messageID = ref.id;
     if (message.gifUrl.isNotEmpty) {
       message.content = '';
@@ -185,27 +178,34 @@ class ChatService {
       }
     }, onError: (e) {
       print((e as PlatformException).message);
+      throw e;
     });
     return conversationModel;
   }
 
-  HomeConversationModel homeConversation(
-      ConversationModel participation, User user) {
-    return HomeConversationModel(
-        conversationModel: participation, members: [user]);
+  Future<ConversationModel?> getSingleConversation(String senderId, String receiverId) async {
+    ConversationModel? conversationModel;
+    try {
+      DocumentSnapshot<Map<String, dynamic>> channel =
+          await firestore.collection(CONVERSATION).doc(senderId).collection(CONVERSATION).doc(receiverId).get();
+      if (channel.exists) {
+        conversationModel = ConversationModel.fromJson(channel.data() ?? {});
+      }
+      return conversationModel;
+    } on Exception catch (e) {
+      throw e;
+    }
   }
 
-  Stream<List<HomeConversationModel>> getChatConversations(
-      String userID) async* {
+  HomeConversationModel homeConversation(ConversationModel participation, User user) {
+    return HomeConversationModel(conversationModel: participation, members: [user]);
+  }
+
+  Stream<List<HomeConversationModel>> getChatConversations(String userID) async* {
     conversationsStream = StreamController<List<HomeConversationModel>>();
     HomeConversationModel newHomeConversation;
 
-    firestore
-        .collection(CONVERSATION)
-        .doc(userID)
-        .collection(CONVERSATION)
-        .snapshots()
-        .listen(
+    firestore.collection(CONVERSATION).doc(userID).collection(CONVERSATION).snapshots().listen(
       (querySnapshot) {
         if (querySnapshot.docs.isEmpty) {
           conversationsStream.sink.add(homeConversations);
@@ -215,21 +215,16 @@ class ChatService {
             querySnapshot.docs,
             (DocumentSnapshot document) async {
               if (document.exists) {
-                ConversationModel participation = ConversationModel.fromJson(
-                    document.data() as Map<String, dynamic>);
-                String userId =
-                    participation.receiverId != MyAppState.currentUser!.userID
-                        ? participation.receiverId
-                        : participation.senderId;
+                ConversationModel participation = ConversationModel.fromJson(document.data() as Map<String, dynamic>);
+                String userId = participation.receiverId != MyAppState.currentUser!.userID
+                    ? participation.receiverId
+                    : participation.senderId;
                 User? user = await _userService.getCurrentUser(userId);
-                newHomeConversation =
-                    homeConversation(participation, user as User);
+                newHomeConversation = homeConversation(participation, user as User);
                 homeConversations.add(newHomeConversation);
-                homeConversations.sort((a, b) => a
-                    .conversationModel!.lastMessageDate
-                    .compareTo(b.conversationModel!.lastMessageDate));
-                conversationsStream.sink
-                    .add(homeConversations.reversed.toList());
+                homeConversations.sort(
+                    (a, b) => a.conversationModel!.lastMessageDate.compareTo(b.conversationModel!.lastMessageDate));
+                conversationsStream.sink.add(homeConversations.reversed.toList());
               }
             },
           );
@@ -239,8 +234,7 @@ class ChatService {
     yield* conversationsStream.stream;
   }
 
-  Future deleteChatMessage(
-      ConversationModel conversation, String messageId) async {
+  Future deleteChatMessage(ConversationModel conversation, String messageId) async {
     try {
       QuerySnapshot<Map<String, dynamic>> result = await firestore
           .collection(CHANNELS)

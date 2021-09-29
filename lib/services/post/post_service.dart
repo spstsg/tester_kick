@@ -16,9 +16,9 @@ class PostService {
   NotificationService notificationService = NotificationService();
   UserService _userService = UserService();
   late StreamSubscription<QuerySnapshot> _postsStreamSubscription;
-  late StreamController<List<Post>> _profilePostsStream;
+  StreamController<List<Post>> _profilePostsStream = StreamController.broadcast();
   late StreamSubscription<QuerySnapshot> _profilePostsStreamSubscription;
-  late StreamController<List<Post>> _postsStream;
+  StreamController<List<Post>> _postsStream = StreamController.broadcast();
 
   Stream<List<Post>> getProfilePosts(String userID) async* {
     List<Post> _profilePosts = [];
@@ -62,8 +62,7 @@ class PostService {
 
   Future<List<Post>> getPosts() async {
     List<Post> _postsList = [];
-    QuerySnapshot result =
-        await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
+    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
 
     await Future.forEach(result.docs, (DocumentSnapshot post) {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
@@ -74,8 +73,7 @@ class PostService {
 
   Future<List<Comment>> getPostComments(Post post) async {
     List<Comment> _commentsList = [];
-    QuerySnapshot result =
-        await firestore.collection(POSTS_COMMENTS).where('postId', isEqualTo: post.id).get();
+    QuerySnapshot result = await firestore.collection(POSTS_COMMENTS).where('postId', isEqualTo: post.id).get();
     await Future.forEach(result.docs, (DocumentSnapshot post) {
       try {
         Comment socialCommentModel = Comment.fromJson(post.data() as Map<String, dynamic>);
@@ -89,26 +87,28 @@ class PostService {
   }
 
   publishPost(Post post) async {
-    String uid = getRandomString(28);
-    post.id = uid;
-    await firestore
-        .collection(SOCIAL_POSTS)
-        .doc(uid)
-        .set(post.toJson())
-        .then((value) => null, onError: (e) => e);
+    try {
+      String uid = getRandomString(28);
+      post.id = uid;
+      await firestore.collection(SOCIAL_POSTS).doc(uid).set(post.toJson()).then((value) => null, onError: (e) {
+        print(e);
+        return e;
+      });
 
-    if (post.sharedPost.authorId != '') {
-      DocumentReference<Map<String, dynamic>> incrementShareCount =
-          firestore.collection(SOCIAL_POSTS).doc(post.sharedPost.id);
-      incrementShareCount.update({'shareCount': FieldValue.increment(1)});
+      if (post.sharedPost.authorId != '') {
+        DocumentReference<Map<String, dynamic>> incrementShareCount =
+            firestore.collection(SOCIAL_POSTS).doc(post.sharedPost.id);
+        incrementShareCount.update({'shareCount': FieldValue.increment(1)});
+      }
+
+      DocumentReference<Map<String, dynamic>> incrementPostCount = firestore.collection(USERS).doc(post.authorId);
+      incrementPostCount.update({'postCount': FieldValue.increment(1)});
+
+      User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+      MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+    } on Exception catch (e) {
+      throw e;
     }
-
-    DocumentReference<Map<String, dynamic>> incrementPostCount =
-        firestore.collection(USERS).doc(post.authorId);
-    incrementPostCount.update({'postCount': FieldValue.increment(1)});
-
-    User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
-    MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
   updatePost(Post post) async {
@@ -129,10 +129,24 @@ class PostService {
     }
   }
 
+  void updateVideoViewCount(Post post) {
+    int count = post.postVideo[0]['count'];
+    count++;
+    Map<String, dynamic> videoUrl = {
+      'count': count,
+      'url': post.postVideo[0]['url'],
+      'videoThumbnail': post.postVideo[0]['videoThumbnail'],
+      'mime': 'video',
+    };
+    DocumentReference<Map<String, dynamic>> increment = firestore.collection(SOCIAL_POSTS).doc(post.id);
+    increment.update({
+      'postVideo': [videoUrl]
+    });
+  }
+
   deletePost(Post post) async {
     await firestore.collection(SOCIAL_POSTS).doc(post.id).delete();
-    DocumentReference<Map<String, dynamic>> decrementPostCount =
-        firestore.collection(USERS).doc(post.authorId);
+    DocumentReference<Map<String, dynamic>> decrementPostCount = firestore.collection(USERS).doc(post.authorId);
     decrementPostCount.update({'postCount': FieldValue.increment(-1)});
     User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
@@ -141,8 +155,7 @@ class PostService {
   postComment(String uid, Comment newComment, Post post) async {
     DocumentReference commentDocument = firestore.collection(POSTS_COMMENTS).doc(uid);
     await commentDocument.set(newComment.toJson());
-    DocumentReference<Map<String, dynamic>> incrementCommentsCount =
-        firestore.collection(SOCIAL_POSTS).doc(post.id);
+    DocumentReference<Map<String, dynamic>> incrementCommentsCount = firestore.collection(SOCIAL_POSTS).doc(post.id);
     incrementCommentsCount.update({'commentsCount': FieldValue.increment(1)});
 
     await notificationService.saveNotification(

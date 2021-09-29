@@ -7,6 +7,7 @@ import 'package:kick_chat/services/post/post_service.dart';
 import 'package:kick_chat/ui/posts/widgets/post_helper_widgets.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/posts/widgets/shared_post_container.dart';
+import 'package:kick_chat/ui/posts/widgets/video_display_widget.dart';
 import 'package:kick_chat/ui/widgets/expanded_text.dart';
 import 'package:kick_chat/ui/widgets/full_screen_image_viewer.dart';
 import 'package:screenshot/screenshot.dart';
@@ -28,7 +29,7 @@ class _ProfilePostState extends State<ProfilePost> {
 
   @override
   void initState() {
-    userPosts = _postService.getProfilePosts(widget.user.userID);
+    userPosts = _postService.getProfilePosts(widget.user.userID).asBroadcastStream();
     super.initState();
   }
 
@@ -55,7 +56,7 @@ class _ProfilePostState extends State<ProfilePost> {
               padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
               child: Center(
                 child: showEmptyState(
-                  'No Posts Found',
+                  'No posts found',
                   'All posts will show up here',
                 ),
               ),
@@ -155,9 +156,7 @@ class _ProfilePostState extends State<ProfilePost> {
                 ],
               ),
             ),
-            post.sharedPost.authorId != ''
-                ? SharedPostContainer(post: post.sharedPost)
-                : SizedBox.shrink(),
+            post.sharedPost.authorId != '' ? SharedPostContainer(post: post.sharedPost) : SizedBox.shrink(),
             post.postMedia.isNotEmpty && post.gifUrl == ''
                 ? Container(
                     height: 350,
@@ -204,6 +203,9 @@ class _ProfilePostState extends State<ProfilePost> {
                       ],
                     ),
                   )
+                : SizedBox.shrink(),
+            post.postVideo.isNotEmpty
+                ? videoDisplay(context, post, _postService.updateVideoViewCount)
                 : SizedBox.shrink(),
             post.postMedia.isEmpty && post.gifUrl != ''
                 ? Container(

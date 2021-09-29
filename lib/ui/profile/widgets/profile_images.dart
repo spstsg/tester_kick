@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/models/image_model.dart';
 import 'package:kick_chat/models/user_model.dart';
@@ -44,7 +45,7 @@ class _ProfileImagesState extends State<ProfileImages> {
               padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
               child: Center(
                 child: showEmptyState(
-                  'No Images yet.',
+                  'No images yet.',
                   'All images will show up here',
                 ),
               ),
@@ -60,7 +61,7 @@ class _ProfileImagesState extends State<ProfileImages> {
               itemBuilder: (context, index) {
                 return Container(
                   child: Stack(
-                    alignment: Alignment.bottomCenter,
+                    alignment: Alignment.topCenter,
                     children: <Widget>[
                       GestureDetector(
                         onTap: () {

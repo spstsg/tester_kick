@@ -148,6 +148,48 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  device_info_plus:
+    dependency: "direct main"
+    description:
+      name: device_info_plus
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  device_info_plus_linux:
+    dependency: transitive
+    description:
+      name: device_info_plus_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  device_info_plus_macos:
+    dependency: transitive
+    description:
+      name: device_info_plus_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  device_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: device_info_plus_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  device_info_plus_web:
+    dependency: transitive
+    description:
+      name: device_info_plus_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  device_info_plus_windows:
+    dependency: transitive
+    description:
+      name: device_info_plus_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   dio:
     dependency: transitive
     description:
@@ -210,7 +252,7 @@ packages:
       name: file_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.1"
+    version: "4.1.2"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -349,13 +391,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.0.2"
+  flutter_lints:
+    dependency: "direct dev"
+    description:
+      name: flutter_lints
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
+  flutter_native_image:
+    dependency: "direct main"
+    description:
+      name: flutter_native_image
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.6+1"
   flutter_native_splash:
     dependency: "direct dev"
     description:
       name: flutter_native_splash
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.3"
+    version: "1.2.4"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -363,13 +419,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.3"
-  flutter_reaction_button:
-    dependency: "direct main"
-    description:
-      name: flutter_reaction_button
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.8"
   flutter_redux:
     dependency: "direct main"
     description:
@@ -555,6 +604,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.1.0"
+  lints:
+    dependency: transitive
+    description:
+      name: lints
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   matcher:
     dependency: transitive
     description:
@@ -702,13 +758,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.2.3"
+  progress_indicators:
+    dependency: "direct main"
+    description:
+      name: progress_indicators
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   provider:
     dependency: "direct main"
     description:
       name: provider
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.0.0"
+    version: "6.0.1"
   quiver:
     dependency: transitive
     description:
@@ -958,7 +1021,7 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.0.11"
+    version: "6.0.12"
   url_launcher_linux:
     dependency: transitive
     description:
@@ -1008,8 +1071,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  video_compress:
+    dependency: "direct main"
+    description:
+      name: video_compress
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.1.0"
   video_player:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: video_player
       url: "https://pub.dartlang.org"
@@ -1029,6 +1099,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.4"
+  video_thumbnail:
+    dependency: "direct main"
+    description:
+      name: video_thumbnail
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.3"
   win32:
     dependency: transitive
     description:

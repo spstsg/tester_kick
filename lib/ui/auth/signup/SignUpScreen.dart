@@ -55,6 +55,7 @@ class SignUpScreen extends StatelessWidget {
       if (result != null && result is User) {
         result.active = true;
         result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
         _userService.updateCurrentUser(result);
         MyAppState.currentUser = result;
         MyAppState.reduxStore!.dispatch(CreateUserAction(result));
@@ -96,6 +97,7 @@ class SignUpScreen extends StatelessWidget {
       if (result != null && result is User) {
         result.active = true;
         result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
         _userService.updateCurrentUser(result);
         MyAppState.currentUser = result;
         MyAppState.reduxStore!.dispatch(CreateUserAction(result));
@@ -402,8 +404,7 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 children: [
                   TextSpan(
-                    text:
-                        'By using this app, you agree to our Privacy Policy and Terms of Service, available',
+                    text: 'By using this app, you agree to our Privacy Policy and Terms of Service, available',
                     style: TextStyle(
                       color: Colors.grey,
                     ),

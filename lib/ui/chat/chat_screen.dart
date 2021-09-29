@@ -39,7 +39,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatService _chatService = ChatService();
   UserService _userService = UserService();
   FileService _fileService = FileService();
-  late HomeConversationModel homeConversationModel;
+  HomeConversationModel homeConversationModel = HomeConversationModel();
   TextEditingController _messageController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
   late Stream<ChatModel> chatStream;
@@ -73,16 +73,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (homeConversationModel.conversationModel!.receiverId ==
-            MyAppState.currentUser!.userID &&
+    if (homeConversationModel.conversationModel != null &&
+        homeConversationModel.conversationModel!.receiverId == MyAppState.currentUser!.userID &&
         context.widget.toStringShort() == 'ChatScreen') {
-      _chatService
-          .markConversationAsRead(homeConversationModel.conversationModel!);
+      _chatService.markConversationAsRead(homeConversationModel.conversationModel!);
       _chatService.markMessageAsRead(homeConversationModel.conversationModel!);
     }
-    // I have finished with this page
-    // I created sender_chat_widgets and receiver_chat_widgets files
-    // I added showSnackBar to helper and used in those files
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -169,20 +165,16 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: GestureDetector(
                   onTap: () {},
                   child: StreamBuilder<ChatModel>(
-                    stream: homeConversationModel.conversationModel != null
-                        ? chatStream
-                        : null,
+                    stream: homeConversationModel.conversationModel != null ? chatStream : null,
                     initialData: ChatModel(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return ChatSkeleton();
                       } else {
-                        if (snapshot.hasData &&
-                            (snapshot.data?.message.isEmpty ?? true)) {
+                        if (snapshot.hasData && (snapshot.data?.message.isEmpty ?? true)) {
                           return Center(child: Text('No messages yet'));
                         } else {
-                          _scrollController =
-                              ScrollController(initialScrollOffset: 50.0);
+                          _scrollController = ScrollController(initialScrollOffset: 50.0);
                           return ListView.builder(
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
@@ -190,8 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             itemCount: snapshot.data!.message.length,
                             padding: EdgeInsets.only(top: 0, bottom: 8),
                             itemBuilder: (BuildContext context, int index) {
-                              var chatMessages =
-                                  snapshot.data!.message.reversed.toList();
+                              var chatMessages = snapshot.data!.message.reversed.toList();
                               return buildMessage(
                                 chatMessages[index],
                                 snapshot.data!.members,
@@ -219,8 +210,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(left: 2, right: 2),
                         child: Container(
-                          padding: EdgeInsets.only(
-                              left: 14, right: 14, top: 5, bottom: 5),
+                          padding: EdgeInsets.only(left: 14, right: 14, top: 5, bottom: 5),
                           margin: EdgeInsets.symmetric(vertical: 20),
                           decoration: ShapeDecoration(
                             shape: OutlineInputBorder(
@@ -270,8 +260,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ),
                                     ),
                                   ),
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
+                                  textCapitalization: TextCapitalization.sentences,
                                   maxLines: 3,
                                   minLines: 1,
                                   keyboardType: TextInputType.multiline,
@@ -404,8 +393,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void setupStream() {
-    chatStream =
-        _chatService.getChatMessages(homeConversationModel).asBroadcastStream();
+    chatStream = _chatService.getChatMessages(homeConversationModel).asBroadcastStream();
     chatStream.listen((chatModel) {
       if (mounted) {
         homeConversationModel.members = chatModel.members;
@@ -445,6 +433,7 @@ class _ChatScreenState extends State<ChatScreen> {
             'File selection',
             'Sorry, at this point you can only upload maximum of 4 files',
             'OK',
+            '',
             '',
             false,
           );
@@ -509,8 +498,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<bool> _checkChannelNullability(
-      ConversationModel? conversationModel) async {
+  Future<bool> _checkChannelNullability(ConversationModel? conversationModel) async {
     if (conversationModel != null) {
       return true;
     } else {
@@ -531,10 +519,8 @@ class _ChatScreenState extends State<ChatScreen> {
         senderId: user.userID,
         receiverId: friend.userID,
       );
-      bool isSuccessful =
-          await _chatService.createChatConversation(conversation);
+      bool isSuccessful = await _chatService.createChatConversation(conversation);
       if (isSuccessful) {
-        print(isSuccessful);
         homeConversationModel.conversationModel = conversation;
         setupStream();
         setState(() {});
@@ -550,8 +536,7 @@ class _ChatScreenState extends State<ChatScreen> {
       created: Timestamp.now(),
       recipientUsername: homeConversationModel.members.first.username,
       recipientID: homeConversationModel.members.first.userID,
-      recipientProfilePictureURL:
-          homeConversationModel.members.first.profilePictureURL,
+      recipientProfilePictureURL: homeConversationModel.members.first.profilePictureURL,
       senderUsername: MyAppState.currentUser!.username,
       senderID: MyAppState.currentUser!.userID,
       senderProfilePictureURL: MyAppState.currentUser!.profilePictureURL,
@@ -564,10 +549,8 @@ class _ChatScreenState extends State<ChatScreen> {
     if (message.gifUrl.isNotEmpty) {
       message.content = '${MyAppState.currentUser!.username} sent a gif';
     }
-    if (await _checkChannelNullability(
-        homeConversationModel.conversationModel)) {
-      homeConversationModel.conversationModel!.lastMessageDate =
-          Timestamp.now();
+    if (await _checkChannelNullability(homeConversationModel.conversationModel)) {
+      homeConversationModel.conversationModel!.lastMessageDate = Timestamp.now();
       homeConversationModel.conversationModel!.lastMessage = message.content;
       await _chatService.sendMessage(
         homeConversationModel.members,

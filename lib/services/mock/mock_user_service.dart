@@ -31,6 +31,7 @@ class MockUserService {
       _imageurl,
       avatarProfileColor,
       randomClubs(),
+      true,
       result,
     );
   }

@@ -47,8 +47,7 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// this key is used to navigate to the appropriate screen when the
   /// notification is clicked from the system tray
-  final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey(debugLabel: "Main Navigator");
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
 
   static User? currentUser;
   static DevToolsStore<AppState>? reduxStore;
@@ -70,13 +69,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initializeFlutterFire() async {
     try {
       /// configure the firebase messaging , required for notifications handling
-      RemoteMessage? initialMessage =
-          await FirebaseMessaging.instance.getInitialMessage();
+      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
         _handleNotification(initialMessage.data, navigatorKey);
       }
-      FirebaseMessaging.onMessageOpenedApp
-          .listen((RemoteMessage? remoteMessage) {
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? remoteMessage) {
         if (remoteMessage != null) {
           _handleNotification(remoteMessage.data, navigatorKey);
         }
@@ -87,8 +84,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
       /// listen to firebase token changes and update the user object in the
       /// database with it's new token
-      tokenStream =
-          NotificationService.firebaseMessaging.onTokenRefresh.listen((event) {
+      tokenStream = NotificationService.firebaseMessaging.onTokenRefresh.listen((event) {
         if (currentUser != null) {
           print('token $event');
           currentUser!.fcmToken = event;
@@ -130,14 +126,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     SharedPreferencesService _sharedPreferences = SharedPreferencesService();
-    String roomCreatorId =
-        await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
-    String selectedRoomId =
-        await _sharedPreferences.getSharedPreferencesString('roomId');
+    String roomCreatorId = await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
+    String selectedRoomId = await _sharedPreferences.getSharedPreferencesString('roomId');
 
-    if (roomCreatorId.isNotEmpty &&
-        selectedRoomId.isNotEmpty &&
-        roomCreatorId != MyAppState.currentUser!.userID) {
+    if (roomCreatorId.isNotEmpty && selectedRoomId.isNotEmpty && roomCreatorId != MyAppState.currentUser!.userID) {
       _audioChatService.removeSpeaker(selectedRoomId);
       _audioChatService.removeParticipant(
         roomCreatorId,
@@ -151,8 +143,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     /// if we are logged in, we attempt to update the user online status and
     /// lastSeenTimestamp based on AppLifecycleState state
     if (auth.FirebaseAuth.instance.currentUser != null && currentUser != null) {
-      if (state == AppLifecycleState.paused ||
-          state == AppLifecycleState.inactive) {
+      if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
         /// user is offline
         /// pause token stream
         tokenStream.pause();
@@ -226,8 +217,7 @@ class OnBoardingState extends State<OnBoarding> {
   Future hasFinishedOnBoarding() async {
     /// first we check if the user has seen the onBoarding screen or not
     SharedPreferencesService _sharedPreferences = SharedPreferencesService();
-    bool finishedOnBoarding =
-        await _sharedPreferences.getSharedPreferencesBool(FINISHED_ON_BOARDING);
+    bool finishedOnBoarding = await _sharedPreferences.getSharedPreferencesBool(FINISHED_ON_BOARDING);
 
     // MockUserService _mockUserService = MockUserService();
     // for (int i = 0; i < 25; i++) {
@@ -308,8 +298,7 @@ class OnBoardingState extends State<OnBoarding> {
 
 /// this fuction is called when the notification is clicked from system tray
 /// when the app is in the background or completely killed
-void _handleNotification(
-    Map<String, dynamic> message, GlobalKey<NavigatorState> navigatorKey) {
+void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState> navigatorKey) {
   /// right now we only handle click actions on chat messages only
   try {
     // Map<dynamic, dynamic> data = message['data'];

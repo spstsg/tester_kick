@@ -8,7 +8,7 @@ import 'package:kick_chat/models/audio_chat_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
-import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
 // import 'package:agora_rtc_engine/rtc_engine.dart';
@@ -99,8 +99,7 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
                       autofocus: false,
                       maxLength: 60,
                       decoration: InputDecoration(
-                        counterText:
-                            '${60 - _enteredTitleText.length} characters remaining',
+                        counterText: '${60 - _enteredTitleText.length} characters remaining',
                         counterStyle: TextStyle(fontSize: 14),
                         contentPadding: EdgeInsets.only(left: 16, right: 16),
                         focusedBorder: OutlineInputBorder(
@@ -440,8 +439,7 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
     } catch (e) {
       print(e);
       _dialog.hide();
-      final snackBar =
-          SnackBar(content: Text('Error creating room. Try again'));
+      final snackBar = SnackBar(content: Text('Error creating room. Try again'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }

@@ -142,15 +142,14 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
         future: _commentsFuture,
         initialData: [],
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              newlyAddedComment.length == 0) {
+          if (snapshot.connectionState == ConnectionState.waiting && newlyAddedComment.length == 0) {
             return PostCommentsSkeleton();
           } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
             return Container(
               height: MediaQuery.of(context).size.height / 2,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Center(child: showEmptyState('No Comments Yet', 'Add a new comment now!')),
+                child: Center(child: showEmptyState('No comments yet', 'Add a new comment now!')),
               ),
             );
           } else {

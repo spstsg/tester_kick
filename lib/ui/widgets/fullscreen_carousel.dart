@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kick_chat/services/helper.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -100,7 +101,7 @@ class MyImageView extends StatelessWidget {
     return Container(
       color: Colors.black,
       child: Hero(
-        tag: imageUrl,
+        tag: getRandomString(20),
         child: PhotoView(
           imageProvider: imageFile == null
               ? (imageUrl != ''

@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:path/path.dart' as path;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:http/http.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:intl/intl.dart';
@@ -18,168 +18,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-Widget buildPreviewIcon(String path) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3.5, vertical: 5),
-      child: Image.asset(path, height: 40),
-    );
-
-Widget buildReactionsIcon(String path, Text text) => Container(
-      color: Colors.transparent,
-      child: Row(
-        children: <Widget>[
-          Image.asset(path, height: 20),
-          const SizedBox(width: 6),
-          text,
-        ],
-      ),
-    );
-
-Widget buildDefaultReactionsIcon(String path, Text text) => Container(
-      color: Colors.transparent,
-      child: Row(
-        children: <Widget>[
-          Image.asset(path, height: 18),
-          const SizedBox(width: 6),
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: text,
-          ),
-        ],
-      ),
-    );
-
-Widget buildReactionsIconDisplay(String type) {
-  String path = getReactionImagePath(type);
-  return Container(
-    color: Colors.transparent,
-    child: Row(
-      children: <Widget>[
-        Image.asset(path, height: 20, width: 20, fit: BoxFit.cover),
-      ],
-    ),
-  );
-}
-
-String getReactionImagePath(String type) {
-  var reactionsImagesPath = {
-    'like': 'assets/images/likes_btn_1.png',
-    'love': 'assets/images/love.png',
-    'wow': 'assets/images/wow.png',
-    'sad': 'assets/images/sad.png',
-    'haha': 'assets/images/haha.png',
-    'angry': 'assets/images/angry.png',
-  };
-  return (reactionsImagesPath[type] as String);
-}
-
-Widget buildTitle(String title) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 2.5),
-      decoration: BoxDecoration(
-        color: Colors.red,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-
-final postReactionsList = [
-  Reaction(
-    title: buildTitle('Like'),
-    previewIcon: buildPreviewIcon('assets/images/likes.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/like_btn.png',
-      Text(
-        'Like',
-        style: TextStyle(
-          color: Color(0XFF50b5ff),
-        ),
-      ),
-    ),
-  ),
-  Reaction(
-    title: buildTitle('Love'),
-    previewIcon: buildPreviewIcon('assets/images/love.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/love.png',
-      Text(
-        'Love',
-        style: TextStyle(
-          color: Color(0XFFf33e58),
-        ),
-      ),
-    ),
-  ),
-  Reaction(
-    title: buildTitle('Wow'),
-    previewIcon: buildPreviewIcon('assets/images/wow.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/wow.png',
-      Text(
-        'Wow',
-        style: TextStyle(
-          color: Color(0XFFf7b124),
-        ),
-      ),
-    ),
-  ),
-  Reaction(
-    title: buildTitle('Haha'),
-    previewIcon: buildPreviewIcon('assets/images/haha.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/haha.png',
-      Text(
-        'Haha',
-        style: TextStyle(
-          color: Color(0XFFf7b124),
-        ),
-      ),
-    ),
-  ),
-  Reaction(
-    title: buildTitle('Sad'),
-    previewIcon: buildPreviewIcon('assets/images/sad.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/sad.png',
-      Text(
-        'Sad',
-        style: TextStyle(
-          color: Color(0XFFffda6b),
-        ),
-      ),
-    ),
-  ),
-  Reaction(
-    title: buildTitle('Angry'),
-    previewIcon: buildPreviewIcon('assets/images/angry.gif'),
-    icon: buildReactionsIcon(
-      'assets/images/angry.png',
-      Text(
-        'Angry',
-        style: TextStyle(
-          color: Color(0XFFe9710f),
-        ),
-      ),
-    ),
-  ),
-];
-
-Widget displayCircleImage(String picUrl, double size, hasBorder) =>
-    CachedNetworkImage(
+Widget displayCircleImage(String picUrl, double size, hasBorder) => CachedNetworkImage(
       height: size,
       width: size,
-      imageBuilder: (context, imageProvider) =>
-          _getCircularImageProvider(imageProvider, size, false),
+      imageBuilder: (context, imageProvider) => _getCircularImageProvider(imageProvider, size, false),
       imageUrl: picUrl,
-      placeholder: (context, url) =>
-          _getPlaceholderOrErrorImage(size, hasBorder),
-      errorWidget: (context, url, error) =>
-          _getPlaceholderOrErrorImage(size, hasBorder),
+      placeholder: (context, url) => _getPlaceholderOrErrorImage(size, hasBorder),
+      errorWidget: (context, url, error) => _getPlaceholderOrErrorImage(size, hasBorder),
     );
 
 Widget _getPlaceholderOrErrorImage(double size, hasBorder) => Container(
@@ -203,8 +48,7 @@ Widget _getPlaceholderOrErrorImage(double size, hasBorder) => Container(
       )),
     );
 
-Widget _getCircularImageProvider(
-    ImageProvider provider, double size, bool hasBorder) {
+Widget _getCircularImageProvider(ImageProvider provider, double size, bool hasBorder) {
   return ClipOval(
       child: Container(
     width: size,
@@ -254,8 +98,7 @@ Widget showEmptyState(
             constraints: BoxConstraints(minWidth: double.infinity),
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: EdgeInsets.symmetric(vertical: 12),
                   primary: Colors.blue,
                 ),
@@ -275,8 +118,7 @@ String truncateString(String data, int length) {
 }
 
 pushReplacement(BuildContext context, Widget destination) {
-  Navigator.of(context).pushReplacement(
-      new MaterialPageRoute(builder: (context) => destination));
+  Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (context) => destination));
 }
 
 push(BuildContext context, Widget destination) async {
@@ -286,8 +128,7 @@ push(BuildContext context, Widget destination) async {
   return Future.value(result);
 }
 
-pushAndRemoveUntil(
-    BuildContext context, Widget destination, bool predict, bool showDialog,
+pushAndRemoveUntil(BuildContext context, Widget destination, bool predict, bool showDialog,
     [String message = '']) async {
   if (showDialog) {
     showProgressDialog(
@@ -299,9 +140,8 @@ pushAndRemoveUntil(
     );
     await Future.delayed(Duration(seconds: 1));
   }
-  Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => destination),
-      (Route<dynamic> route) => predict);
+  Navigator.of(context)
+      .pushAndRemoveUntil(MaterialPageRoute(builder: (context) => destination), (Route<dynamic> route) => predict);
 }
 
 bool validateEmail(String value) {
@@ -397,18 +237,11 @@ String timeFromDate(dateTime) {
   return DateFormat.jm().format(date);
 }
 
-sumReactions(reactions) {
-  return reactions.toJson().values.reduce((sum, element) => sum + element);
-}
-
 Widget displayImage(String picUrl, double size) => CachedNetworkImage(
-      imageBuilder: (context, imageProvider) =>
-          _getFlatImageProvider(imageProvider, size),
+      imageBuilder: (context, imageProvider) => _getFlatImageProvider(imageProvider, size),
       imageUrl: picUrl,
-      placeholder: (context, url) =>
-          _getFlatPlaceholderOrErrorImage(size, true),
-      errorWidget: (context, url, error) =>
-          _getFlatPlaceholderOrErrorImage(size, false),
+      placeholder: (context, url) => _getFlatPlaceholderOrErrorImage(size, true),
+      errorWidget: (context, url, error) => _getFlatPlaceholderOrErrorImage(size, false),
     );
 
 Widget _getFlatImageProvider(ImageProvider provider, double size) {
@@ -427,8 +260,7 @@ Widget _getFlatImageProvider(ImageProvider provider, double size) {
   );
 }
 
-Widget _getFlatPlaceholderOrErrorImage(double size, bool placeholder) =>
-    Container(
+Widget _getFlatPlaceholderOrErrorImage(double size, bool placeholder) => Container(
       width: placeholder ? 35 : size,
       height: placeholder ? 35 : size,
       child: placeholder
@@ -450,8 +282,7 @@ Color hexStringToColor(String hexColor) {
 }
 
 String getRandomString(int length) {
-  String chars =
-      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  String chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
   return String.fromCharCodes(
     Iterable.generate(
@@ -475,17 +306,13 @@ int getRandomInt(int length) {
 
 Future<bool> saveImageToGallery(Uint8List imageBytes) async {
   await [Permission.storage].request();
-  final time = DateTime.now()
-      .toIso8601String()
-      .replaceAll('.', '-')
-      .replaceAll(':', '-');
+  final time = DateTime.now().toIso8601String().replaceAll('.', '-').replaceAll(':', '-');
   final name = 'screenshot_$time';
   final result = await ImageGallerySaver.saveImage(imageBytes, name: name);
   return result['isSuccess'];
 }
 
-Future shareScreenshot(
-    BuildContext context, Uint8List bytes, String text) async {
+Future shareScreenshot(BuildContext context, Uint8List bytes, String text) async {
   final box = context.findRenderObject() as RenderBox?;
   final directory = await getApplicationDocumentsDirectory();
   final image = File('${directory.path}/flutter.png');
@@ -579,6 +406,7 @@ Future showCupertinoAlert(
   String description,
   String text,
   String cancel,
+  String other,
   bool showCancel,
 ) {
   return showCupertinoDialog(
@@ -589,14 +417,14 @@ Future showCupertinoAlert(
         descriptions: description,
         okay: text,
         cancel: cancel,
+        other: other,
         showCancel: showCancel,
       );
     },
   );
 }
 
-Future showAlertDialog(
-    BuildContext context, String title, String content, bool hideCancel) async {
+Future showAlertDialog(BuildContext context, String title, String content, bool hideCancel) async {
   return showDialog<bool>(
     context: context,
     barrierDismissible: false, // user must tap button!
@@ -635,8 +463,7 @@ Future showAlertDialog(
   );
 }
 
-Future<ByteData?> createProfileAvatar(
-    Color color, Size size, String text) async {
+Future<ByteData?> createProfileAvatar(Color color, Size size, String text) async {
   ui.PictureRecorder recorder = new ui.PictureRecorder();
   Canvas canvas = new Canvas(
     recorder,
@@ -686,8 +513,7 @@ Future writeBufferToFile(ByteData data) async {
   final buffer = data.buffer;
   Directory tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
-  var filePath =
-      tempPath + '/file_01.tmp'; // file_01.tmp is dump file, can be anything
+  var filePath = tempPath + '/file_01.tmp'; // file_01.tmp is dump file, can be anything
   return new File(filePath).writeAsBytes(
     buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
   );
@@ -700,6 +526,14 @@ Future convertSocialProfileUrlToImage(String urlString) async {
   final image = File('${directory.path}/flutter.png');
   image.writeAsBytesSync(response.bodyBytes);
   return image;
+}
+
+Future<File> changeFileNameOnly(File file, String newFileName) {
+  var filePath = file.path;
+  var lastSeparator = filePath.lastIndexOf(Platform.pathSeparator);
+  final extension = path.extension(filePath);
+  var newPath = filePath.substring(0, lastSeparator + 1) + newFileName;
+  return file.rename(newPath + extension);
 }
 
 matchStatus(status, elapsed, timestamp) {
