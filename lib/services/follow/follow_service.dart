@@ -3,12 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
-import 'package:kick_chat/services/notifications/notification_service.dart';
+// import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 
 class FollowService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  NotificationService notificationService = NotificationService();
+  // NotificationService _notificationService = NotificationService();
   UserService _userService = UserService();
 
   Future followUser(User currentUser, User visitedUser) async {
