@@ -350,7 +350,7 @@ PODS:
     - BoringSSL-GRPC/Interface (= 0.0.7)
   - BoringSSL-GRPC/Interface (0.0.7)
   - cloud_firestore (2.5.3):
-    - Firebase/Firestore (= 8.6.0)
+    - Firebase/Firestore (= 8.7.0)
     - firebase_core
     - Flutter
   - device_info_plus (0.0.1):
@@ -406,41 +406,41 @@ PODS:
   - file_picker (0.0.1):
     - DKImagePickerController/PhotoGallery
     - Flutter
-  - Firebase/Auth (8.6.0):
+  - Firebase/Auth (8.7.0):
     - Firebase/CoreOnly
-    - FirebaseAuth (~> 8.6.0)
-  - Firebase/CoreOnly (8.6.0):
-    - FirebaseCore (= 8.6.0)
-  - Firebase/Firestore (8.6.0):
+    - FirebaseAuth (~> 8.7.0)
+  - Firebase/CoreOnly (8.7.0):
+    - FirebaseCore (= 8.7.0)
+  - Firebase/Firestore (8.7.0):
     - Firebase/CoreOnly
-    - FirebaseFirestore (~> 8.6.0)
-  - Firebase/Messaging (8.6.0):
+    - FirebaseFirestore (~> 8.7.0)
+  - Firebase/Messaging (8.7.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (~> 8.6.0)
-  - Firebase/Storage (8.6.0):
+    - FirebaseMessaging (~> 8.7.0)
+  - Firebase/Storage (8.7.0):
     - Firebase/CoreOnly
-    - FirebaseStorage (~> 8.6.0)
-  - firebase_auth (3.1.1):
-    - Firebase/Auth (= 8.6.0)
+    - FirebaseStorage (~> 8.7.0)
+  - firebase_auth (3.1.2):
+    - Firebase/Auth (= 8.7.0)
     - firebase_core
     - Flutter
-  - firebase_core (1.6.0):
-    - Firebase/CoreOnly (= 8.6.0)
+  - firebase_core (1.7.0):
+    - Firebase/CoreOnly (= 8.7.0)
     - Flutter
-  - firebase_messaging (10.0.7):
-    - Firebase/Messaging (= 8.6.0)
+  - firebase_messaging (10.0.8):
+    - Firebase/Messaging (= 8.7.0)
     - firebase_core
     - Flutter
-  - firebase_storage (10.0.3):
-    - Firebase/Storage (= 8.6.0)
+  - firebase_storage (10.0.4):
+    - Firebase/Storage (= 8.7.0)
     - firebase_core
     - Flutter
-  - FirebaseAuth (8.6.0):
+  - FirebaseAuth (8.7.0):
     - FirebaseCore (~> 8.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.4)
     - GoogleUtilities/Environment (~> 7.4)
     - GTMSessionFetcher/Core (~> 1.5)
-  - FirebaseCore (8.6.0):
+  - FirebaseCore (8.7.0):
     - FirebaseCoreDiagnostics (~> 8.0)
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/Logger (~> 7.4)
@@ -449,7 +449,7 @@ PODS:
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/Logger (~> 7.4)
     - nanopb (~> 2.30908.0)
-  - FirebaseFirestore (8.6.0):
+  - FirebaseFirestore (8.7.0):
     - abseil/algorithm (= 0.20200225.0)
     - abseil/base (= 0.20200225.0)
     - abseil/container/flat_hash_map (= 0.20200225.0)
@@ -467,7 +467,7 @@ PODS:
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/UserDefaults (~> 7.4)
     - PromisesObjC (< 3.0, >= 1.2)
-  - FirebaseMessaging (8.6.0):
+  - FirebaseMessaging (8.7.0):
     - FirebaseCore (~> 8.0)
     - FirebaseInstallations (~> 8.0)
     - GoogleDataTransport (~> 9.0)
@@ -476,13 +476,15 @@ PODS:
     - GoogleUtilities/Reachability (~> 7.4)
     - GoogleUtilities/UserDefaults (~> 7.4)
     - nanopb (~> 2.30908.0)
-  - FirebaseStorage (8.6.0):
+  - FirebaseStorage (8.7.0):
     - FirebaseCore (~> 8.0)
     - GTMSessionFetcher/Core (~> 1.5)
   - Flutter (1.0.0)
   - flutter_facebook_auth (3.5.1):
     - FBSDKCoreKit (~> 11.2.0)
     - FBSDKLoginKit (~> 11.2.0)
+    - Flutter
+  - flutter_local_notifications (0.0.1):
     - Flutter
   - flutter_native_image (0.0.1):
     - Flutter
@@ -606,6 +608,7 @@ DEPENDENCIES:
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
   - flutter_facebook_auth (from `.symlinks/plugins/flutter_facebook_auth/ios`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_native_image (from `.symlinks/plugins/flutter_native_image/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
@@ -675,6 +678,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_facebook_auth:
     :path: ".symlinks/plugins/flutter_facebook_auth/ios"
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_native_image:
     :path: ".symlinks/plugins/flutter_native_image/ios"
   google_sign_in:
@@ -708,7 +713,7 @@ SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   BoringSSL-GRPC: 8edf627ee524575e2f8d19d56f068b448eea3879
-  cloud_firestore: bb4fcf1d62a2bf48586fad7a7e9612f20a719cda
+  cloud_firestore: a09fdd53707eadea99f93ca5ad8e95e4c1ab1108
   device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
   DKImagePickerController: b5eb7f7a388e4643264105d648d01f727110fc3d
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
@@ -717,20 +722,21 @@ SPEC CHECKSUMS:
   FBSDKCoreKit_Basics: 73ebe3a27eb688ac5b5aa7e99f68992993042115
   FBSDKLoginKit: 2e76831ef08d356b8f9150ea51cce865074ea304
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
-  Firebase: 21ac9f28b09a8bdfc005f34c984fca84e7e8786d
-  firebase_auth: a5da789c2876fda3ad7407bd2828e502dfeebc42
-  firebase_core: c21ac09a8d23afd3594b56ed786bad12e5266bba
-  firebase_messaging: 0fddeca6fcfee0bed23c66210391d782af8f8d0e
-  firebase_storage: 75fc62b16cfbb268ea4e90729be5729e3dc38b1e
-  FirebaseAuth: 223adeeb2262b417532e89bf06a960e3a0a1e9e4
-  FirebaseCore: 620b677f70f5470a8e59cb77f3ddc666f6f09785
+  Firebase: bc9325d5ee2041524bac78a5213d0e530c651309
+  firebase_auth: 3193124aa14a62b8abec3fd069df73ef378d2c5b
+  firebase_core: f5ac1f2726a2bd0468cea0161eddeea3d83d7e3e
+  firebase_messaging: cfee8830477d2f1875e027a65cce7f6239ebf583
+  firebase_storage: 04a381404ffddf5d3d39bf4bdfc517e4a354dfe9
+  FirebaseAuth: 2e7d029977648c67a5d51a263d4cbab76d34cf12
+  FirebaseCore: f4804c1d3f4bbbefc88904d15653038f2c99ddf7
   FirebaseCoreDiagnostics: b63732f581a1c6a453ec7241f9ab60b3a5bd3450
-  FirebaseFirestore: 7b8bd72aff4d3ad91498343e81fdbaa994ce8abe
+  FirebaseFirestore: e722ba956610c45d368d9787689e2aa41b809e68
   FirebaseInstallations: ede6fb72bb6337914e5888b399271259d0c4910c
-  FirebaseMessaging: ce0a5ee974f7bfe83b6cc5acce88c2d969e37c41
-  FirebaseStorage: 2765944230981e63f8bd2938d9d5819158b7c34c
+  FirebaseMessaging: 93227dd71d7888e200baef65043f81acb2b6596e
+  FirebaseStorage: 2e6e58fe31fb0061fdce3f156d0ebc964e9de6ba
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_facebook_auth: 870a465b1afff3ace7a592bd44665d921991726c
+  flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
   flutter_native_image: 9c0b7451838484458e5b0fae007b86a4c2d4bdfe
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_sign_in: c5cecea71f3be43282263550556e311c4cc03582
