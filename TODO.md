@@ -6,6 +6,20 @@
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 * Try to find out how you users can turn off notifications from settings page
+* A page with different users best eleven
+  - Users should be able to comment and like
+
+WHERE TO ADD NOTIFICATION
+- post reaction - done
+- post comment - done
+- follow user - done
+- When a user creates a post, notify all his followers
+- Send chat
+- Any post related to the teams you are following
+- Any audio room related to the team you are following
+- * Randomly send notifications to all users to see other users best eleven
+- Breaking news
+- Voting
 
 ...........
 - The gif select for post create is not working - done
