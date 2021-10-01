@@ -7,12 +7,14 @@ class CircleProfileAvatar extends StatelessWidget {
   final String avatarColor;
   final double radius;
   final double fontSize;
+  final bool showPlaceholderImage;
 
   const CircleProfileAvatar({
     this.username = '',
     this.avatarColor = '',
     this.radius = 45.0,
     this.fontSize = 20.0,
+    required this.showPlaceholderImage,
   });
 
   @override
@@ -20,24 +22,29 @@ class CircleProfileAvatar extends StatelessWidget {
     return Stack(
       children: [
         Center(
-          child: Container(
-            alignment: Alignment(0.0, 0.0),
-            width: radius,
-            height: radius,
-            decoration: new BoxDecoration(
-              color: hexStringToColor(avatarColor),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              username.substring(0, 1).toUpperCase(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: fontSize,
-                color: ColorPalette.white,
-              ),
-            ),
-          ),
+          child: !showPlaceholderImage
+              ? Container(
+                  alignment: Alignment(0.0, 0.0),
+                  width: radius,
+                  height: radius,
+                  decoration: new BoxDecoration(
+                    color: hexStringToColor(avatarColor),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    username.substring(0, 1).toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: fontSize,
+                      color: ColorPalette.white,
+                    ),
+                  ),
+                )
+              : CircleAvatar(
+                  radius: radius,
+                  backgroundImage: AssetImage('assets/images/placeholder.jpg'),
+                ),
         ),
       ],
     );

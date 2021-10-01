@@ -140,17 +140,13 @@ class CardEventItemNew extends StatelessWidget {
                               matchStatus(shortStatus, timeMatch, timestamp),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: shortStatus == '1H' ||
-                                        shortStatus == '2H' ||
-                                        shortStatus == 'ET'
+                                color: shortStatus == '1H' || shortStatus == '2H' || shortStatus == 'ET'
                                     ? ColorPalette.primary
                                     : Colors.black,
                               ),
                             ),
                           ),
-                          shortStatus == '1H' ||
-                                  shortStatus == '2H' ||
-                                  shortStatus == 'ET'
+                          shortStatus == '1H' || shortStatus == '2H' || shortStatus == 'ET'
                               ? BlinkingIcon()
                               : SizedBox.shrink()
                         ],
@@ -382,9 +378,7 @@ class CardBarMain extends StatelessWidget {
             Spacer(),
             IconButton(
               icon: Icon(
-                isDropped
-                    ? FontAwesomeIcons.chevronUp
-                    : FontAwesomeIcons.chevronDown,
+                isDropped ? FontAwesomeIcons.chevronUp : FontAwesomeIcons.chevronDown,
                 size: 20.0,
                 color: Colors.white,
               ),

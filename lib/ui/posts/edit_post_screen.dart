@@ -767,7 +767,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                 setState(() {
                   imageStringList = [];
                 });
-                if (result != null) {
+                if (result != null && result.files.isNotEmpty) {
                   List<File> files = result.paths.map((path) => File(path!)).toList();
                   imageFileList = files;
                   for (int i = 0; i < files.length; i++) {

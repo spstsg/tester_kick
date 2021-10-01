@@ -10,6 +10,7 @@ class ProfileAvatar extends StatelessWidget {
   final String avatarColor;
   final double radius;
   final double fontSize;
+  final bool showPlaceholderImage;
   final showIcon;
   final VoidCallback? onPressed;
 
@@ -21,6 +22,7 @@ class ProfileAvatar extends StatelessWidget {
     this.radius = 20.0,
     this.fontSize = 20.0,
     this.showIcon = false,
+    this.showPlaceholderImage = false,
     this.onPressed,
   });
 
@@ -28,16 +30,14 @@ class ProfileAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        imageUrl != ''
+        imageUrl != '' && !showPlaceholderImage
             ? CircleAvatar(
                 radius: radius,
                 backgroundColor: ColorPalette.primary,
                 child: CircleAvatar(
                   radius: radius,
                   backgroundColor: hexStringToColor(avatarColor),
-                  backgroundImage: imageUrl is String
-                      ? Image.network(imageUrl).image
-                      : Image.file(imageUrl).image,
+                  backgroundImage: imageUrl is String ? Image.network(imageUrl).image : Image.file(imageUrl).image,
                 ),
               )
             : CircleProfileAvatar(
@@ -45,6 +45,7 @@ class ProfileAvatar extends StatelessWidget {
                 avatarColor: avatarColor,
                 radius: radius,
                 fontSize: fontSize,
+                showPlaceholderImage: showPlaceholderImage,
               ),
         isActive
             ? Positioned(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kick_chat/main.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_home_screen.dart';
 import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/fans/fans_screen.dart';
@@ -36,6 +37,16 @@ class _NavScreenState extends State<NavScreen> {
 
   @override
   void initState() {
+    /// On iOS, we request notification permissions, Does nothing and returns null on Android
+    NotificationService.firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       setState(() {

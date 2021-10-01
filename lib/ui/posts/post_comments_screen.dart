@@ -23,12 +23,17 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
   late Future<List<Comment>> _commentsFuture;
   List<Comment> newlyAddedComment = [];
   TextEditingController _commentController = TextEditingController();
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController(initialScrollOffset: 0);
     _commentsFuture = _postService.getPostComments(widget.post);
     addComments();
+    if (mounted) {
+      _scrollToBottom();
+    }
   }
 
   @override
@@ -36,6 +41,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
     super.dispose();
     _commentController.dispose();
     newlyAddedComment = [];
+    _scrollController.dispose();
   }
 
   @override
@@ -55,12 +61,9 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                child: Container(
-                  width: double.infinity,
-                  child: _buildComment(),
-                ),
+              child: Container(
+                width: double.infinity,
+                child: _buildComment(),
               ),
             )
           ],
@@ -114,7 +117,6 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                         if (_commentController.text.isNotEmpty) {
                           _postComment(_commentController.text, widget.post);
                           _commentController.clear();
-                          setState(() {});
                         }
                       },
                       child: Icon(
@@ -153,10 +155,12 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
               ),
             );
           } else {
+            snapshot.data!.sort((a, b) => a.createdAt.compareTo(b.createdAt));
             return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
               physics: ScrollPhysics(),
+              controller: _scrollController,
               itemCount: snapshot.data!.length,
               itemBuilder: (BuildContext context, int index) {
                 Comment comment = snapshot.data![index];
@@ -198,6 +202,18 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
     newlyAddedComment = await _postService.getPostComments(widget.post);
   }
 
+  void _scrollToBottom() async {
+    _scrollController = ScrollController(initialScrollOffset: 0.0);
+    await Future.delayed(Duration(milliseconds: 200));
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   Future<void> _postComment(String comment, Post post) async {
     String uid = getRandomString(28);
     Comment newComment = Comment(
@@ -211,7 +227,10 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
       id: uid,
       commentId: uid,
     );
-    _commentsFuture = Future.delayed(const Duration(seconds: 1), () => addedComment(newComment));
+    _commentsFuture = Future.delayed(Duration(milliseconds: 200), () {
+      _scrollToBottom();
+      return addedComment(newComment);
+    });
     await _postService.postComment(uid, newComment, post);
     FocusScope.of(context).unfocus();
   }

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/services/helper.dart';
 
@@ -55,18 +54,9 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
           return GestureDetector(
             child: Hero(
               tag: getRandomString(20),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.fitHeight,
+              child: Container(
                 height: 200,
-                placeholder: (context, url) => Image.asset(
-                  'assets/images/img_placeholder'
-                  '.png',
-                ),
-                errorWidget: (context, url, error) => Image.asset(
-                  'assets/images/error_image'
-                  '.png',
-                ),
+                child: displayImage(imageUrl, 200),
               ),
             ),
             onTap: () => widget.onImageClicked(index),
@@ -80,18 +70,9 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
               children: [
                 Hero(
                   tag: getRandomString(20),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.fitHeight,
+                  child: Container(
                     height: 200,
-                    placeholder: (context, url) => Image.asset(
-                      'assets/images/img_placeholder'
-                      '.png',
-                    ),
-                    errorWidget: (context, url, error) => Image.asset(
-                      'assets/images/error_image'
-                      '.png',
-                    ),
+                    child: displayImage(imageUrl, 200),
                   ),
                 ),
                 Positioned.fill(
@@ -111,18 +92,9 @@ class _ChatPhotoGridState extends State<ChatPhotoGrid> {
         return GestureDetector(
           child: Hero(
             tag: getRandomString(20),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.fitHeight,
+            child: Container(
               height: 200,
-              placeholder: (context, url) => Image.asset(
-                'assets/images/img_placeholder'
-                '.png',
-              ),
-              errorWidget: (context, url, error) => Image.asset(
-                'assets/images/error_image'
-                '.png',
-              ),
+              child: displayImage(imageUrl, 200),
             ),
           ),
           onTap: () => widget.onImageClicked(index),

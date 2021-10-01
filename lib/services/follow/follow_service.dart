@@ -8,7 +8,7 @@ import 'package:kick_chat/services/user/user_service.dart';
 
 class FollowService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  NotificationService notificationService = NotificationService();
+  NotificationService _notificationService = NotificationService();
   UserService _userService = UserService();
 
   Future followUser(User currentUser, User visitedUser) async {
@@ -49,6 +49,23 @@ class FollowService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+
+      await _notificationService.saveNotification(
+        'follow_user',
+        'Started following you.',
+        visitedUser,
+        MyAppState.currentUser!.username,
+        {'outBound': MyAppState.currentUser!.toJson()},
+      );
+
+      if (visitedUser.settings.pushNewMessages) {
+        await _notificationService.sendNotification(
+          visitedUser.fcmToken,
+          MyAppState.currentUser!.username,
+          'Started following you.',
+          null,
+        );
+      }
     } catch (e) {
       throw e;
     }

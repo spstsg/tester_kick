@@ -68,6 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _chatService.disposeChatStream();
     _messageController.dispose();
     _userService.disposeCurrentUserStream();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -81,32 +82,32 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        actions: <Widget>[
-          PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  child: ListTile(
-                    dense: true,
-                    onTap: () {},
-                    contentPadding: const EdgeInsets.all(0),
-                    leading: Icon(
-                      Icons.settings,
-                      color: ColorPalette.grey,
-                    ),
-                    title: Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: ColorPalette.black,
-                      ),
-                    ),
-                  ),
-                )
-              ];
-            },
-          ),
-        ],
+        // actions: <Widget>[
+        //   PopupMenuButton(
+        //     itemBuilder: (BuildContext context) {
+        //       return [
+        //         PopupMenuItem(
+        //           child: ListTile(
+        //             dense: true,
+        //             onTap: () {},
+        //             contentPadding: const EdgeInsets.all(0),
+        //             leading: Icon(
+        //               Icons.settings,
+        //               color: ColorPalette.grey,
+        //             ),
+        //             title: Text(
+        //               'Settings',
+        //               style: TextStyle(
+        //                 fontSize: 18,
+        //                 color: ColorPalette.black,
+        //               ),
+        //             ),
+        //           ),
+        //         )
+        //       ];
+        //     },
+        //   ),
+        // ],
         leadingWidth: 90,
         leading: Container(
           child: Row(
@@ -121,6 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 avatarColor: widget.user.avatarColor,
                 radius: 20,
                 fontSize: 30,
+                showPlaceholderImage: widget.user.profilePictureURL.isNotEmpty && widget.user.defaultImage,
               )
             ],
           ),
@@ -422,7 +424,7 @@ class _ChatScreenState extends State<ChatScreen> {
         allowMultiple: true,
       );
 
-      if (result != null) {
+      if (result != null && result.files.isNotEmpty) {
         List<File> files = result.paths.map((path) => File(path!)).toList();
         imageFileList = files;
         if (imageFileList.isNotEmpty && imageFileList.length <= 4) {

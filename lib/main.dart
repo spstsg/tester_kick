@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -9,9 +10,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/conversation_model.dart';
+import 'package:kick_chat/models/home_conversation_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
@@ -25,17 +29,35 @@ import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/auth/signup/SignUpScreen.dart';
+import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/home/nav_screen.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 // import 'services/mock/mock_post_service.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
 void main() async {
   await dotenv.load(fileName: "assets/.env");
   WidgetsFlutterBinding.ensureInitialized();
   // Wait for Firebase to initialize and set `_initialized` state to true
   await Firebase.initializeApp();
+
+  final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+    onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {},
+  );
+  var initializationSettings = new InitializationSettings(iOS: initializationSettingsIOS);
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: (String? payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+  });
   runApp(MyApp());
 }
 
@@ -78,7 +100,24 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           _handleNotification(remoteMessage.data, navigatorKey);
         }
       });
-      if (!Platform.isIOS) {
+      FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
+        RemoteNotification? message = remoteMessage!.notification;
+        if (message!.title != '' && message.body != '') {
+          await flutterLocalNotificationsPlugin.show(
+            0,
+            message.title,
+            message.body,
+            const NotificationDetails(
+              iOS: IOSNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+              ),
+            ),
+          );
+        }
+      });
+      if (Platform.isIOS) {
         FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
       }
 
@@ -105,6 +144,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     initializeFlutterFire();
+
     WidgetsBinding.instance?.addObserver(this);
     super.initState();
     // MockPostService _mockPostService = MockPostService();
@@ -191,6 +231,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return StoreProvider<AppState>(
       store: store,
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'KickChat',
         theme: ThemeData(
@@ -283,13 +324,11 @@ class OnBoardingState extends State<OnBoarding> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Container(
-          child: Image(
-            height: MediaQuery.of(context).size.height * 0.5,
-            width: MediaQuery.of(context).size.width * 0.5,
-            image: AssetImage('assets/images/splash.png'),
-            fit: BoxFit.cover,
-          ),
+        child: Image(
+          height: MediaQuery.of(context).size.height * 0.5,
+          width: MediaQuery.of(context).size.width * 0.5,
+          image: AssetImage('assets/images/splash.png'),
+          fit: BoxFit.cover,
         ),
       ),
     );
@@ -301,24 +340,23 @@ class OnBoardingState extends State<OnBoarding> {
 void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState> navigatorKey) {
   /// right now we only handle click actions on chat messages only
   try {
-    // Map<dynamic, dynamic> data = message['data'];
-    // if (data.containsKey('members') &&
-    //     data.containsKey('isGroup') &&
-    //     data.containsKey('conversationModel')) {
-    //   List<User> members = List<User>.from(
-    //       (jsonDecode(data['members']) as List<dynamic>).map((e) => User.fromPayload(e))).toList();
-    //   bool isGroup = jsonDecode(data['isGroup']);
-    //   ConversationModel conversationModel =
-    //       ConversationModel.fromPayload(jsonDecode(data['conversationModel']));
-    //   navigatorKey.currentState?.push(
-    //     MaterialPageRoute(
-    //       builder: (_) => ChatScreen(
-    //         homeConversationModel: HomeConversationModel(
-    //             members: members, isGroupChat: isGroup, conversationModel: conversationModel),
-    //       ),
-    //     ),
-    //   );
-    // }
+    Map<dynamic, dynamic> data = message['data'];
+    if (data.containsKey('members') && data.containsKey('conversationModel')) {
+      List<User> members =
+          List<User>.from((jsonDecode(data['members']) as List<dynamic>).map((e) => User.fromPayload(e))).toList();
+      ConversationModel conversationModel = ConversationModel.fromPayload(jsonDecode(data['conversationModel']));
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            homeConversationModel: HomeConversationModel(
+              members: members,
+              conversationModel: conversationModel,
+            ),
+            user: MyAppState.currentUser!,
+          ),
+        ),
+      );
+    }
   } catch (e, s) {
     print('MyAppState._handleNotification $e $s');
   }
@@ -327,6 +365,7 @@ void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState>
 /// this fuction is called when the user receives a notification while the
 /// app is in the background or completely killed
 Future<dynamic> backgroundMessageHandler(RemoteMessage remoteMessage) async {
+  print('.....data.........');
   await Firebase.initializeApp();
   Map<dynamic, dynamic> message = remoteMessage.data;
   if (message.containsKey('data')) {

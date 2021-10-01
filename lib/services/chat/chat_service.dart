@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/chat_model.dart';
@@ -170,19 +170,6 @@ class ChatService {
     }
   }
 
-  Future<ConversationModel?> getChannelByIdOrNull(String channelID) async {
-    ConversationModel? conversationModel;
-    await firestore.collection(CHANNELS).doc(channelID).get().then((channel) {
-      if (channel.exists) {
-        conversationModel = ConversationModel.fromJson(channel.data() ?? {});
-      }
-    }, onError: (e) {
-      print((e as PlatformException).message);
-      throw e;
-    });
-    return conversationModel;
-  }
-
   Future<ConversationModel?> getSingleConversation(String senderId, String receiverId) async {
     ConversationModel? conversationModel;
     try {
@@ -223,7 +210,8 @@ class ChatService {
                 newHomeConversation = homeConversation(participation, user as User);
                 homeConversations.add(newHomeConversation);
                 homeConversations.sort(
-                    (a, b) => a.conversationModel!.lastMessageDate.compareTo(b.conversationModel!.lastMessageDate));
+                  (a, b) => a.conversationModel!.lastMessageDate.compareTo(b.conversationModel!.lastMessageDate),
+                );
                 conversationsStream.sink.add(homeConversations.reversed.toList());
               }
             },

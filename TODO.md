@@ -3,9 +3,23 @@
 - After sharing a screenshot, delete from the users device
 - *Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
 - *Add stickers
-- *Add notifications
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
+* Try to find out how you users can turn off notifications from settings page
+* A page with different users best eleven
+  - Users should be able to comment and like
+
+WHERE TO ADD NOTIFICATION
+- post reaction - done
+- post comment - done
+- follow user - done
+- When a user creates a post, notify all his followers
+- Send chat
+- Any post related to the teams you are following
+- Any audio room related to the team you are following
+- * Randomly send notifications to all users to see other users best eleven
+- Breaking news
+- Voting
 
 ...........
 - The gif select for post create is not working - done
@@ -21,6 +35,10 @@
 - Implemented post reactions
 - Implemented password (when logged out) reset and change password (when logged in)
 - Implemented video upload
+- Add notifications
+- Fix cache image issue most espacially the one on the create_post_container - done
+- The reactions images are too small - done
+- Scroll to bottom for post comments - done
 
 
 This is the github url for the agora chat 
@@ -39,3 +57,10 @@ Audio chat logic
 - Show a notification in the room if the time is remaining 5 minutes
 - Make the time update automatically when a creator adds more time
 - Make the add more button show up immediately the time hits zero
+
+
+Note
+This was added to AppDelegate.swift for IOS in other for flutter_local_notification to work. There is a corresponding code for android. Check the docs.
+if #available(iOS 10.0, *) {
+    UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+}

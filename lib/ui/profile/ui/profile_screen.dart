@@ -418,13 +418,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         GestureDetector(
                           onTap: () async {
                             User friend = widget.user;
-                            String channelID;
-                            if (friend.userID.compareTo(MyAppState.currentUser!.userID) < 0) {
-                              channelID = friend.userID + MyAppState.currentUser!.userID;
-                            } else {
-                              channelID = MyAppState.currentUser!.userID + friend.userID;
-                            }
-                            ConversationModel? conversationModel = await _chatService.getChannelByIdOrNull(channelID);
+                            ConversationModel? conversationModel = await _chatService.getSingleConversation(
+                              MyAppState.currentUser!.userID,
+                              friend.userID,
+                            );
                             push(
                               context,
                               ChatScreen(
@@ -709,7 +706,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
 
-      if (result != null) {
+      if (result != null && result.files.isNotEmpty) {
         PlatformFile file = result.files.first;
         imageFileList.add(File(file.path as String));
       }
@@ -741,6 +738,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             profilePicture: '$cloudinaryAppEndpoint/${response.publicId}',
           );
           await _fileService.addUserImageFile(userImage, uploadResponse.secureUrl!);
+          if (MyAppState.currentUser!.defaultImage) {
+            _userService.updateDefaultImageProp(false);
+          }
+
           LoadingOverlay.of(context).hide();
           setState(() {
             imageFileList = [];

@@ -187,7 +187,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                         radius: MyAppState.currentUser!.profilePictureURL != '' ? 20 : 45.0,
                         fontSize: 20,
                       ),
-                      const SizedBox(width: 8.0),
+                      SizedBox(width: 8.0),
                       Expanded(
                         child: Text(
                           'What\'s on your mind?',

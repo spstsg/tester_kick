@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/constants.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 
 class UserService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -82,6 +84,12 @@ class UserService {
     return await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((document) {
       return user;
     });
+  }
+
+  Future<void> updateDefaultImageProp(bool defaultImage) async {
+    await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({'defaultImage': defaultImage});
+    User? user = await getCurrentUser(MyAppState.currentUser!.userID);
+    MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
   Future<dynamic> getUserByUsername(String username) async {
