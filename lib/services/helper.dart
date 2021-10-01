@@ -237,28 +237,37 @@ String timeFromDate(dateTime) {
   return DateFormat.jm().format(date);
 }
 
-Widget displayImage(String picUrl, double size) => CachedNetworkImage(
-      imageBuilder: (context, imageProvider) => _getFlatImageProvider(imageProvider, size),
-      imageUrl: picUrl,
-      placeholder: (context, url) => _getFlatPlaceholderOrErrorImage(size, true),
-      errorWidget: (context, url, error) => _getFlatPlaceholderOrErrorImage(size, false),
-    );
-
-Widget _getFlatImageProvider(ImageProvider provider, double size) {
-  return Container(
-    width: size - 50,
-    height: size - 50,
-    child: FadeInImage(
-        fit: BoxFit.cover,
-        placeholder: Image.asset(
-          'assets/images/img_placeholder.png',
-          fit: BoxFit.cover,
-          height: size,
-          width: size,
-        ).image,
-        image: provider),
+Widget displayImage(String picUrl, double size) {
+  return FadeInImage(
+    fit: BoxFit.fitHeight,
+    placeholder: Image.asset(
+      'assets/images/img_placeholder.png',
+      fit: BoxFit.cover,
+      height: size,
+      width: size,
+    ).image,
+    image: NetworkImage(picUrl),
+    placeholderErrorBuilder: (context, ob, stack) => _getFlatPlaceholderOrErrorImage(size, true),
+    imageErrorBuilder: (context, ob, stack) => _getFlatPlaceholderOrErrorImage(size, false),
   );
 }
+
+// Widget _getFlatImageProvider(ImageProvider provider, double size) {
+//   return Container(
+//     width: size - 50,
+//     height: size - 50,
+//     child: FadeInImage(
+//       fit: BoxFit.cover,
+//       placeholder: Image.asset(
+//         'assets/images/img_placeholder.png',
+//         fit: BoxFit.cover,
+//         height: size,
+//         width: size,
+//       ).image,
+//       image: provider,
+//     ),
+//   );
+// }
 
 Widget _getFlatPlaceholderOrErrorImage(double size, bool placeholder) => Container(
       width: placeholder ? 35 : size,

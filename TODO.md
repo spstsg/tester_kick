@@ -5,9 +5,6 @@
 - *Add stickers
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
-* Fix cache image issue most espacially the one on the create_post_container
-* The reactions images are too small
-* Scroll to bottom for post comments
 * Try to find out how you users can turn off notifications from settings page
 
 ...........
@@ -25,6 +22,9 @@
 - Implemented password (when logged out) reset and change password (when logged in)
 - Implemented video upload
 - Add notifications
+- Fix cache image issue most espacially the one on the create_post_container - done
+- The reactions images are too small - done
+- Scroll to bottom for post comments - done
 
 
 This is the github url for the agora chat 

@@ -29,5 +29,6 @@ User _addUserSuccess(User state, CreateUserAction action) {
     lowercaseTeam: action.user.lowercaseTeam,
     followingCount: action.user.followingCount,
     followersCount: action.user.followersCount,
+    defaultImage: action.user.defaultImage,
   );
 }

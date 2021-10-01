@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
@@ -80,17 +79,7 @@ class SenderWidget extends StatelessWidget {
                               child: messageData.chatImages.length <= 1
                                   ? Hero(
                                       tag: getRandomString(20),
-                                      child: CachedNetworkImage(
-                                        imageUrl: messageData.chatImages[0],
-                                        placeholder: (context, url) => Image.asset(
-                                          'assets/images/img_placeholder'
-                                          '.png',
-                                        ),
-                                        errorWidget: (context, url, error) => Image.asset(
-                                          'assets/images/error_image'
-                                          '.png',
-                                        ),
-                                      ),
+                                      child: displayImage(messageData.chatImages[0], 100),
                                     )
                                   : ChatPhotoGrid(
                                       type: 'string',
@@ -214,13 +203,7 @@ class SenderWidget extends StatelessWidget {
                             },
                             child: Hero(
                               tag: getRandomString(20),
-                              child: CachedNetworkImage(
-                                imageUrl: messageData.gifUrl,
-                                placeholder: (context, url) => Image.asset('assets/images/img_placeholder'
-                                    '.png'),
-                                errorWidget: (context, url, error) => Image.asset('assets/images/error_image'
-                                    '.png'),
-                              ),
+                              child: displayImage(messageData.gifUrl, 100),
                             ),
                           ),
                         ],

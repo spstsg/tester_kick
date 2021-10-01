@@ -26,6 +26,7 @@ class User with ChangeNotifier {
   String team;
   String lowercaseTeam;
   bool emailPasswordLogin;
+  bool defaultImage;
 
   //internal use only, don't save to db
   bool selected = false;
@@ -52,9 +53,11 @@ class User with ChangeNotifier {
     this.followersCount = 0,
     this.followingCount = 0,
     emailPasswordLogin,
+    defaultImage,
   })  : this.lastOnlineTimestamp = lastOnlineTimestamp ?? Timestamp.now(),
         this.settings = settings ?? UserSettings(),
-        this.emailPasswordLogin = emailPasswordLogin ?? false;
+        this.emailPasswordLogin = emailPasswordLogin ?? false,
+        this.defaultImage = defaultImage ?? true;
 
   User copyWith({
     String? username,
@@ -78,6 +81,7 @@ class User with ChangeNotifier {
     String? team,
     String? lowercaseTeam,
     bool? emailPasswordLogin,
+    bool? defaultImage,
   }) {
     return new User(
       username: username ?? this.username,
@@ -101,6 +105,7 @@ class User with ChangeNotifier {
       team: team ?? this.team,
       lowercaseTeam: lowercaseTeam ?? this.lowercaseTeam,
       emailPasswordLogin: emailPasswordLogin ?? this.emailPasswordLogin,
+      defaultImage: defaultImage ?? this.defaultImage,
     );
   }
 
@@ -111,6 +116,7 @@ class User with ChangeNotifier {
       email: parsedJson['email'] ?? '',
       active: parsedJson['active'] ?? false,
       emailPasswordLogin: parsedJson['emailPasswordLogin'] ?? false,
+      defaultImage: parsedJson['defaultImage'] ?? true,
       lastOnlineTimestamp: parsedJson['lastOnlineTimestamp'],
       settings: parsedJson.containsKey('settings') ? UserSettings.fromJson(parsedJson['settings']) : UserSettings(),
       phoneNumber: parsedJson['phoneNumber'] ?? '',
@@ -136,6 +142,7 @@ class User with ChangeNotifier {
       email: parsedJson['email'] ?? '',
       active: parsedJson['active'] ?? false,
       emailPasswordLogin: parsedJson['emailPasswordLogin'] ?? false,
+      defaultImage: parsedJson['defaultImage'] ?? true,
       lastOnlineTimestamp: Timestamp.fromMillisecondsSinceEpoch(parsedJson['lastOnlineTimestamp']),
       settings: parsedJson.containsKey('settings') ? UserSettings.fromJson(parsedJson['settings']) : UserSettings(),
       phoneNumber: parsedJson['phoneNumber'] ?? '',
@@ -165,6 +172,7 @@ class User with ChangeNotifier {
       'uniqueId': this.uniqueId,
       'active': this.active,
       'emailPasswordLogin': this.emailPasswordLogin,
+      'defaultImage': this.defaultImage,
       'lastOnlineTimestamp': this.lastOnlineTimestamp,
       'profilePictureURL': this.profilePictureURL,
       'appIdentifier': this.appIdentifier,
@@ -202,6 +210,7 @@ class User with ChangeNotifier {
       'bio': this.bio,
       'team': this.team,
       'lowercaseTeam': this.lowercaseTeam,
+      'defaultImage': this.defaultImage,
     };
   }
 
@@ -230,6 +239,7 @@ class User with ChangeNotifier {
         other.followingCount == followingCount &&
         other.team == team &&
         other.lowercaseTeam == lowercaseTeam &&
+        other.defaultImage == defaultImage &&
         other.selected == selected;
   }
 
@@ -255,6 +265,7 @@ class User with ChangeNotifier {
         followingCount.hashCode ^
         team.hashCode ^
         lowercaseTeam.hashCode ^
+        defaultImage.hashCode ^
         selected.hashCode;
   }
 }

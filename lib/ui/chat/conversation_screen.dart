@@ -12,7 +12,7 @@ import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/ui/chat/chat_screen.dart';
-import 'package:kick_chat/ui/chat/widgets/conversation_followers_skeleton.dart';
+// import 'package:kick_chat/ui/chat/widgets/conversation_followers_skeleton.dart';
 import 'package:kick_chat/ui/chat/widgets/conversation_skeleton.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -72,7 +72,7 @@ class _ConversationsState extends State<ConversationsScreen> {
               height: MediaQuery.of(context).size.height,
               child: ListView(
                 children: [
-                  hasConversations ? _followersList() : SizedBox.shrink(),
+                  _followersList(),
                   _buildConversation(),
                 ],
               ),
@@ -103,6 +103,11 @@ class _ConversationsState extends State<ConversationsScreen> {
               ),
             );
           } else {
+            WidgetsBinding.instance!.addPostFrameCallback((_) {
+              setState(() {
+                hasConversations = true;
+              });
+            });
             return _buildConversationList(snapshot);
           }
         },
@@ -118,11 +123,6 @@ class _ConversationsState extends State<ConversationsScreen> {
       itemCount: snapshot.data!.length,
       itemBuilder: (context, index) {
         final homeConversationModel = snapshot.data![index];
-        WidgetsBinding.instance!.addPostFrameCallback((_) {
-          setState(() {
-            hasConversations = true;
-          });
-        });
         return GestureDetector(
           onTap: () {
             if (homeConversationModel.conversationModel!.creatorId == MyAppState.currentUser!.userID) {
@@ -250,9 +250,10 @@ class _ConversationsState extends State<ConversationsScreen> {
       future: _friendsFuture,
       initialData: [],
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return ConversationFollowersSkeleton();
-        } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
+        // if (snapshot.connectionState == ConnectionState.waiting) {
+        //   return ConversationFollowersSkeleton();
+        // }
+        if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
           return SizedBox(height: 0);
         } else {
           return SizedBox(

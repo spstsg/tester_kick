@@ -41,6 +41,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
   void dispose() {
     _messageController.dispose();
     _audioChatRoomService.disposeAudioRoomMessageStream();
+    _scrollController.dispose();
     super.dispose();
   }
 

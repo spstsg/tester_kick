@@ -29,8 +29,8 @@ class _ReactionsWidgetState extends State<ReactionsWidget> {
           children: <Widget>[
             Image.asset(
               'assets/images/${widget.reactions.name}.png',
-              height: 15,
-              width: 15,
+              height: 19,
+              width: 19,
               fit: BoxFit.cover,
             ),
             Padding(
@@ -38,7 +38,7 @@ class _ReactionsWidgetState extends State<ReactionsWidget> {
               child: Text(
                 NumberFormat.compact().format(widget.reactions.size),
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                 ),
               ),
             ),
