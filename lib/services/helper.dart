@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:kick_chat/constants.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -584,5 +585,19 @@ matchStatus(status, elapsed, timestamp) {
         return "$elapsed'";
       }
       return elapsed;
+  }
+}
+
+String setLastSeen(int seconds) {
+  var format = DateFormat('hh:mm a');
+  var date = new DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+  var diff = DateTime.now().millisecondsSinceEpoch - (seconds * 1000);
+  if (diff < 24 * HOUR_MILLIS) {
+    return format.format(date);
+  } else if (diff < 48 * HOUR_MILLIS) {
+    return 'Yesterday at ${format.format(date)}';
+  } else {
+    format = DateFormat('MMM d');
+    return '${format.format(date)}';
   }
 }

@@ -6,7 +6,7 @@
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 - Conversation list sometimes shows duplicate
-- 
+- Send notification when a user share another user's post
 
 * A page with different users best eleven
   - Users should be able to comment and like
@@ -15,6 +15,7 @@ WHERE TO ADD NOTIFICATION
 - post reaction - done
 - post comment - done
 - follow user - done
+- Consider using topics that users subscribe to send notifications
 <!-- - When a user creates a post, notify all his followers
 - Send chat
   - Only send push notification if the receiver is not online

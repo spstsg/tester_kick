@@ -7,15 +7,13 @@ import 'package:kick_chat/models/audio_chat_model.dart';
 
 class AudoChatService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  late StreamController<List<Room>> liveRoomsStream;
-  late StreamController<Room> singleLiveRoomStream;
+  StreamController<List<Room>> liveRoomsStream = StreamController();
+  StreamController<Room> singleLiveRoomStream = StreamController();
   late StreamSubscription<QuerySnapshot> singleLiveRoomStreamSubscription;
   late StreamSubscription<QuerySnapshot> liveRoomsStreamSubscription;
 
   Stream<Room> getLiveRoom(String roomId) async* {
-    singleLiveRoomStream = StreamController();
-    Stream<QuerySnapshot> result =
-        firestore.collection(AUDIO_LIVE_ROOMS).where('id', isEqualTo: roomId).snapshots();
+    Stream<QuerySnapshot> result = firestore.collection(AUDIO_LIVE_ROOMS).where('id', isEqualTo: roomId).snapshots();
 
     singleLiveRoomStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot room) {
@@ -46,7 +44,6 @@ class AudoChatService {
 
   Stream<List<Room>> getLiveRooms() async* {
     List<Room> liveRooms = [];
-    liveRoomsStream = StreamController();
     Stream<QuerySnapshot> result =
         firestore.collection(AUDIO_LIVE_ROOMS).orderBy('createdDate', descending: true).snapshots();
 
@@ -198,10 +195,7 @@ class AudoChatService {
   }
 
   Future updateRoomStartedDate(String roomId, String roomStarted) async {
-    await firestore
-        .collection(AUDIO_LIVE_ROOMS)
-        .doc(roomId)
-        .update({'roomStarted': roomStarted}).then(
+    await firestore.collection(AUDIO_LIVE_ROOMS).doc(roomId).update({'roomStarted': roomStarted}).then(
       (value) => null,
       onError: (e) {
         throw e;
