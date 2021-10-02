@@ -49,6 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String giphyApiKey = dotenv.get('GIPHY_API_KEY');
   List<File> imageFileList = [];
   List<String> urlPhotos = [];
+  User? receiver = User();
   final direction = Axis.horizontal;
 
   @override
@@ -57,6 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController = ScrollController(initialScrollOffset: 0);
     homeConversationModel = widget.homeConversationModel;
     _userDataStream = _userService.getCurrentUserStream(widget.user.userID);
+    getChatUsersData();
     setupStream();
     SchedulerBinding.instance!.addPostFrameCallback((_) {
       _scrollToBottom();
@@ -70,6 +72,12 @@ class _ChatScreenState extends State<ChatScreen> {
     _userService.disposeCurrentUserStream();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  getChatUsersData() async {
+    if (homeConversationModel.members.isNotEmpty) {
+      receiver = await _userService.getCurrentUser(homeConversationModel.members.first.userID);
+    }
   }
 
   @override
@@ -310,6 +318,26 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
+  // void sendMessageNotification() async {
+  //   if (homeConversationModel.conversationModel != null &&
+  //       homeConversationModel.conversationModel!.receiverId == MyAppState.currentUser!.userID &&
+  //       context.widget.toStringShort() != 'ChatScreen') {
+  //     Map<String, dynamic> payload = <String, dynamic>{
+  //       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+  //       'id': '1',
+  //       'status': 'done',
+  //       'conversationModel': homeConversationModel.conversationModel!.toPayload(),
+  //       'members': [receiver]
+  //     };
+  //     await _notificationService.sendNotification(
+  //       receiver!.fcmToken,
+  //       MyAppState.currentUser!.username,
+  //       _messageController.text,
+  //       payload,
+  //     );
+  //   }
+  // }
 
   Widget buildMessage(MessageData messageData, List<User> members) {
     if (messageData.senderID == MyAppState.currentUser!.userID) {
@@ -560,6 +588,8 @@ class _ChatScreenState extends State<ChatScreen> {
         homeConversationModel.conversationModel!,
       );
       _listenForMessageChanges();
+
+      // sendMessageNotification();
     } else {
       // showAlertDialog(context, 'anErrorOccurred'.tr(), 'failedToSendMessage'.tr(), true);
     }

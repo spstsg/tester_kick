@@ -8,6 +8,7 @@ import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/profile/ui/blocked_users.dart';
 import 'package:kick_chat/ui/profile/ui/change_password.dart';
+import 'package:kick_chat/ui/profile/ui/push_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -48,7 +49,21 @@ class SettingScreen extends StatelessWidget {
           );
         }
       },
-      {'name': 'Notifications', 'icon': MdiIcons.bell, 'showTrailing': true, 'click': () {}},
+      {
+        'name': 'Notifications',
+        'icon': MdiIcons.bell,
+        'showTrailing': true,
+        'click': () {
+          Navigator.of(context).push(
+            new MaterialPageRoute<Null>(
+              builder: (BuildContext context) {
+                return new PushNotification();
+              },
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      },
     ];
 
     List others = [

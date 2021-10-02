@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 
 class ReactionService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   NotificationService notificationService = NotificationService();
+  UserService _userService = UserService();
 
   Future<Map> getMyReactions(String postId) async {
     DocumentSnapshot<Map<String, dynamic>> result = await firestore
@@ -71,7 +74,8 @@ class ReactionService {
       {'outBound': MyAppState.currentUser!.toJson()},
     );
 
-    if (post.author.settings.pushNewMessages) {
+    User? user = await _userService.getCurrentUser(post.author.userID);
+    if (user!.settings.notifications && user.notifications['reactions']) {
       await notificationService.sendNotification(
         post.author.fcmToken,
         MyAppState.currentUser!.username,

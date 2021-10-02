@@ -1,6 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_home_screen.dart';
 import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/fans/fans_screen.dart';
@@ -18,6 +20,7 @@ class NavScreen extends StatefulWidget {
 }
 
 class _NavScreenState extends State<NavScreen> {
+  UserService _userService = UserService();
   int _selectedIndex = 0;
   final List _tabElements = [
     {'name': 'Feeds', 'index': 0, 'icon': Icons.home, 'screen': HomeScreen()},
@@ -37,8 +40,17 @@ class _NavScreenState extends State<NavScreen> {
 
   @override
   void initState() {
-    /// On iOS, we request notification permissions, Does nothing and returns null on Android
-    NotificationService.firebaseMessaging.requestPermission(
+    super.initState();
+    requestNotificationPermission();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      setState(() {
+        _selectedIndex = widget.tabIndex;
+      });
+    });
+  }
+
+  requestNotificationPermission() async {
+    NotificationSettings settings = await NotificationService.firebaseMessaging.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -47,12 +59,9 @@ class _NavScreenState extends State<NavScreen> {
       provisional: false,
       sound: true,
     );
-    super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      setState(() {
-        _selectedIndex = widget.tabIndex;
-      });
-    });
+    if (settings.authorizationStatus == AuthorizationStatus.denied && MyAppState.currentUser!.settings.notifications) {
+      await _userService.updatePushNotificationSetting(false);
+    }
   }
 
   @override

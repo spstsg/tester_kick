@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 
 class User with ChangeNotifier {
   String email;
@@ -27,6 +28,7 @@ class User with ChangeNotifier {
   String lowercaseTeam;
   bool emailPasswordLogin;
   bool defaultImage;
+  Map notifications;
 
   //internal use only, don't save to db
   bool selected = false;
@@ -54,10 +56,18 @@ class User with ChangeNotifier {
     this.followingCount = 0,
     emailPasswordLogin,
     defaultImage,
+    notifications,
   })  : this.lastOnlineTimestamp = lastOnlineTimestamp ?? Timestamp.now(),
         this.settings = settings ?? UserSettings(),
         this.emailPasswordLogin = emailPasswordLogin ?? false,
-        this.defaultImage = defaultImage ?? true;
+        this.defaultImage = defaultImage ?? true,
+        this.notifications = notifications ??
+            {
+              'followers': true,
+              'reactions': true,
+              'comments': true,
+              'messages': true,
+            };
 
   User copyWith({
     String? username,
@@ -82,6 +92,7 @@ class User with ChangeNotifier {
     String? lowercaseTeam,
     bool? emailPasswordLogin,
     bool? defaultImage,
+    Map? notifications,
   }) {
     return new User(
       username: username ?? this.username,
@@ -106,6 +117,7 @@ class User with ChangeNotifier {
       lowercaseTeam: lowercaseTeam ?? this.lowercaseTeam,
       emailPasswordLogin: emailPasswordLogin ?? this.emailPasswordLogin,
       defaultImage: defaultImage ?? this.defaultImage,
+      notifications: notifications ?? this.notifications,
     );
   }
 
@@ -132,6 +144,13 @@ class User with ChangeNotifier {
       followersCount: parsedJson['followersCount'] ?? 0,
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
+      notifications: parsedJson['notifications'] ??
+          {
+            'followers': true,
+            'reactions': true,
+            'comments': true,
+            'messages': true,
+          },
     );
   }
 
@@ -158,6 +177,13 @@ class User with ChangeNotifier {
       followersCount: parsedJson['followersCount'] ?? 0,
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
+      notifications: parsedJson['notifications'] ??
+          {
+            'followers': true,
+            'reactions': true,
+            'comments': true,
+            'messages': true,
+          },
     );
   }
 
@@ -185,6 +211,7 @@ class User with ChangeNotifier {
       'bio': this.bio,
       'team': this.team,
       'lowercaseTeam': this.lowercaseTeam,
+      'notifications': this.notifications,
     };
   }
 
@@ -211,6 +238,7 @@ class User with ChangeNotifier {
       'team': this.team,
       'lowercaseTeam': this.lowercaseTeam,
       'defaultImage': this.defaultImage,
+      'notifications': this.notifications,
     };
   }
 
@@ -240,7 +268,8 @@ class User with ChangeNotifier {
         other.team == team &&
         other.lowercaseTeam == lowercaseTeam &&
         other.defaultImage == defaultImage &&
-        other.selected == selected;
+        other.selected == selected &&
+        DeepCollectionEquality().equals(other.notifications, notifications);
   }
 
   @override
@@ -266,38 +295,21 @@ class User with ChangeNotifier {
         team.hashCode ^
         lowercaseTeam.hashCode ^
         defaultImage.hashCode ^
+        notifications.hashCode ^
         selected.hashCode;
   }
 }
 
 class UserSettings {
-  bool pushNewMessages;
+  bool notifications;
 
-  UserSettings({this.pushNewMessages = true});
+  UserSettings({this.notifications = true});
 
   factory UserSettings.fromJson(Map<dynamic, dynamic> parsedJson) {
-    return new UserSettings(pushNewMessages: parsedJson['pushNewMessages'] ?? true);
+    return new UserSettings(notifications: parsedJson['notifications'] ?? true);
   }
 
   Map<String, dynamic> toJson() {
-    return {'pushNewMessages': this.pushNewMessages};
+    return {'notifications': this.notifications};
   }
 }
-
-// class UserSignup {
-//   String email;
-//   String password;
-//   String dob;
-//   String phoneNumber;
-//   String profilePicture;
-//   String team;
-
-//   UserSignup({
-//     this.email = '',
-//     this.password = '',
-//     this.dob = '',
-//     this.phoneNumber = '',
-//     this.profilePicture = '',
-//     this.team = '',
-//   });
-// }

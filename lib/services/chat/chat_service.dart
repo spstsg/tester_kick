@@ -85,7 +85,7 @@ class ChatService {
     //   payloadFriends = [MyAppState.currentUser!];
     // }
     await Future.forEach(members, (User element) async {
-      if (element.settings.pushNewMessages) {
+      if (element.settings.notifications) {
         // User? friend;
         // if (isGroup) {
         //   friend = payloadFriends.firstWhere((user) => user.fcmToken == element.fcmToken);

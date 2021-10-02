@@ -18,6 +18,7 @@ class BlockedUserService {
         username: blockedUser.username,
         profilePictureURL: blockedUser.profilePictureURL,
         avatarColor: blockedUser.avatarColor,
+        fcmToken: blockedUser.fcmToken,
       );
       await firestore
           .collection(BLOCKED)
@@ -31,6 +32,7 @@ class BlockedUserService {
         username: currentUser.username,
         profilePictureURL: currentUser.profilePictureURL,
         avatarColor: currentUser.avatarColor,
+        fcmToken: currentUser.fcmToken,
       );
 
       await firestore
@@ -98,8 +100,7 @@ class BlockedUserService {
   Future<List<User>> getBlockedUsers(String userId) async {
     List<User> blockedUsers = [];
 
-    QuerySnapshot blocked =
-        await firestore.collection(BLOCKED).doc(userId).collection(BLOCKED).get();
+    QuerySnapshot blocked = await firestore.collection(BLOCKED).doc(userId).collection(BLOCKED).get();
 
     await Future.forEach(blocked.docs, (DocumentSnapshot actualBlockedUser) {
       blockedUsers.add(User.fromJson(actualBlockedUser.data() as Map<String, dynamic>));
@@ -110,8 +111,7 @@ class BlockedUserService {
   Future<List<User>> getBlockedByUsers(String userId) async {
     List<User> blockedByUsers = [];
 
-    QuerySnapshot blockedBy =
-        await firestore.collection(BLOCKEDBY).doc(userId).collection(BLOCKEDBY).get();
+    QuerySnapshot blockedBy = await firestore.collection(BLOCKEDBY).doc(userId).collection(BLOCKEDBY).get();
 
     await Future.forEach(blockedBy.docs, (DocumentSnapshot actualBlockedByUser) {
       blockedByUsers.add(User.fromJson(actualBlockedByUser.data() as Map<String, dynamic>));

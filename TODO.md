@@ -5,7 +5,9 @@
 - *Add stickers
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
-* Try to find out how you users can turn off notifications from settings page
+- Conversation list sometimes shows duplicate
+- 
+
 * A page with different users best eleven
   - Users should be able to comment and like
 
@@ -13,13 +15,15 @@ WHERE TO ADD NOTIFICATION
 - post reaction - done
 - post comment - done
 - follow user - done
-- When a user creates a post, notify all his followers
+<!-- - When a user creates a post, notify all his followers
 - Send chat
+  - Only send push notification if the receiver is not online
+  - If the receiver is still on the app but on a different page, use local notification
 - Any post related to the teams you are following
 - Any audio room related to the team you are following
 - * Randomly send notifications to all users to see other users best eleven
 - Breaking news
-- Voting
+- Voting -->
 
 ...........
 - The gif select for post create is not working - done
@@ -39,6 +43,7 @@ WHERE TO ADD NOTIFICATION
 - Fix cache image issue most espacially the one on the create_post_container - done
 - The reactions images are too small - done
 - Scroll to bottom for post comments - done
+- Try to find out how you users can turn off notifications from settings page - done
 
 
 This is the github url for the agora chat 

@@ -18,6 +18,7 @@ class FollowService {
         username: visitedUser.username,
         profilePictureURL: visitedUser.profilePictureURL,
         avatarColor: visitedUser.avatarColor,
+        fcmToken: visitedUser.fcmToken,
       );
       await firestore
           .collection(FOLLOWING)
@@ -34,6 +35,7 @@ class FollowService {
         username: currentUser.username,
         profilePictureURL: currentUser.profilePictureURL,
         avatarColor: currentUser.avatarColor,
+        fcmToken: currentUser.fcmToken,
       );
 
       await firestore
@@ -58,9 +60,10 @@ class FollowService {
         {'outBound': MyAppState.currentUser!.toJson()},
       );
 
-      if (visitedUser.settings.pushNewMessages) {
+      User? visitedUserData = await _userService.getCurrentUser(visitedUser.userID);
+      if (visitedUserData!.settings.notifications && visitedUserData.notifications['followers']) {
         await _notificationService.sendNotification(
-          visitedUser.fcmToken,
+          visitedUserData.fcmToken,
           MyAppState.currentUser!.username,
           'Started following you.',
           null,

@@ -166,7 +166,8 @@ class PostService {
       {'outBound': MyAppState.currentUser!.toJson()},
     );
 
-    if (post.author.settings.pushNewMessages) {
+    User? user = await _userService.getCurrentUser(post.author.userID);
+    if (user!.settings.notifications && user.notifications['comments']) {
       await notificationService.sendNotification(
         post.author.fcmToken,
         MyAppState.currentUser!.username,
