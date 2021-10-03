@@ -26,6 +26,7 @@ class _ProfilePostState extends State<ProfilePost> {
   int displayedImageIndex = 0;
   late Stream<List<Post>> userPosts;
   PostService _postService = PostService();
+  List<Post> usersPostList = [];
 
   @override
   void initState() {
@@ -42,13 +43,14 @@ class _ProfilePostState extends State<ProfilePost> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: ColorPalette.greyWhite),
+      decoration: BoxDecoration(color: usersPostList.isEmpty ? ColorPalette.white : ColorPalette.greyWhite),
       height: noPosts ? MediaQuery.of(context).size.height : null,
       child: StreamBuilder<List<Post>>(
         stream: userPosts,
         initialData: [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
+            if (usersPostList.isEmpty) return SizedBox.shrink();
             return PostSkeleton();
           } else if (!snapshot.hasData || snapshot.hasData && snapshot.data!.isEmpty) {
             noPosts = true;
@@ -63,6 +65,11 @@ class _ProfilePostState extends State<ProfilePost> {
             );
           } else {
             noPosts = false;
+            WidgetsBinding.instance!.addPostFrameCallback((_) {
+              setState(() {
+                usersPostList = snapshot.data!;
+              });
+            });
             return ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 4),
               physics: ScrollPhysics(),

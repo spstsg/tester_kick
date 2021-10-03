@@ -31,14 +31,18 @@ class PostService {
 
     _profilePostsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _profilePosts.clear();
-      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
-        try {
-          _profilePosts.add(Post.fromJson(post.data() as Map<String, dynamic>));
-        } catch (e) {
-          print(e);
-        }
-      });
-      _profilePostsStream.sink.add(_profilePosts);
+      if (querySnapshot.docs.isEmpty) {
+        _profilePostsStream.sink.add([]);
+      } else {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
+          try {
+            _profilePosts.add(Post.fromJson(post.data() as Map<String, dynamic>));
+          } catch (e) {
+            print(e);
+          }
+        });
+        _profilePostsStream.sink.add(_profilePosts);
+      }
     }, cancelOnError: true);
     yield* _profilePostsStream.stream;
   }
@@ -91,7 +95,6 @@ class PostService {
       String uid = getRandomString(28);
       post.id = uid;
       await firestore.collection(SOCIAL_POSTS).doc(uid).set(post.toJson()).then((value) => null, onError: (e) {
-        print(e);
         return e;
       });
 
@@ -99,6 +102,23 @@ class PostService {
         DocumentReference<Map<String, dynamic>> incrementShareCount =
             firestore.collection(SOCIAL_POSTS).doc(post.sharedPost.id);
         incrementShareCount.update({'shareCount': FieldValue.increment(1)});
+        await notificationService.saveNotification(
+          'posts_shared',
+          'shared on your post.',
+          post.sharedPost.author,
+          MyAppState.currentUser!.username,
+          {'outBound': MyAppState.currentUser!.toJson()},
+        );
+
+        User? user = await _userService.getCurrentUser(post.sharedPost.author.userID);
+        if (user!.settings.notifications && user.notifications['shared']) {
+          await notificationService.sendNotification(
+            post.author.fcmToken,
+            MyAppState.currentUser!.username,
+            'shared on your post.',
+            null,
+          );
+        }
       }
 
       DocumentReference<Map<String, dynamic>> incrementPostCount = firestore.collection(USERS).doc(post.authorId);
@@ -160,7 +180,7 @@ class PostService {
 
     await notificationService.saveNotification(
       'posts_comments',
-      'Commented on your post.',
+      'commented on your post.',
       post.author,
       MyAppState.currentUser!.username,
       {'outBound': MyAppState.currentUser!.toJson()},
@@ -171,7 +191,7 @@ class PostService {
       await notificationService.sendNotification(
         post.author.fcmToken,
         MyAppState.currentUser!.username,
-        'Commented on your post.',
+        'commented on your post.',
         null,
       );
     }

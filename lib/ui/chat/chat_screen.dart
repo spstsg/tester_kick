@@ -18,6 +18,7 @@ import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/files/file_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/chat_notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/receiver_chat_widgets.dart';
 import 'package:kick_chat/ui/chat/sender_chat_widgets.dart';
@@ -39,6 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatService _chatService = ChatService();
   UserService _userService = UserService();
   FileService _fileService = FileService();
+  ChatNotificationService _chatNotificationService = ChatNotificationService();
   HomeConversationModel homeConversationModel = HomeConversationModel();
   TextEditingController _messageController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
@@ -58,7 +60,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController = ScrollController(initialScrollOffset: 0);
     homeConversationModel = widget.homeConversationModel;
     _userDataStream = _userService.getCurrentUserStream(widget.user.userID);
-    getChatUsersData();
     setupStream();
     SchedulerBinding.instance!.addPostFrameCallback((_) {
       _scrollToBottom();
@@ -72,12 +73,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _userService.disposeCurrentUserStream();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  getChatUsersData() async {
-    if (homeConversationModel.members.isNotEmpty) {
-      receiver = await _userService.getCurrentUser(homeConversationModel.members.first.userID);
-    }
   }
 
   @override
@@ -122,7 +117,10 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               IconButton(
                 icon: Icon(MdiIcons.chevronLeft, size: 30),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  _chatService.updateUserOneUserTwoChat('', '');
+                  Navigator.pop(context);
+                },
               ),
               ProfileAvatar(
                 imageUrl: widget.user.profilePictureURL,
@@ -172,37 +170,34 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: <Widget>[
               Expanded(
-                child: GestureDetector(
-                  onTap: () {},
-                  child: StreamBuilder<ChatModel>(
-                    stream: homeConversationModel.conversationModel != null ? chatStream : null,
-                    initialData: ChatModel(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return ChatSkeleton();
+                child: StreamBuilder<ChatModel>(
+                  stream: homeConversationModel.conversationModel != null ? chatStream : null,
+                  initialData: ChatModel(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return ChatSkeleton();
+                    } else {
+                      if (snapshot.hasData && (snapshot.data?.message.isEmpty ?? true)) {
+                        return Center(child: Text('No messages yet'));
                       } else {
-                        if (snapshot.hasData && (snapshot.data?.message.isEmpty ?? true)) {
-                          return Center(child: Text('No messages yet'));
-                        } else {
-                          _scrollController = ScrollController(initialScrollOffset: 50.0);
-                          return ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            controller: _scrollController,
-                            itemCount: snapshot.data!.message.length,
-                            padding: EdgeInsets.only(top: 0, bottom: 8),
-                            itemBuilder: (BuildContext context, int index) {
-                              var chatMessages = snapshot.data!.message.reversed.toList();
-                              return buildMessage(
-                                chatMessages[index],
-                                snapshot.data!.members,
-                              );
-                            },
-                          );
-                        }
+                        _scrollController = ScrollController(initialScrollOffset: 50.0);
+                        return ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          controller: _scrollController,
+                          itemCount: snapshot.data!.message.length,
+                          padding: EdgeInsets.only(top: 0, bottom: 8),
+                          itemBuilder: (BuildContext context, int index) {
+                            var chatMessages = snapshot.data!.message.reversed.toList();
+                            return buildMessage(
+                              chatMessages[index],
+                              snapshot.data!.members,
+                            );
+                          },
+                        );
                       }
-                    },
-                  ),
+                    }
+                  },
                 ),
               ),
               Container(
@@ -238,6 +233,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   onChanged: (s) {},
                                   textAlignVertical: TextAlignVertical.center,
                                   controller: _messageController,
+                                  textInputAction: TextInputAction.next,
                                   style: TextStyle(
                                     color: ColorPalette.black,
                                     fontSize: 16,
@@ -318,26 +314,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
-  // void sendMessageNotification() async {
-  //   if (homeConversationModel.conversationModel != null &&
-  //       homeConversationModel.conversationModel!.receiverId == MyAppState.currentUser!.userID &&
-  //       context.widget.toStringShort() != 'ChatScreen') {
-  //     Map<String, dynamic> payload = <String, dynamic>{
-  //       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-  //       'id': '1',
-  //       'status': 'done',
-  //       'conversationModel': homeConversationModel.conversationModel!.toPayload(),
-  //       'members': [receiver]
-  //     };
-  //     await _notificationService.sendNotification(
-  //       receiver!.fcmToken,
-  //       MyAppState.currentUser!.username,
-  //       _messageController.text,
-  //       payload,
-  //     );
-  //   }
-  // }
 
   Widget buildMessage(MessageData messageData, List<User> members) {
     if (messageData.senderID == MyAppState.currentUser!.userID) {
@@ -560,8 +536,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage(String content, [images = const []]) async {
+    String uid = getRandomString(28);
     MessageData message;
     message = MessageData(
+      messageID: uid,
       content: content,
       created: Timestamp.now(),
       recipientUsername: homeConversationModel.members.first.username,
@@ -588,10 +566,24 @@ class _ChatScreenState extends State<ChatScreen> {
         homeConversationModel.conversationModel!,
       );
       _listenForMessageChanges();
-
-      // sendMessageNotification();
+      sendMessageNotification(message);
     } else {
       // showAlertDialog(context, 'anErrorOccurred'.tr(), 'failedToSendMessage'.tr(), true);
+    }
+  }
+
+  Future sendMessageNotification(MessageData message) async {
+    if (homeConversationModel.members.isNotEmpty) {
+      receiver = await _userService.getCurrentUser(homeConversationModel.members.first.userID);
+      if (receiver!.active && receiver!.chat['userTwo'] != MyAppState.currentUser!.username) {
+        _chatNotificationService.saveChatNotification(
+          'chat_message',
+          'sent you a message.',
+          homeConversationModel.members[0],
+          MyAppState.currentUser!.username,
+          {'outBound': MyAppState.currentUser!.toJson(), 'chat': message.toJson()},
+        );
+      }
     }
   }
 

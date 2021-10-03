@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/search/search_service.dart';
@@ -120,7 +121,8 @@ class _UserSearchState extends State<UserSearch> {
           onTap: user.username != MyAppState.currentUser!.username
               ? () async {
                   User? authUser = await _userService.getCurrentUser(user.userID);
-                  push(context, ProfileScreen(user: authUser as User));
+                  MyAppState.reduxStore!.dispatch(CreateUserAction(authUser!));
+                  push(context, ProfileScreen(user: authUser));
                 }
               : null,
           leading: ProfileAvatar(
@@ -175,7 +177,7 @@ class _UserSearchState extends State<UserSearch> {
                 return GestureDetector(
                   onTap: () async {
                     try {
-                      await _followService.unFollowUser(MyAppState.currentUser!.userID, user.userID);
+                      _followService.unFollowUser(MyAppState.currentUser!.userID, user.userID);
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

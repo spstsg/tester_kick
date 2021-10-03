@@ -1,30 +1,37 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/home_conversation_model.dart';
 import 'package:kick_chat/models/notification_model.dart';
+import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
-import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/notifications/chat_notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
+import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class LocalNotification extends StatefulWidget {
+class ChatNotification extends StatefulWidget {
   @override
-  _LocalNotificationState createState() => _LocalNotificationState();
+  _ChatNotificationState createState() => _ChatNotificationState();
 }
 
-class _LocalNotificationState extends State<LocalNotification> {
+class _ChatNotificationState extends State<ChatNotification> {
   late Future<List<NotificationModel>> _notificationsFuture;
-  NotificationService _notificationService = NotificationService();
+  ChatNotificationService _chatNotificationService = ChatNotificationService();
+  ChatService _chatService = ChatService();
+  UserService _userService = UserService();
 
   @override
   void initState() {
     super.initState();
-    _notificationsFuture = _notificationService.getUserNotifications();
+    _notificationsFuture = _chatNotificationService.getChatUserNotifications();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('notifications'),
+        title: Text('Chat notifications'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15),
@@ -32,9 +39,9 @@ class _LocalNotificationState extends State<LocalNotification> {
               children: [
                 GestureDetector(
                   onTap: () async {
-                    await _notificationService.updateAllNotifications();
+                    await _chatNotificationService.updateAllChatNotifications();
                     setState(() {
-                      _notificationsFuture = _notificationService.getUserNotifications();
+                      _notificationsFuture = _chatNotificationService.getChatUserNotifications();
                     });
                   },
                   child: Icon(MdiIcons.emailOutline),
@@ -42,9 +49,9 @@ class _LocalNotificationState extends State<LocalNotification> {
                 SizedBox(width: 20),
                 GestureDetector(
                   onTap: () async {
-                    await _notificationService.deleteAllUserNotifications();
+                    await _chatNotificationService.deleteAllChatUserNotifications();
                     setState(() {
-                      _notificationsFuture = _notificationService.getUserNotifications();
+                      _notificationsFuture = _chatNotificationService.getChatUserNotifications();
                     });
                   },
                   child: Icon(MdiIcons.trashCanOutline),
@@ -83,51 +90,47 @@ class _LocalNotificationState extends State<LocalNotification> {
             snapshot.data!.sort((a, b) => b.createdAt.compareTo(a.createdAt));
             return ListView.separated(
               itemBuilder: (context, index) {
-                String notificationBody = '';
-                Map notificationMetaData = {};
-                try {
-                  switch (snapshot.data![index].type) {
-                    case 'posts_comments':
-                      notificationBody = 'commented on your post.';
-                      notificationMetaData = snapshot.data![index].metadata['outBound'];
-                      break;
-                    case 'follow_user':
-                      notificationBody = 'just followed you.';
-                      notificationMetaData = snapshot.data![index].metadata['outBound'];
-                      break;
-                    case 'social_reaction':
-                      notificationBody = 'just reacted to your post.';
-                      notificationMetaData = snapshot.data![index].metadata['outBound'];
-                      break;
-                    default:
-                      notificationBody = 'sent you a new notification';
-                      break;
-                  }
-                } catch (e) {}
+                Map notificationMetaData = snapshot.data![index].metadata['outBound'];
                 return Container(
                   color: !snapshot.data![index].seen ? Colors.lightBlueAccent.shade100.withOpacity(0.2) : null,
                   child: ListTile(
-                    enabled: !snapshot.data![index].seen,
-                    onTap: snapshot.data![index].seen
-                        ? () => null
-                        : () {
-                            snapshot.data![index].seen = true;
-                            _notificationService.updateNotification(snapshot.data![index]);
-                            setState(() {});
-                          },
-                    leading: notificationMetaData.keys.toList().isNotEmpty
-                        ? snapshot.data![index].type != 'chat_message'
-                            ? displayCircleImage(notificationMetaData['profilePictureURL'] ?? '', 40, true)
-                            : Icon(CupertinoIcons.chat_bubble_fill, size: 35, color: Colors.blue)
-                        : Icon(CupertinoIcons.bell_solid, size: 35, color: Colors.blue),
+                    onTap: () async {
+                      snapshot.data![index].seen = true;
+                      _chatNotificationService.updateChatNotification(snapshot.data![index]);
+                      List<dynamic> result = await Future.wait([
+                        _chatService.getSingleConversation(
+                          MyAppState.currentUser!.userID,
+                          snapshot.data![index].fromUserID,
+                        ),
+                        _userService.getCurrentUser(snapshot.data![index].fromUserID),
+                      ]);
+                      if (result[0] != null && result[1] != null) {
+                        push(
+                          context,
+                          ChatScreen(
+                            homeConversationModel: HomeConversationModel(
+                              members: [result[1]],
+                              conversationModel: result[0],
+                            ),
+                            user: result[1]!,
+                          ),
+                        );
+                      }
+                    },
+                    leading: displayCircleImage(notificationMetaData['profilePictureURL'] ?? '', 40, true),
                     title: RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
-                              text: snapshot.data![index].title,
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 17)),
+                            text: snapshot.data![index].title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 17,
+                            ),
+                          ),
                           TextSpan(
-                            text: '  $notificationBody',
+                            text: '  ${snapshot.data![index].body}',
                             style: TextStyle(
                               color: Colors.grey.shade800,
                               fontSize: 17,
@@ -136,13 +139,13 @@ class _LocalNotificationState extends State<LocalNotification> {
                         ],
                       ),
                     ),
-                    subtitle: Text('${setLastSeen(snapshot.data![index].createdAt.seconds)}'),
+                    subtitle: Text('${dateTimeAgo(snapshot.data![index].createdAt)}'),
                     trailing: GestureDetector(
                       onTap: () async {
                         try {
-                          await _notificationService.deleteSingleNotification(snapshot.data![index].id);
+                          await _chatNotificationService.deleteSingleChatNotification(snapshot.data![index].id);
                           setState(() {
-                            _notificationsFuture = _notificationService.getUserNotifications();
+                            _notificationsFuture = _chatNotificationService.getChatUserNotifications();
                           });
                         } catch (e) {
                           await showCupertinoAlert(

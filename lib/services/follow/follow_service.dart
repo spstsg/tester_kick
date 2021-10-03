@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import 'package:kick_chat/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/main.dart';
@@ -54,7 +56,7 @@ class FollowService {
 
       await _notificationService.saveNotification(
         'follow_user',
-        'Started following you.',
+        'started following you.',
         visitedUser,
         MyAppState.currentUser!.username,
         {'outBound': MyAppState.currentUser!.toJson()},
@@ -65,7 +67,7 @@ class FollowService {
         await _notificationService.sendNotification(
           visitedUserData.fcmToken,
           MyAppState.currentUser!.username,
-          'Started following you.',
+          'started following you.',
           null,
         );
       }
@@ -152,9 +154,9 @@ class FollowService {
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
       followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));
     });
-    if (followers.length > 10) {
-      followers.removeRange(10, followers.length);
-    }
-    return followers.toSet().toList();
+    List<User> items = getRandomUsersList(10, followers);
+    return items;
   }
+
+  List<User> getRandomUsersList(int n, List<User> source) => source.sample(n);
 }

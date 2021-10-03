@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
@@ -73,10 +74,9 @@ class _FollowingsScreenState extends State<FollowingsScreen> {
                               right: 10,
                             ),
                             onTap: () async {
-                              User? user = await _userService.getCurrentUser(
-                                snapshot.data![index].userID,
-                              );
-                              push(context, ProfileScreen(user: user as User));
+                              User? user = await _userService.getCurrentUser(snapshot.data![index].userID);
+                              MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+                              push(context, ProfileScreen(user: user));
                             },
                             leading: ProfileAvatar(
                               imageUrl: snapshot.data![index].profilePictureURL,

@@ -9,6 +9,7 @@ class CircleButton extends StatelessWidget {
   final double iconSize;
   final bool showBadge;
   final int badgeNumber;
+  final Color color;
   final VoidCallback onPressed;
 
   const CircleButton({
@@ -17,6 +18,7 @@ class CircleButton extends StatelessWidget {
     required this.onPressed,
     this.showBadge = false,
     this.badgeNumber = 0,
+    this.color = ColorPalette.primary,
   });
 
   @override
@@ -28,7 +30,7 @@ class CircleButton extends StatelessWidget {
               toAnimate: false,
               shape: badgeNumber >= 1 && badgeNumber <= 99 ? BadgeShape.circle : BadgeShape.square,
               position: BadgePosition.topEnd(
-                top: -3,
+                top: 1,
                 end: badgeNumber >= 1 && badgeNumber <= 9
                     ? 1
                     : badgeNumber >= 10 && badgeNumber <= 99
@@ -48,7 +50,7 @@ class CircleButton extends StatelessWidget {
               child: IconButton(
                 icon: Icon(icon),
                 iconSize: iconSize,
-                color: ColorPalette.primary,
+                color: color,
                 onPressed: onPressed,
               ),
             ),
@@ -61,7 +63,7 @@ class CircleButton extends StatelessWidget {
             child: IconButton(
               icon: Icon(icon),
               iconSize: iconSize,
-              color: ColorPalette.primary,
+              color: color,
               onPressed: onPressed,
             ),
           );

@@ -29,9 +29,7 @@ class User with ChangeNotifier {
   bool emailPasswordLogin;
   bool defaultImage;
   Map notifications;
-
-  //internal use only, don't save to db
-  bool selected = false;
+  Map chat;
 
   User({
     this.username = '',
@@ -57,16 +55,19 @@ class User with ChangeNotifier {
     emailPasswordLogin,
     defaultImage,
     notifications,
+    chat,
   })  : this.lastOnlineTimestamp = lastOnlineTimestamp ?? Timestamp.now(),
         this.settings = settings ?? UserSettings(),
         this.emailPasswordLogin = emailPasswordLogin ?? false,
         this.defaultImage = defaultImage ?? true,
+        this.chat = chat ?? {'userOne': '', 'userTwo': ''},
         this.notifications = notifications ??
             {
               'followers': true,
               'reactions': true,
               'comments': true,
               'messages': true,
+              'shared': true,
             };
 
   User copyWith({
@@ -93,6 +94,7 @@ class User with ChangeNotifier {
     bool? emailPasswordLogin,
     bool? defaultImage,
     Map? notifications,
+    Map? chat,
   }) {
     return new User(
       username: username ?? this.username,
@@ -118,6 +120,7 @@ class User with ChangeNotifier {
       emailPasswordLogin: emailPasswordLogin ?? this.emailPasswordLogin,
       defaultImage: defaultImage ?? this.defaultImage,
       notifications: notifications ?? this.notifications,
+      chat: chat ?? this.chat,
     );
   }
 
@@ -144,12 +147,14 @@ class User with ChangeNotifier {
       followersCount: parsedJson['followersCount'] ?? 0,
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
+      chat: parsedJson['chat'] ?? {'userOne': '', 'userTwo': ''},
       notifications: parsedJson['notifications'] ??
           {
             'followers': true,
             'reactions': true,
             'comments': true,
             'messages': true,
+            'shared': true,
           },
     );
   }
@@ -177,12 +182,14 @@ class User with ChangeNotifier {
       followersCount: parsedJson['followersCount'] ?? 0,
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
+      chat: parsedJson['chat'] ?? {'userOne': '', 'userTwo': ''},
       notifications: parsedJson['notifications'] ??
           {
             'followers': true,
             'reactions': true,
             'comments': true,
             'messages': true,
+            'shared': true,
           },
     );
   }
@@ -212,6 +219,7 @@ class User with ChangeNotifier {
       'team': this.team,
       'lowercaseTeam': this.lowercaseTeam,
       'notifications': this.notifications,
+      'chat': this.chat,
     };
   }
 
@@ -239,6 +247,7 @@ class User with ChangeNotifier {
       'lowercaseTeam': this.lowercaseTeam,
       'defaultImage': this.defaultImage,
       'notifications': this.notifications,
+      'chat': this.chat,
     };
   }
 
@@ -268,8 +277,8 @@ class User with ChangeNotifier {
         other.team == team &&
         other.lowercaseTeam == lowercaseTeam &&
         other.defaultImage == defaultImage &&
-        other.selected == selected &&
-        DeepCollectionEquality().equals(other.notifications, notifications);
+        DeepCollectionEquality().equals(other.notifications, notifications) &&
+        DeepCollectionEquality().equals(other.chat, chat);
   }
 
   @override
@@ -295,8 +304,8 @@ class User with ChangeNotifier {
         team.hashCode ^
         lowercaseTeam.hashCode ^
         defaultImage.hashCode ^
-        notifications.hashCode ^
-        selected.hashCode;
+        chat.hashCode ^
+        notifications.hashCode;
   }
 }
 

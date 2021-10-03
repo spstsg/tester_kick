@@ -4,7 +4,6 @@ import 'package:kick_chat/main.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_home_screen.dart';
-import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/fans/fans_screen.dart';
 import 'package:kick_chat/ui/home/home_screen.dart';
 import 'package:kick_chat/ui/livescores/ui/screens/live_scores_tab.dart';
@@ -25,15 +24,19 @@ class _NavScreenState extends State<NavScreen> {
   final List _tabElements = [
     {'name': 'Feeds', 'index': 0, 'icon': Icons.home, 'screen': HomeScreen()},
     {'name': 'Audio', 'index': 1, 'icon': MdiIcons.castAudio, 'screen': AudioHomeScreen()},
-    {'name': 'Scores', 'index': 2, 'icon': MdiIcons.soccerField, 'screen': LiveScoresTabScreen()},
+    {
+      'name': 'Scores',
+      'index': 2,
+      'icon': MdiIcons.soccerField,
+      'screen': LiveScoresTabScreen(),
+    },
     {'name': 'Fans', 'index': 3, 'icon': Icons.people, 'screen': FanScreen()},
     {
-      'name': 'Chat',
+      'name': 'Profile',
       'index': 4,
-      'icon': Icons.chat_bubble_outline,
-      'screen': ConversationsScreen(user: MyAppState.currentUser!)
+      'icon': Icons.person,
+      'screen': ProfileScreen(user: MyAppState.currentUser!),
     },
-    {'name': 'Profile', 'index': 5, 'icon': Icons.person, 'screen': ProfileScreen(user: MyAppState.currentUser!)},
   ];
   final PageStorageBucket bucket = PageStorageBucket();
   Widget currentScreen = HomeScreen();
@@ -71,12 +74,12 @@ class _NavScreenState extends State<NavScreen> {
         child: currentScreen,
         bucket: bucket,
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: Container(
+        height: 70,
         child: Container(
-          height: 40,
-          margin: EdgeInsets.only(top: 10),
+          margin: EdgeInsets.only(bottom: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               for (var item in _tabElements)
@@ -103,7 +106,7 @@ class _NavScreenState extends State<NavScreen> {
                           item['name'],
                           style: TextStyle(
                             color: _selectedIndex == item['index'] ? Colors.blue : Colors.grey,
-                            fontSize: 13,
+                            fontSize: fontSizeForScreen(context).toDouble(),
                           ),
                         ),
                       ],
@@ -115,5 +118,15 @@ class _NavScreenState extends State<NavScreen> {
         ),
       ),
     );
+  }
+
+  int fontSizeForScreen(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    if (width < 400) {
+      return 10;
+    } else if (width > 400 && width < 500) {
+      return 12;
+    }
+    return 14;
   }
 }

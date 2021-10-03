@@ -68,7 +68,7 @@ class ReactionService {
 
     await notificationService.saveNotification(
       'social_reaction',
-      'Just reacted to your post.',
+      'reacted to your post.',
       post.author,
       MyAppState.currentUser!.username,
       {'outBound': MyAppState.currentUser!.toJson()},
@@ -79,7 +79,7 @@ class ReactionService {
       await notificationService.sendNotification(
         post.author.fcmToken,
         MyAppState.currentUser!.username,
-        'Reacted to your post.',
+        'reacted to your post.',
         null,
       );
     }

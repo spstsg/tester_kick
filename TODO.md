@@ -5,8 +5,7 @@
 - *Add stickers
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
-- Conversation list sometimes shows duplicate
-- Send notification when a user share another user's post
+<!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
 
 * A page with different users best eleven
   - Users should be able to comment and like
@@ -15,7 +14,9 @@ WHERE TO ADD NOTIFICATION
 - post reaction - done
 - post comment - done
 - follow user - done
-- Consider using topics that users subscribe to send notifications
+- Send notification when a user share another user's post - done
+- Create a page for displaying user's chat notification - done
+- * Consider using topics that users subscribe to send notifications
 <!-- - When a user creates a post, notify all his followers
 - Send chat
   - Only send push notification if the receiver is not online
@@ -45,6 +46,9 @@ WHERE TO ADD NOTIFICATION
 - The reactions images are too small - done
 - Scroll to bottom for post comments - done
 - Try to find out how you users can turn off notifications from settings page - done
+- Conversation list sometimes shows duplicate - done
+- If I follow a user from the user's profile page, the whole page reloads and sometimes the posts remain in loading state - done
+- Fix bottom tab display on different devices - done
 
 
 This is the github url for the agora chat 

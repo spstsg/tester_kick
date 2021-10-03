@@ -31,5 +31,6 @@ User _addUserSuccess(User state, CreateUserAction action) {
     followersCount: action.user.followersCount,
     defaultImage: action.user.defaultImage,
     notifications: action.user.notifications,
+    chat: action.user.chat,
   );
 }

@@ -5,6 +5,7 @@ import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
+import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -142,7 +143,9 @@ class _PushNotificationState extends State<PushNotification> {
                     title: Row(
                       children: [
                         Text(
-                          content[i].name,
+                          content[i].name == 'shared'
+                              ? '${capitalizeFirstLetter(content[i].name)} post'
+                              : capitalizeFirstLetter(content[i].name),
                           style: TextStyle(
                             color: ColorPalette.black,
                           ),

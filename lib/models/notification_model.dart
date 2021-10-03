@@ -9,6 +9,7 @@ class NotificationModel {
   bool seen;
   String title;
   String toUserID;
+  String fromUserID;
   User toUser;
   Map<String, dynamic> metadata;
 
@@ -20,6 +21,7 @@ class NotificationModel {
     this.seen = false,
     this.title = '',
     this.toUserID = '',
+    this.fromUserID = '',
     toUser,
     this.metadata = const {},
   })  : this.createdAt = createdAt ?? Timestamp.now(),
@@ -33,6 +35,7 @@ class NotificationModel {
       seen: parsedJson['seen'] ?? false,
       title: parsedJson['title'] ?? '',
       toUserID: parsedJson['toUserID'] ?? '',
+      fromUserID: parsedJson['fromUserID'] ?? '',
       metadata: parsedJson['metadata'] ?? Map(),
       type: parsedJson['type'] ?? '',
     );
@@ -46,6 +49,7 @@ class NotificationModel {
       'seen': this.seen,
       'title': this.title,
       'toUserID': this.toUserID,
+      'fromUserID': this.fromUserID,
       'metadata': this.metadata,
       'type': this.type
     };

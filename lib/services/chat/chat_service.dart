@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/services.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/chat_model.dart';
@@ -9,6 +8,7 @@ import 'package:kick_chat/models/conversation_model.dart';
 import 'package:kick_chat/models/home_conversation_model.dart';
 import 'package:kick_chat/models/message_data_model.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 
 class ChatService {
@@ -16,18 +16,20 @@ class ChatService {
   UserService _userService = UserService();
   late StreamController<User> userStreamController;
   // ignore: close_sinks
-  late StreamController<List<HomeConversationModel>> conversationsStream;
-  List<HomeConversationModel> homeConversations = [];
+  StreamController<List<HomeConversationModel>> conversationsStream = StreamController<List<HomeConversationModel>>();
+  // ignore: unused_field
+  late StreamSubscription<QuerySnapshot> _conversationsStreamSubscription;
 
   Stream<User> getUserByID(String id) async* {
     userStreamController = StreamController();
     firestore.collection(USERS).doc(id).snapshots().listen((user) {
       try {
         User userModel = User.fromJson(user.data() as Map<String, dynamic>);
-        userStreamController.sink.add(userModel);
+        if (!userStreamController.isClosed) {
+          userStreamController.sink.add(userModel);
+        }
       } catch (e) {
-        print(e);
-        print('FireStoreUtils.getUserByID failed to parse user object ${user.id}');
+        throw e;
       }
     });
     yield* userStreamController.stream;
@@ -69,7 +71,7 @@ class ChatService {
 
   Future<void> sendMessage(List<User> members, MessageData message, ConversationModel conversationModel) async {
     var ref = firestore.collection(CHANNELS).doc(conversationModel.id).collection(THREAD).doc();
-    message.messageID = ref.id;
+    // message.messageID = ref.id;
     if (message.gifUrl.isNotEmpty) {
       message.content = '';
     }
@@ -77,13 +79,6 @@ class ChatService {
 
     await createChatConversation(conversationModel);
 
-    // List<User> payloadFriends;
-    // if (isGroup) {
-    //   payloadFriends = [];
-    //   payloadFriends.addAll(members);
-    // } else {
-    //   payloadFriends = [MyAppState.currentUser!];
-    // }
     await Future.forEach(members, (User element) async {
       if (element.settings.notifications) {
         // User? friend;
@@ -189,33 +184,31 @@ class ChatService {
   }
 
   Stream<List<HomeConversationModel>> getChatConversations(String userID) async* {
-    conversationsStream = StreamController<List<HomeConversationModel>>();
     HomeConversationModel newHomeConversation;
+    List<HomeConversationModel> homeConversations = [];
 
-    firestore.collection(CONVERSATION).doc(userID).collection(CONVERSATION).snapshots().listen(
-      (querySnapshot) {
+    Stream<QuerySnapshot> result = firestore.collection(CONVERSATION).doc(userID).collection(CONVERSATION).snapshots();
+    _conversationsStreamSubscription = result.listen(
+      (QuerySnapshot querySnapshot) async {
         if (querySnapshot.docs.isEmpty) {
           conversationsStream.sink.add(homeConversations);
         } else {
           homeConversations.clear();
-          Future.forEach(
-            querySnapshot.docs,
-            (DocumentSnapshot document) async {
-              if (document.exists) {
-                ConversationModel participation = ConversationModel.fromJson(document.data() as Map<String, dynamic>);
-                String userId = participation.receiverId != MyAppState.currentUser!.userID
-                    ? participation.receiverId
-                    : participation.senderId;
-                User? user = await _userService.getCurrentUser(userId);
-                newHomeConversation = homeConversation(participation, user as User);
-                homeConversations.add(newHomeConversation);
-                homeConversations.sort(
-                  (a, b) => a.conversationModel!.lastMessageDate.compareTo(b.conversationModel!.lastMessageDate),
-                );
-                conversationsStream.sink.add(homeConversations.reversed.toList());
-              }
-            },
-          );
+          await Future.forEach(querySnapshot.docs, (DocumentSnapshot document) async {
+            if (document.exists) {
+              ConversationModel participation = ConversationModel.fromJson(document.data() as Map<String, dynamic>);
+              String userId = participation.receiverId != MyAppState.currentUser!.userID
+                  ? participation.receiverId
+                  : participation.senderId;
+              User? user = await _userService.getCurrentUser(userId);
+              newHomeConversation = homeConversation(participation, user!);
+              homeConversations.add(newHomeConversation);
+              homeConversations.sort(
+                (a, b) => b.conversationModel!.lastMessageDate.compareTo(a.conversationModel!.lastMessageDate),
+              );
+              conversationsStream.sink.add(homeConversations.toList());
+            }
+          });
         }
       },
     );
@@ -249,6 +242,15 @@ class ChatService {
     } on Exception catch (e) {
       throw e;
     }
+  }
+
+  Future updateUserOneUserTwoChat(String userOne, String userTwo) async {
+    await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({
+      'chat.userOne': userOne,
+      'chat.userTwo': userTwo,
+    });
+    User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+    MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
   void disposeChatStream() {
