@@ -646,7 +646,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-        GestureDetector(
+        InkWell(
           onTap: () {
             push(
               context,
@@ -676,7 +676,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
-        GestureDetector(
+        InkWell(
           onTap: () {
             push(context, FriendsTabScreen(tabIndex: 1, user: widget.user));
           },

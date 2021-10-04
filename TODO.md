@@ -5,6 +5,9 @@
 - *Add stickers
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
+- *Add video controls to player
+- * Consider using topics that users subscribe to send notifications
+
 <!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
 
 * A page with different users best eleven
@@ -16,7 +19,7 @@ WHERE TO ADD NOTIFICATION
 - follow user - done
 - Send notification when a user share another user's post - done
 - Create a page for displaying user's chat notification - done
-- * Consider using topics that users subscribe to send notifications
+
 <!-- - When a user creates a post, notify all his followers
 - Send chat
   - Only send push notification if the receiver is not online
@@ -49,6 +52,10 @@ WHERE TO ADD NOTIFICATION
 - Conversation list sometimes shows duplicate - done
 - If I follow a user from the user's profile page, the whole page reloads and sometimes the posts remain in loading state - done
 - Fix bottom tab display on different devices - done
+- Following number is not properly displayed on friends tab - done
+- Change height of video thumbnail - done
+- Remove video loop - done
+- Don't send notifications to yourself - done
 
 
 This is the github url for the agora chat 

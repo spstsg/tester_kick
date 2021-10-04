@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
@@ -201,8 +202,9 @@ class SettingScreen extends StatelessWidget {
     MyAppState.currentUser!.emailPasswordLogin = false;
     MyAppState.currentUser!.lastOnlineTimestamp = Timestamp.now();
     _userService.updateCurrentUser(MyAppState.currentUser!);
-    await FirebaseAuth.instance.signOut();
-    MyAppState.currentUser = null;
+    await auth.FirebaseAuth.instance.signOut();
+
+    MyAppState.currentUser = User();
     pushAndRemoveUntil(context, LoginScreen(), false, false);
   }
 }

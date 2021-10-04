@@ -366,7 +366,7 @@ class _FanScreenState extends State<FanScreen> {
         clickedUser = user;
       });
       try {
-        await _followService.followUser(MyAppState.currentUser!, user);
+        _followService.followUser(MyAppState.currentUser!, user);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

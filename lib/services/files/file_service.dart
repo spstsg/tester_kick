@@ -127,6 +127,7 @@ class FileService {
           }
           User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
           MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+          MyAppState.currentUser = user;
         });
       }
     } on Exception catch (e) {

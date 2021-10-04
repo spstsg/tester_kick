@@ -44,6 +44,7 @@ class BlockedUserService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
       return true;
     } catch (e) {
       throw e;
@@ -78,6 +79,7 @@ class BlockedUserService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
     } catch (e) {
       throw e;
     }

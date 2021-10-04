@@ -66,22 +66,24 @@ class ReactionService {
     updatePostDocument
         .update({'reactionsCount': FieldValue.increment(1), 'reactions.${newReaction}': FieldValue.increment(1)});
 
-    await notificationService.saveNotification(
-      'social_reaction',
-      'reacted to your post.',
-      post.author,
-      MyAppState.currentUser!.username,
-      {'outBound': MyAppState.currentUser!.toJson()},
-    );
-
     User? user = await _userService.getCurrentUser(post.author.userID);
-    if (user!.settings.notifications && user.notifications['reactions']) {
-      await notificationService.sendNotification(
-        post.author.fcmToken,
-        MyAppState.currentUser!.username,
+    if (user!.userID != MyAppState.currentUser!.userID) {
+      await notificationService.saveNotification(
+        'social_reaction',
         'reacted to your post.',
-        null,
+        user,
+        MyAppState.currentUser!.username,
+        {'outBound': MyAppState.currentUser!.toJson()},
       );
+
+      if (user.settings.notifications && user.notifications['reactions']) {
+        await notificationService.sendNotification(
+          user.fcmToken,
+          MyAppState.currentUser!.username,
+          'reacted to your post.',
+          null,
+        );
+      }
     }
   }
 

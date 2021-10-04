@@ -251,6 +251,7 @@ class ChatService {
     });
     User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+    MyAppState.currentUser = user;
   }
 
   void disposeChatStream() {

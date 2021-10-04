@@ -53,23 +53,27 @@ class FollowService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
-
-      await _notificationService.saveNotification(
-        'follow_user',
-        'started following you.',
-        visitedUser,
-        MyAppState.currentUser!.username,
-        {'outBound': MyAppState.currentUser!.toJson()},
-      );
+      MyAppState.currentUser = user;
 
       User? visitedUserData = await _userService.getCurrentUser(visitedUser.userID);
-      if (visitedUserData!.settings.notifications && visitedUserData.notifications['followers']) {
-        await _notificationService.sendNotification(
-          visitedUserData.fcmToken,
-          MyAppState.currentUser!.username,
+
+      if (visitedUserData!.userID != MyAppState.currentUser!.userID) {
+        await _notificationService.saveNotification(
+          'follow_user',
           'started following you.',
-          null,
+          visitedUserData,
+          MyAppState.currentUser!.username,
+          {'outBound': MyAppState.currentUser!.toJson()},
         );
+
+        if (visitedUserData.settings.notifications && visitedUserData.notifications['followers']) {
+          await _notificationService.sendNotification(
+            visitedUserData.fcmToken,
+            MyAppState.currentUser!.username,
+            'started following you.',
+            null,
+          );
+        }
       }
     } catch (e) {
       throw e;
@@ -110,6 +114,7 @@ class FollowService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
     } catch (e) {
       throw e;
     }
