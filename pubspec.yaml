@@ -81,6 +81,7 @@ dependencies:
   video_compress: ^3.1.0
   flutter_native_image: ^0.0.6+1
   progress_indicators: ^1.0.0
+  badges: ^2.0.1
 
 dev_dependencies:
   flutter_test:

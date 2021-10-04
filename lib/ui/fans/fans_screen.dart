@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -148,7 +149,8 @@ class _FanScreenState extends State<FanScreen> {
           onTap: user.username != MyAppState.currentUser!.username
               ? () async {
                   User? authUser = await _userService.getCurrentUser(user.userID);
-                  push(context, ProfileScreen(user: authUser as User));
+                  MyAppState.reduxStore!.dispatch(CreateUserAction(authUser!));
+                  push(context, ProfileScreen(user: authUser));
                 }
               : null,
           leading: ProfileAvatar(
@@ -364,7 +366,7 @@ class _FanScreenState extends State<FanScreen> {
         clickedUser = user;
       });
       try {
-        await _followService.followUser(MyAppState.currentUser!, user);
+        _followService.followUser(MyAppState.currentUser!, user);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

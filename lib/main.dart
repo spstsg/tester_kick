@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -58,6 +56,8 @@ void main() async {
       debugPrint('notification payload: ' + payload);
     }
   });
+
+  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
   runApp(MyApp());
 }
 
@@ -117,15 +117,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           );
         }
       });
-      if (Platform.isIOS) {
-        FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
-      }
 
       /// listen to firebase token changes and update the user object in the
       /// database with it's new token
       tokenStream = NotificationService.firebaseMessaging.onTokenRefresh.listen((event) {
         if (currentUser != null) {
-          print('token $event');
           currentUser!.fcmToken = event;
           _userService.updateCurrentUser(currentUser!);
         }
@@ -197,12 +193,24 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         /// update user object in the firestore database to persist changes
         _userService.updateCurrentUser(currentUser!);
       } else if (state == AppLifecycleState.resumed) {
+        NotificationSettings settings = await NotificationService.firebaseMessaging.getNotificationSettings();
+        if (settings.authorizationStatus == AuthorizationStatus.denied) {
+          currentUser!.settings.notifications = false;
+        } else if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+          currentUser!.settings.notifications = true;
+        }
+
+        SharedPreferencesService _sharedPreferences = SharedPreferencesService();
+        await _sharedPreferences.setSharedPreferencesBool('notification', currentUser!.settings.notifications);
+
         /// user is online
         /// resume token stream
         tokenStream.resume();
 
         /// set active flag to true
         currentUser!.active = true;
+
+        MyAppState.reduxStore!.dispatch(currentUser);
 
         /// update user object in the firestore database to persist changes
         _userService.updateCurrentUser(currentUser!);
@@ -338,7 +346,6 @@ class OnBoardingState extends State<OnBoarding> {
 /// this fuction is called when the notification is clicked from system tray
 /// when the app is in the background or completely killed
 void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState> navigatorKey) {
-  /// right now we only handle click actions on chat messages only
   try {
     Map<dynamic, dynamic> data = message['data'];
     if (data.containsKey('members') && data.containsKey('conversationModel')) {
@@ -352,7 +359,7 @@ void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState>
               members: members,
               conversationModel: conversationModel,
             ),
-            user: MyAppState.currentUser!,
+            user: members.first,
           ),
         ),
       );
@@ -365,22 +372,16 @@ void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState>
 /// this fuction is called when the user receives a notification while the
 /// app is in the background or completely killed
 Future<dynamic> backgroundMessageHandler(RemoteMessage remoteMessage) async {
-  print('.....data.........');
   await Firebase.initializeApp();
   Map<dynamic, dynamic> message = remoteMessage.data;
   if (message.containsKey('data')) {
     // Handle data message
-    print('backgroundMessageHandler message.containsKey(data)');
-    final dynamic data = message['data'];
-    print('.....data.........');
-    inspect(data);
+    // final dynamic data = message['data'];
+
   }
 
   if (message.containsKey('notification')) {
     // Handle notification message
-    final dynamic notification = message['notification'];
-    print('.....notification.........');
-    inspect(notification);
-    print('backgroundMessageHandler message.containsKey(notification)');
+    // final dynamic notification = message['notification'];
   }
 }

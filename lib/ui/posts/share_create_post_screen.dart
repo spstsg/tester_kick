@@ -118,6 +118,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
     LoadingOverlay.of(context).show();
     try {
       SharedPost sharedPost = SharedPost(
+        author: widget.post.author,
         id: widget.post.id,
         authorId: widget.post.authorId,
         username: widget.post.username,

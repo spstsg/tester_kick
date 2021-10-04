@@ -213,6 +213,7 @@ class Post with ChangeNotifier {
 
 class SharedPost {
   String id;
+  User author;
   String authorId;
   String username;
   String avatarColor;
@@ -226,6 +227,7 @@ class SharedPost {
   Map reactions;
 
   SharedPost({
+    author,
     this.id = '',
     this.authorId = '',
     this.username = '',
@@ -239,6 +241,7 @@ class SharedPost {
     this.postVideo = const [],
     reactions,
   })  : this.createdAt = createdAt ?? Timestamp.now(),
+        this.author = author ?? User(),
         this.reactions = reactions ??
             {
               'angry': 0,
@@ -253,6 +256,7 @@ class SharedPost {
     List _postMedia = parsedJson['postMedia'] ?? [];
     List _postVideo = parsedJson['postVideo'] ?? [];
     return new SharedPost(
+      author: parsedJson.containsKey('author') ? User.fromJson(parsedJson['author']) : User(),
       id: parsedJson['id'] ?? '',
       authorId: parsedJson['authorId'] ?? '',
       username: parsedJson['username'] ?? '',
@@ -279,6 +283,7 @@ class SharedPost {
   Map<String, dynamic> toJson() {
     return {
       "id": this.id,
+      "author": this.author.toJson(),
       'authorId': this.authorId,
       'username': this.username,
       'avatarColor': this.avatarColor,

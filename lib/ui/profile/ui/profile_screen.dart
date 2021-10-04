@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kick_chat/models/conversation_model.dart';
 import 'package:kick_chat/models/home_conversation_model.dart';
+import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
@@ -111,7 +112,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   size: 30,
                   color: ColorPalette.primary,
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  MyAppState.reduxStore!.dispatch(CreateUserAction(MyAppState.currentUser!));
+                  Navigator.pop(context);
+                },
               )
             : Text(''),
         actions: [
@@ -463,10 +467,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: GestureDetector(
                             onTap: () async {
                               try {
-                                await _followService.unFollowUser(
-                                  MyAppState.currentUser!.userID,
-                                  widget.user.userID,
-                                );
+                                _followService.unFollowUser(MyAppState.currentUser!.userID, widget.user.userID);
+                                MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                                 setState(() {
                                   _followersCount--;
                                 });
@@ -493,10 +495,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         if (!_isBlocked) {
                           try {
-                            await _followService.followUser(
-                              MyAppState.currentUser!,
-                              widget.user,
-                            );
+                            _followService.followUser(MyAppState.currentUser!, widget.user);
+                            MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                             setState(() {
                               _followersCount++;
                             });
@@ -561,6 +561,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     } else {
+                      MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                       setState(() {
                         _isBlocked = !_isBlocked;
                       });
@@ -593,7 +594,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : GestureDetector(
                 onTap: () async {
                   try {
-                    await _blockedUserService.unblockUser(MyAppState.currentUser!, widget.user);
+                    _blockedUserService.unblockUser(MyAppState.currentUser!, widget.user);
+                    MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                     setState(() {
                       _isBlocked = !_isBlocked;
                     });
@@ -644,7 +646,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-        GestureDetector(
+        InkWell(
           onTap: () {
             push(
               context,
@@ -674,7 +676,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
-        GestureDetector(
+        InkWell(
           onTap: () {
             push(context, FriendsTabScreen(tabIndex: 1, user: widget.user));
           },

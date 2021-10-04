@@ -5,7 +5,11 @@
 - *Add stickers
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
-* Try to find out how you users can turn off notifications from settings page
+- *Add video controls to player
+- * Consider using topics that users subscribe to send notifications
+
+<!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
+
 * A page with different users best eleven
   - Users should be able to comment and like
 
@@ -13,13 +17,18 @@ WHERE TO ADD NOTIFICATION
 - post reaction - done
 - post comment - done
 - follow user - done
-- When a user creates a post, notify all his followers
+- Send notification when a user share another user's post - done
+- Create a page for displaying user's chat notification - done
+
+<!-- - When a user creates a post, notify all his followers
 - Send chat
+  - Only send push notification if the receiver is not online
+  - If the receiver is still on the app but on a different page, use local notification
 - Any post related to the teams you are following
 - Any audio room related to the team you are following
 - * Randomly send notifications to all users to see other users best eleven
 - Breaking news
-- Voting
+- Voting -->
 
 ...........
 - The gif select for post create is not working - done
@@ -39,6 +48,14 @@ WHERE TO ADD NOTIFICATION
 - Fix cache image issue most espacially the one on the create_post_container - done
 - The reactions images are too small - done
 - Scroll to bottom for post comments - done
+- Try to find out how you users can turn off notifications from settings page - done
+- Conversation list sometimes shows duplicate - done
+- If I follow a user from the user's profile page, the whole page reloads and sometimes the posts remain in loading state - done
+- Fix bottom tab display on different devices - done
+- Following number is not properly displayed on friends tab - done
+- Change height of video thumbnail - done
+- Remove video loop - done
+- Don't send notifications to yourself - done
 
 
 This is the github url for the agora chat 

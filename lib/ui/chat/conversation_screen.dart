@@ -11,9 +11,11 @@ import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/chat_notification_service.dart';
 import 'package:kick_chat/ui/chat/chat_screen.dart';
-// import 'package:kick_chat/ui/chat/widgets/conversation_followers_skeleton.dart';
 import 'package:kick_chat/ui/chat/widgets/conversation_skeleton.dart';
+import 'package:kick_chat/ui/notifications/chat_notification.dart';
+import 'package:kick_chat/ui/widgets/circle_button.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -31,6 +33,7 @@ class ConversationsScreen extends StatefulWidget {
 class _ConversationsState extends State<ConversationsScreen> {
   ChatService _chatService = ChatService();
   FollowService _followService = FollowService();
+  ChatNotificationService _chatNotificationService = ChatNotificationService();
   late User user;
   late Future<List<User>> _friendsFuture;
   late Stream<List<HomeConversationModel>> _conversationsStream;
@@ -38,14 +41,15 @@ class _ConversationsState extends State<ConversationsScreen> {
 
   @override
   void initState() {
-    super.initState();
     user = widget.user;
     _friendsFuture = _followService.getUserFollowersWithRange(MyAppState.currentUser!.userID);
     _conversationsStream = _chatService.getChatConversations(MyAppState.currentUser!.userID);
+    super.initState();
   }
 
   @override
   void dispose() {
+    _chatNotificationService.disposeUserNotificationCountStream();
     super.dispose();
   }
 
@@ -61,6 +65,22 @@ class _ConversationsState extends State<ConversationsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          StreamBuilder<int>(
+            stream: _chatNotificationService.getUserChatNotificationsCount(),
+            initialData: 0,
+            builder: (context, snapshot) {
+              return CircleButton(
+                icon: MdiIcons.chatOutline,
+                iconSize: 30.0,
+                showBadge: true,
+                color: Colors.white,
+                badgeNumber: snapshot.hasData && snapshot.data! > 0 ? snapshot.data! : 0,
+                onPressed: () => push(context, ChatNotification()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         mainAxisSize: MainAxisSize.min,
@@ -72,7 +92,7 @@ class _ConversationsState extends State<ConversationsScreen> {
               height: MediaQuery.of(context).size.height,
               child: ListView(
                 children: [
-                  _followersList(),
+                  hasConversations ? _followersList() : SizedBox.shrink(),
                   _buildConversation(),
                 ],
               ),
@@ -115,20 +135,29 @@ class _ConversationsState extends State<ConversationsScreen> {
     );
   }
 
-  Widget _buildConversationList(AsyncSnapshot<List<dynamic>> snapshot) {
+  Widget _buildConversationList(AsyncSnapshot<List<HomeConversationModel>> snapshot) {
+    Map<dynamic, HomeConversationModel> mappedData = {};
+    for (HomeConversationModel item in snapshot.data!) {
+      mappedData[item.conversationModel?.id] = item;
+    }
+    List<HomeConversationModel> filteredSnapshot = mappedData.values.toList();
     return ListView.builder(
       scrollDirection: Axis.vertical,
       shrinkWrap: true,
       physics: ScrollPhysics(),
-      itemCount: snapshot.data!.length,
+      itemCount: filteredSnapshot.length,
       itemBuilder: (context, index) {
-        final homeConversationModel = snapshot.data![index];
+        HomeConversationModel homeConversationModel = filteredSnapshot[index];
         return GestureDetector(
           onTap: () {
             if (homeConversationModel.conversationModel!.creatorId == MyAppState.currentUser!.userID) {
               _chatService.markConversationAsRead(homeConversationModel.conversationModel!);
               _chatService.markMessageAsRead(homeConversationModel.conversationModel!);
             }
+            _chatService.updateUserOneUserTwoChat(
+              MyAppState.currentUser!.username,
+              homeConversationModel.members.first.username,
+            );
             push(
               context,
               ChatScreen(

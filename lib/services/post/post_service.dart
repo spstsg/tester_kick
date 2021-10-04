@@ -31,14 +31,18 @@ class PostService {
 
     _profilePostsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _profilePosts.clear();
-      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
-        try {
-          _profilePosts.add(Post.fromJson(post.data() as Map<String, dynamic>));
-        } catch (e) {
-          print(e);
-        }
-      });
-      _profilePostsStream.sink.add(_profilePosts);
+      if (querySnapshot.docs.isEmpty) {
+        _profilePostsStream.sink.add([]);
+      } else {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
+          try {
+            _profilePosts.add(Post.fromJson(post.data() as Map<String, dynamic>));
+          } catch (e) {
+            print(e);
+          }
+        });
+        _profilePostsStream.sink.add(_profilePosts);
+      }
     }, cancelOnError: true);
     yield* _profilePostsStream.stream;
   }
@@ -91,7 +95,6 @@ class PostService {
       String uid = getRandomString(28);
       post.id = uid;
       await firestore.collection(SOCIAL_POSTS).doc(uid).set(post.toJson()).then((value) => null, onError: (e) {
-        print(e);
         return e;
       });
 
@@ -99,6 +102,26 @@ class PostService {
         DocumentReference<Map<String, dynamic>> incrementShareCount =
             firestore.collection(SOCIAL_POSTS).doc(post.sharedPost.id);
         incrementShareCount.update({'shareCount': FieldValue.increment(1)});
+
+        User? author = await _userService.getCurrentUser(post.sharedPost.author.userID);
+        if (author!.userID != MyAppState.currentUser!.userID) {
+          await notificationService.saveNotification(
+            'posts_shared',
+            'shared your post.',
+            author,
+            MyAppState.currentUser!.username,
+            {'outBound': MyAppState.currentUser!.toJson()},
+          );
+
+          if (author.settings.notifications && author.notifications['shared']) {
+            await notificationService.sendNotification(
+              author.fcmToken,
+              MyAppState.currentUser!.username,
+              'shared your post.',
+              null,
+            );
+          }
+        }
       }
 
       DocumentReference<Map<String, dynamic>> incrementPostCount = firestore.collection(USERS).doc(post.authorId);
@@ -106,6 +129,7 @@ class PostService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
     } on Exception catch (e) {
       throw e;
     }
@@ -150,6 +174,7 @@ class PostService {
     decrementPostCount.update({'postCount': FieldValue.increment(-1)});
     User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+    MyAppState.currentUser = user;
   }
 
   postComment(String uid, Comment newComment, Post post) async {
@@ -158,21 +183,24 @@ class PostService {
     DocumentReference<Map<String, dynamic>> incrementCommentsCount = firestore.collection(SOCIAL_POSTS).doc(post.id);
     incrementCommentsCount.update({'commentsCount': FieldValue.increment(1)});
 
-    await notificationService.saveNotification(
-      'posts_comments',
-      'Commented on your post.',
-      post.author,
-      MyAppState.currentUser!.username,
-      {'outBound': MyAppState.currentUser!.toJson()},
-    );
-
-    if (post.author.settings.pushNewMessages) {
-      await notificationService.sendNotification(
-        post.author.fcmToken,
+    User? user = await _userService.getCurrentUser(post.author.userID);
+    if (user!.userID != MyAppState.currentUser!.userID) {
+      await notificationService.saveNotification(
+        'posts_comments',
+        'commented on your post.',
+        user,
         MyAppState.currentUser!.username,
-        'Commented on your post.',
-        null,
+        {'outBound': MyAppState.currentUser!.toJson()},
       );
+
+      if (user.settings.notifications && user.notifications['comments']) {
+        await notificationService.sendNotification(
+          user.fcmToken,
+          MyAppState.currentUser!.username,
+          'commented on your post.',
+          null,
+        );
+      }
     }
   }
 

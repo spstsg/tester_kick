@@ -1,27 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/notification_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 
-class NotificationService {
-  static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+class ChatNotificationService {
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
   late StreamController<int> userNotificationCount; // = StreamController();
   late StreamSubscription<QuerySnapshot> _userNotificationCountStreamSubscription;
 
-  String serverKey = dotenv.get('CLOUD_MESSAGING_SERVER_TOKEN');
-
-  Stream<int> getUserNotificationsCount() async* {
+  Stream<int> getUserChatNotificationsCount() async* {
     userNotificationCount = StreamController();
     Stream<QuerySnapshot> result = await firestore
-        .collection(NOTIFICATIONS)
+        .collection(CHAT_NOTIFICATIONS)
         .where('toUserID', isEqualTo: MyAppState.currentUser!.userID)
         .where('seen', isEqualTo: false)
         .snapshots();
@@ -34,10 +27,12 @@ class NotificationService {
     yield* userNotificationCount.stream;
   }
 
-  Future<List<NotificationModel>> getUserNotifications() async {
+  Future<List<NotificationModel>> getChatUserNotifications() async {
     List<NotificationModel> _userNotifications = [];
-    QuerySnapshot result =
-        await firestore.collection(NOTIFICATIONS).where('toUserID', isEqualTo: MyAppState.currentUser!.userID).get();
+    QuerySnapshot result = await firestore
+        .collection(CHAT_NOTIFICATIONS)
+        .where('toUserID', isEqualTo: MyAppState.currentUser!.userID)
+        .get();
 
     Future.forEach(result.docs, (DocumentSnapshot document) {
       try {
@@ -49,32 +44,14 @@ class NotificationService {
     return _userNotifications;
   }
 
-  Future sendNotification(String token, String title, String body, Map<String, dynamic>? payload) async {
-    await http.post(
-      Uri.parse('https://fcm.googleapis.com/fcm/send'),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'key=$serverKey',
-      },
-      body: jsonEncode(
-        <String, dynamic>{
-          'notification': <String, dynamic>{'body': body, 'title': title},
-          'priority': 'high',
-          'data': payload ?? <String, dynamic>{},
-          'to': token
-        },
-      ),
-    );
-  }
-
-  Future saveNotification(
+  Future saveChatNotification(
     String type,
     String body,
     User toUser,
     String title,
     Map<String, dynamic> metaData,
   ) async {
-    DocumentReference notificationDocument = firestore.collection(NOTIFICATIONS).doc();
+    DocumentReference notificationDocument = firestore.collection(CHAT_NOTIFICATIONS).doc();
     NotificationModel notificationModel = NotificationModel(
       type: type,
       body: body,
@@ -99,21 +76,24 @@ class NotificationService {
       await Future.forEach(result.docs, (DocumentSnapshot notification) {
         notification.reference.update({
           'seen': false,
+          'metadata.chat': metaData['chat'],
           'createdAt': Timestamp.now(),
         });
       });
     }
   }
 
-  Future updateNotification(NotificationModel notification) async {
+  Future updateChatNotification(NotificationModel notification) async {
     notification.seen = true;
-    await firestore.collection(NOTIFICATIONS).doc(notification.id).update(notification.toJson());
+    await firestore.collection(CHAT_NOTIFICATIONS).doc(notification.id).update(notification.toJson());
   }
 
-  Future updateAllNotifications() async {
+  Future updateAllChatNotifications() async {
     try {
-      QuerySnapshot result =
-          await firestore.collection(NOTIFICATIONS).where('toUserID', isEqualTo: MyAppState.currentUser!.userID).get();
+      QuerySnapshot result = await firestore
+          .collection(CHAT_NOTIFICATIONS)
+          .where('toUserID', isEqualTo: MyAppState.currentUser!.userID)
+          .get();
       await Future.forEach(result.docs, (DocumentSnapshot notification) {
         notification.reference.update({'seen': true});
       });
@@ -123,9 +103,9 @@ class NotificationService {
     }
   }
 
-  Future deleteSingleNotification(String id) async {
+  Future deleteSingleChatNotification(String id) async {
     try {
-      QuerySnapshot result = await firestore.collection(NOTIFICATIONS).where('id', isEqualTo: id).get();
+      QuerySnapshot result = await firestore.collection(CHAT_NOTIFICATIONS).where('id', isEqualTo: id).get();
       await Future.forEach(result.docs, (DocumentSnapshot notification) {
         notification.reference.delete();
       });
@@ -135,10 +115,12 @@ class NotificationService {
     }
   }
 
-  Future deleteAllUserNotifications() async {
+  Future deleteAllChatUserNotifications() async {
     try {
-      QuerySnapshot result =
-          await firestore.collection(NOTIFICATIONS).where('toUserID', isEqualTo: MyAppState.currentUser!.userID).get();
+      QuerySnapshot result = await firestore
+          .collection(CHAT_NOTIFICATIONS)
+          .where('toUserID', isEqualTo: MyAppState.currentUser!.userID)
+          .get();
       await Future.forEach(result.docs, (DocumentSnapshot notification) {
         notification.reference.delete();
       });

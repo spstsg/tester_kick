@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/profile/ui/blocked_users.dart';
 import 'package:kick_chat/ui/profile/ui/change_password.dart';
+import 'package:kick_chat/ui/profile/ui/push_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -48,7 +50,21 @@ class SettingScreen extends StatelessWidget {
           );
         }
       },
-      {'name': 'Notifications', 'icon': MdiIcons.bell, 'showTrailing': true, 'click': () {}},
+      {
+        'name': 'Notifications',
+        'icon': MdiIcons.bell,
+        'showTrailing': true,
+        'click': () {
+          Navigator.of(context).push(
+            new MaterialPageRoute<Null>(
+              builder: (BuildContext context) {
+                return new PushNotification();
+              },
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      },
     ];
 
     List others = [
@@ -186,8 +202,9 @@ class SettingScreen extends StatelessWidget {
     MyAppState.currentUser!.emailPasswordLogin = false;
     MyAppState.currentUser!.lastOnlineTimestamp = Timestamp.now();
     _userService.updateCurrentUser(MyAppState.currentUser!);
-    await FirebaseAuth.instance.signOut();
-    MyAppState.currentUser = null;
+    await auth.FirebaseAuth.instance.signOut();
+
+    MyAppState.currentUser = User();
     pushAndRemoveUntil(context, LoginScreen(), false, false);
   }
 }

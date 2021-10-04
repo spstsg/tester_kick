@@ -43,11 +43,13 @@ class FriendsTabScreen extends StatelessWidget {
             ),
             tabs: [
               Tab(
-                  text:
-                      'FOLLOWING (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followingCount : MyAppState.currentUser!.followingCount)})'),
+                text:
+                    'FOLLOWING (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followingCount : MyAppState.currentUser!.followingCount)})',
+              ),
               Tab(
-                  text:
-                      'FOLLOWERS (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followersCount : MyAppState.currentUser!.followersCount)})'),
+                text:
+                    'FOLLOWERS (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followersCount : MyAppState.currentUser!.followersCount)})',
+              ),
             ],
           ),
         ),

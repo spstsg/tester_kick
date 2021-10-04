@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import 'package:kick_chat/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/main.dart';
@@ -18,6 +20,7 @@ class FollowService {
         username: visitedUser.username,
         profilePictureURL: visitedUser.profilePictureURL,
         avatarColor: visitedUser.avatarColor,
+        fcmToken: visitedUser.fcmToken,
       );
       await firestore
           .collection(FOLLOWING)
@@ -34,6 +37,7 @@ class FollowService {
         username: currentUser.username,
         profilePictureURL: currentUser.profilePictureURL,
         avatarColor: currentUser.avatarColor,
+        fcmToken: currentUser.fcmToken,
       );
 
       await firestore
@@ -49,22 +53,27 @@ class FollowService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
 
-      await _notificationService.saveNotification(
-        'follow_user',
-        'Started following you.',
-        visitedUser,
-        MyAppState.currentUser!.username,
-        {'outBound': MyAppState.currentUser!.toJson()},
-      );
+      User? visitedUserData = await _userService.getCurrentUser(visitedUser.userID);
 
-      if (visitedUser.settings.pushNewMessages) {
-        await _notificationService.sendNotification(
-          visitedUser.fcmToken,
+      if (visitedUserData!.userID != MyAppState.currentUser!.userID) {
+        await _notificationService.saveNotification(
+          'follow_user',
+          'started following you.',
+          visitedUserData,
           MyAppState.currentUser!.username,
-          'Started following you.',
-          null,
+          {'outBound': MyAppState.currentUser!.toJson()},
         );
+
+        if (visitedUserData.settings.notifications && visitedUserData.notifications['followers']) {
+          await _notificationService.sendNotification(
+            visitedUserData.fcmToken,
+            MyAppState.currentUser!.username,
+            'started following you.',
+            null,
+          );
+        }
       }
     } catch (e) {
       throw e;
@@ -105,6 +114,7 @@ class FollowService {
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+      MyAppState.currentUser = user;
     } catch (e) {
       throw e;
     }
@@ -149,9 +159,9 @@ class FollowService {
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
       followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));
     });
-    if (followers.length > 10) {
-      followers.removeRange(10, followers.length);
-    }
-    return followers.toSet().toList();
+    List<User> items = getRandomUsersList(10, followers);
+    return items;
   }
+
+  List<User> getRandomUsersList(int n, List<User> source) => source.sample(n);
 }

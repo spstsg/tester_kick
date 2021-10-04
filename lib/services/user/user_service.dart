@@ -92,6 +92,22 @@ class UserService {
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
   }
 
+  Future<void> updatePushNotificationSetting(bool notification) async {
+    await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({
+      'settings.notifications': notification,
+    });
+    User? user = await getCurrentUser(MyAppState.currentUser!.userID);
+    MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+  }
+
+  Future<void> updateNotificationType(String type, bool notification) async {
+    await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({
+      'notifications.${type}': notification,
+    });
+    User? user = await getCurrentUser(MyAppState.currentUser!.userID);
+    MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
+  }
+
   Future<dynamic> getUserByUsername(String username) async {
     var userDocument = await FirebaseFirestore.instance.collection(USERS).where('username', isEqualTo: username).get();
     if (userDocument.docs.length >= 1) {

@@ -7,7 +7,7 @@ import 'package:kick_chat/ui/widgets/fullscreen_video_viewer.dart';
 
 Widget videoDisplay(BuildContext context, Post post, Function updateVideoViewCount) {
   return Container(
-    height: MediaQuery.of(context).size.height * 0.25,
+    height: MediaQuery.of(context).size.height * 0.65,
     decoration: BoxDecoration(
       color: Colors.black,
       image: post.postVideo[0]['videoThumbnail'] != null && post.postVideo[0]['videoThumbnail']!.isNotEmpty
@@ -15,7 +15,8 @@ Widget videoDisplay(BuildContext context, Post post, Function updateVideoViewCou
               fit: BoxFit.fill,
               image: Image.network(
                 post.postVideo[0]['videoThumbnail']!,
-              ).image)
+              ).image,
+            )
           : null,
     ),
     child: Center(

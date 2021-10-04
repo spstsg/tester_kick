@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
+import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/chat_notification_service.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/home/user_search.dart';
+import 'package:kick_chat/ui/notifications/local_notification.dart';
 import 'package:kick_chat/ui/toberemoved/add_clubs.dart';
 import 'package:kick_chat/ui/widgets/circle_button.dart';
 import 'package:kick_chat/ui/posts/widgets/create_post_container.dart';
@@ -16,6 +22,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  NotificationService _notificationService = NotificationService();
+  ChatNotificationService _chatNotificationService = ChatNotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _notificationService.disposeUserNotificationCountStream();
+    _chatNotificationService.disposeUserNotificationCountStream();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -40,10 +61,31 @@ class _HomeScreenState extends State<HomeScreen> {
             centerTitle: false,
             floating: true,
             actions: [
-              CircleButton(
-                icon: MdiIcons.bellOutline,
-                iconSize: 30.0,
-                onPressed: () => print('Search'),
+              StreamBuilder<int>(
+                stream: _notificationService.getUserNotificationsCount(),
+                initialData: 0,
+                builder: (context, snapshot) {
+                  return CircleButton(
+                    icon: MdiIcons.bellOutline,
+                    iconSize: 30.0,
+                    showBadge: true,
+                    badgeNumber: snapshot.hasData && snapshot.data! > 0 ? snapshot.data! : 0,
+                    onPressed: () => push(context, LocalNotification()),
+                  );
+                },
+              ),
+              StreamBuilder<int>(
+                stream: _chatNotificationService.getUserChatNotificationsCount(),
+                initialData: 0,
+                builder: (context, snapshot) {
+                  return CircleButton(
+                    icon: MdiIcons.chatOutline,
+                    iconSize: 30.0,
+                    showBadge: true,
+                    badgeNumber: snapshot.hasData && snapshot.data! > 0 ? snapshot.data! : 0,
+                    onPressed: () => push(context, ConversationsScreen(user: MyAppState.currentUser!)),
+                  );
+                },
               ),
               CircleButton(
                 icon: Icons.search,
