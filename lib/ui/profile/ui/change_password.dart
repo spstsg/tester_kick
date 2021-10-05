@@ -59,7 +59,7 @@ class _ChangePasswordState extends State<ChangePassword> {
               constraints: BoxConstraints(minWidth: double.infinity),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: ColorPalette.primary,
+                  primary: !isLoading ? ColorPalette.primary : Colors.grey.shade200,
                   padding: EdgeInsets.only(top: 10, bottom: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(0.0),
@@ -71,7 +71,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                         newPasswordLength >= 8 &&
                         !confirmPasswordNotValid &&
                         _confirmPassword.text.isNotEmpty
-                    ? () => _changePassword(context)
+                    ? () => !isLoading ? _changePassword(context) : null
                     : null,
                 child: isLoading
                     ? Row(

@@ -1,8 +1,10 @@
 - Add login/signup with Apple
-- Look for ways to validate email domain(So users won't use disposable emails). Decide if you need to send verification email.
-- After sharing a screenshot, delete from the users device
+<!-- - Send verification code to email on signup
+- Try to see if you can integrate games into flutter app -->
+<!-- - After sharing a screenshot, delete from the users device -->
 - *Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
 - *Add stickers
+- *Add dynamic links thats take a user directly to a specific page when the user clicks on a notification
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 - *Add video controls to player
@@ -56,6 +58,8 @@ WHERE TO ADD NOTIFICATION
 - Change height of video thumbnail - done
 - Remove video loop - done
 - Don't send notifications to yourself - done
+- Look for ways to validate email domain(So users won't use disposable emails). Decide if you need to send verification email (Not perfect but at least emails with domains @me, @test etc can be validated) - done
+- Instead of a loading when user is signing up or logging in, add the loader to the button - done
 
 
 This is the github url for the agora chat 
@@ -63,6 +67,10 @@ https://github.com/InolabSF/flutter_voice_chat_using_agora
 
 This is the link for ios device
 https://github.com/filsv/iPhoneOSDeviceSupport
+
+https://stackoverflow.com/questions/53630136/using-cocoapods-libraries-in-flutter-ios-platform-specific-code
+
+- On xcode, under build settings, I changed release to yes under build active architecture only
 
 Audio chat logic
 - *Try to see if you can persist the stopwatch timer as long as the room is not ended
@@ -81,3 +89,15 @@ This was added to AppDelegate.swift for IOS in other for flutter_local_notificat
 if #available(iOS 10.0, *) {
     UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
 }
+
+TEMPORAL FIX FOR AGORA IOS SDK ISSUE
+- Change platform version inside Podfile to something higher than 8
+- Add after flutter_additional_ios_build_settings(target) in the Podfile
+  target.build_configurations.each do |config|
+    config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+    config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 arm64'
+  end
+- Go into ios folder and delete Podfile.lock
+- Go to the root folder and run
+  - flutter clean
+  - flutter pub get

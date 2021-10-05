@@ -49,7 +49,7 @@ dependencies:
   shared_preferences: ^2.0.8
   firebase_storage: ^10.0.3
   firebase_messaging: ^10.0.8
-  flutter_local_notifications: ^8.2.0
+  flutter_local_notifications: ^9.0.0
   story_view: ^0.13.1
   google_sign_in: ^5.1.1
   flutter_facebook_auth: ^3.5.2
@@ -72,7 +72,7 @@ dependencies:
   permission_handler: ^8.1.6
   flutter_linkify: ^5.0.2
   file_picker: ^4.1.1
-  # agora_rtc_engine: ^4.0.7
+  agora_rtc_engine: ^4.0.7
   destiny: ^1.0.0
   flutter_slidable: ^0.6.0
   video_thumbnail: ^0.4.3

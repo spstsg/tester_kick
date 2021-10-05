@@ -33,6 +33,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
   bool eligibleDate = false;
   String dobNextButton = 'Next';
   User? userData;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -74,7 +75,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
             size: 30,
             color: ColorPalette.primary,
           ),
-          onPressed: () => goBack(widget.type),
+          onPressed: () => goBack(widget.pageType),
         ),
       ),
       body: SafeArea(
@@ -197,20 +198,31 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                     constraints: BoxConstraints(minWidth: double.infinity),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: ColorPalette.primary,
+                        shadowColor: Colors.transparent,
+                        onPrimary: Colors.grey.shade200,
+                        primary: !isLoading ? ColorPalette.primary : Colors.grey.shade200,
                         padding: EdgeInsets.only(top: 10, bottom: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                       ),
-                      onPressed: addDateOfBirth,
-                      child: Text(
-                        dobNextButton,
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: ColorPalette.white,
-                        ),
-                      ),
+                      onPressed: !isLoading ? addDateOfBirth : null,
+                      child: isLoading
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 21,
+                                  height: 21,
+                                  child: CircularProgressIndicator(color: Colors.blue),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              dobNextButton,
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: ColorPalette.white,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -254,6 +266,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
   void addDateOfBirth() {
     setState(() {
       eligibleDate = false;
+      isLoading = true;
     });
     var now = DateTime.now();
     if (_selectedDate != DateTime.now() && (_selectedDate.year < now.year - 16)) {
@@ -268,15 +281,10 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
           ),
         ),
       );
-      pushAndRemoveUntil(
-        context,
-        SetUsernameScreen(widget.result, widget.type, widget.pageType),
-        false,
-        true,
-        'Please wait...',
-      );
+      push(context, SetUsernameScreen(widget.result, widget.type, widget.pageType));
     } else {
       setState(() {
+        isLoading = false;
         eligibleDate = true;
         dobNextButton = 'Next';
       });
@@ -285,26 +293,14 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
 
   void goBack(String pageType) {
     if (pageType == 'email') {
-      pushAndRemoveUntil(
-        context,
-        SignUpWithEmail(userData!.email),
-        false,
-        false,
-      );
+      push(context, SignUpWithEmail(userData!.email));
     } else if (pageType == 'phone') {
-      pushAndRemoveUntil(
+      push(
         context,
         PhoneNumberInputScreen(type: 'signup'),
-        false,
-        false,
       );
     } else {
-      pushAndRemoveUntil(
-        context,
-        SignUpScreen(),
-        false,
-        false,
-      );
+      push(context, SignUpScreen());
     }
   }
 }

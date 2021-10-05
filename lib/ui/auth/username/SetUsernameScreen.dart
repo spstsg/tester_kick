@@ -27,6 +27,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
   int usernameLength = 0;
   bool usernameExist = false;
   String usernameSignupButton = 'Sign up';
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -61,12 +62,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
             size: 30,
             color: ColorPalette.primary,
           ),
-          onPressed: () => pushAndRemoveUntil(
-            context,
-            DateOfBirthScreen(widget.type, widget.pageType, ''),
-            false,
-            false,
-          ),
+          onPressed: () => push(context, DateOfBirthScreen(widget.type, widget.pageType, '')),
         ),
       ),
       body: SafeArea(
@@ -188,25 +184,38 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                     constraints: BoxConstraints(minWidth: double.infinity),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.transparent,
+                        onPrimary: Colors.grey.shade200,
                         primary: usernameLength < 3 || usernameLength > 10
-                            ? ColorPalette.grey
-                            : ColorPalette.primary,
+                            ? Colors.grey.shade200
+                            : !isLoading
+                                ? ColorPalette.primary
+                                : Colors.grey.shade200,
                         padding: EdgeInsets.only(top: 10, bottom: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                       ),
                       onPressed: usernameLength > 3 && usernameLength < 10
-                          ? () => _checkIfUsernameExist()
+                          ? () => !isLoading ? _checkIfUsernameExist() : null
                           : null,
-                      child: Text(
-                        usernameSignupButton,
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: ColorPalette.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: isLoading
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 21,
+                                  height: 21,
+                                  child: CircularProgressIndicator(color: Colors.blue),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              usernameSignupButton,
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: ColorPalette.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -221,11 +230,9 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
   Future _checkIfUsernameExist() async {
     setState(() {
       usernameExist = false;
+      isLoading = true;
     });
-    var userExist = await _authService.checkIfUsernameExist(
-      capitalizeFirstLetter(_usernameController.text.trim()),
-    );
-
+    var userExist = await _authService.checkIfUsernameExist(capitalizeFirstLetter(_usernameController.text.trim()));
     if (!userExist) {
       MyAppState.reduxStore!.dispatch(
         CreateUserAction(
@@ -239,17 +246,12 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
           ),
         ),
       );
-      pushAndRemoveUntil(
-        context,
-        SetTeamNameScreen(widget.result, widget.type, widget.pageType),
-        false,
-        true,
-        'Please wait...',
-      );
+      push(context, SetTeamNameScreen(widget.result, widget.type, widget.pageType));
     } else {
       setState(() {
         usernameExist = true;
         usernameSignupButton = 'Sign up';
+        isLoading = false;
       });
     }
   }

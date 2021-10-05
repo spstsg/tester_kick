@@ -338,6 +338,10 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
+  - agora_rtc_engine (4.0.7):
+    - AgoraRtcEngine_iOS (= 3.5.0.3)
+    - Flutter
+  - AgoraRtcEngine_iOS (3.5.0.3)
   - AppAuth (1.4.0):
     - AppAuth/Core (= 1.4.0)
     - AppAuth/ExternalUserAgent (= 1.4.0)
@@ -444,7 +448,7 @@ PODS:
     - FirebaseCoreDiagnostics (~> 8.0)
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/Logger (~> 7.4)
-  - FirebaseCoreDiagnostics (8.7.0):
+  - FirebaseCoreDiagnostics (8.8.0):
     - GoogleDataTransport (~> 9.0)
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/Logger (~> 7.4)
@@ -462,7 +466,7 @@ PODS:
     - "gRPC-C++ (~> 1.28.0)"
     - leveldb-library (~> 1.22)
     - nanopb (~> 2.30908.0)
-  - FirebaseInstallations (8.7.0):
+  - FirebaseInstallations (8.8.0):
     - FirebaseCore (~> 8.0)
     - GoogleUtilities/Environment (~> 7.4)
     - GoogleUtilities/UserDefaults (~> 7.4)
@@ -558,15 +562,15 @@ PODS:
     - Flutter
     - libphonenumber
     - libPhoneNumber-iOS
-  - libwebp (1.2.0):
-    - libwebp/demux (= 1.2.0)
-    - libwebp/mux (= 1.2.0)
-    - libwebp/webp (= 1.2.0)
-  - libwebp/demux (1.2.0):
+  - libwebp (1.2.1):
+    - libwebp/demux (= 1.2.1)
+    - libwebp/mux (= 1.2.1)
+    - libwebp/webp (= 1.2.1)
+  - libwebp/demux (1.2.1):
     - libwebp/webp
-  - libwebp/mux (1.2.0):
+  - libwebp/mux (1.2.1):
     - libwebp/demux
-  - libwebp/webp (1.2.0)
+  - libwebp/webp (1.2.1)
   - nanopb (2.30908.0):
     - nanopb/decode (= 2.30908.0)
     - nanopb/encode (= 2.30908.0)
@@ -577,9 +581,9 @@ PODS:
   - "permission_handler (5.1.0+2)":
     - Flutter
   - PromisesObjC (2.0.0)
-  - SDWebImage (5.11.1):
-    - SDWebImage/Core (= 5.11.1)
-  - SDWebImage/Core (5.11.1)
+  - SDWebImage (5.12.0):
+    - SDWebImage/Core (= 5.12.0)
+  - SDWebImage/Core (5.12.0)
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences (0.0.1):
@@ -599,6 +603,7 @@ PODS:
     - libwebp
 
 DEPENDENCIES:
+  - agora_rtc_engine (from `.symlinks/plugins/agora_rtc_engine/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
@@ -627,6 +632,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - abseil
+    - AgoraRtcEngine_iOS
     - AppAuth
     - BoringSSL-GRPC
     - DKImagePickerController
@@ -660,6 +666,8 @@ SPEC REPOS:
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  agora_rtc_engine:
+    :path: ".symlinks/plugins/agora_rtc_engine/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   device_info_plus:
@@ -711,6 +719,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
+  agora_rtc_engine: 006e9971577caa41817309d3155334fbd0d04c78
+  AgoraRtcEngine_iOS: ff8e085161ea98c917173783a899882f884dd9ef
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   BoringSSL-GRPC: 8edf627ee524575e2f8d19d56f068b448eea3879
   cloud_firestore: a09fdd53707eadea99f93ca5ad8e95e4c1ab1108
@@ -729,9 +739,9 @@ SPEC CHECKSUMS:
   firebase_storage: 04a381404ffddf5d3d39bf4bdfc517e4a354dfe9
   FirebaseAuth: 2e7d029977648c67a5d51a263d4cbab76d34cf12
   FirebaseCore: f4804c1d3f4bbbefc88904d15653038f2c99ddf7
-  FirebaseCoreDiagnostics: b63732f581a1c6a453ec7241f9ab60b3a5bd3450
+  FirebaseCoreDiagnostics: fe77f42da6329d6d83d21fd9d621a6b704413bfc
   FirebaseFirestore: e722ba956610c45d368d9787689e2aa41b809e68
-  FirebaseInstallations: ede6fb72bb6337914e5888b399271259d0c4910c
+  FirebaseInstallations: 2563cb18a723ef9c6ef18318a49519b75dce613c
   FirebaseMessaging: 93227dd71d7888e200baef65043f81acb2b6596e
   FirebaseStorage: 2e6e58fe31fb0061fdce3f156d0ebc964e9de6ba
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
@@ -752,12 +762,12 @@ SPEC CHECKSUMS:
   libphonenumber: bd14d5abfc5939ab0b0767234e2d8e2593af258e
   libPhoneNumber-iOS: 0a32a9525cf8744fe02c5206eb30d571e38f7d75
   libphonenumber_plugin: 7cf755ad1656145935d6c208173a476bd3f12898
-  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
+  libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
   permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
-  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImage: 4ea20cca2986adc5aacde07aa686742fd4c67a37
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
   shared_preferences: 5033afbb22d372e15aff8ff766df9021b845f273
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
@@ -767,6 +777,6 @@ SPEC CHECKSUMS:
   video_player: ecd305f42e9044793efd34846e1ce64c31ea6fcb
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
 
-PODFILE CHECKSUM: 6551ed6ce2e2282fa79c98757f15c571aade3476
+PODFILE CHECKSUM: 3f913456da52d38a7717cc4183cf072195a350db
 
 COCOAPODS: 1.11.2

@@ -39,6 +39,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
   User? userData;
   String usernameSignupButton = 'Sign up';
   List<String> clubs = [];
+  bool isLoading = false;
   String cloudinaryAppEndpoint = dotenv.get('CLOUDINARY_APP_ENDPOINT');
 
   @override
@@ -74,12 +75,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
             size: 30,
             color: ColorPalette.primary,
           ),
-          onPressed: () => pushAndRemoveUntil(
-            context,
-            SetUsernameScreen(widget.result, widget.type, widget.pageType),
-            false,
-            false,
-          ),
+          onPressed: () => push(context, SetUsernameScreen(widget.result, widget.type, widget.pageType)),
         ),
       ),
       body: SafeArea(
@@ -215,21 +211,37 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                       constraints: BoxConstraints(minWidth: double.infinity),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: _searchController.text.isNotEmpty ? ColorPalette.primary : ColorPalette.grey,
+                          shadowColor: Colors.transparent,
+                          onPrimary: Colors.grey.shade200,
+                          primary: _searchController.text.isNotEmpty && !isLoading
+                              ? ColorPalette.primary
+                              : Colors.grey.shade200,
                           padding: EdgeInsets.only(top: 10, bottom: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                        onPressed: _searchController.text.isNotEmpty ? () => _authentication() : null,
-                        child: Text(
-                          usernameSignupButton,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: ColorPalette.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        onPressed:
+                            _searchController.text.isNotEmpty ? () => !isLoading ? _authentication() : null : null,
+                        child: isLoading
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 21,
+                                    height: 21,
+                                    child: CircularProgressIndicator(color: Colors.blue),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                usernameSignupButton,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: ColorPalette.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -242,7 +254,8 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
     );
   }
 
-  void _authentication() {
+  void _authentication() async {
+    setState(() => isLoading = true);
     if (widget.result is auth.UserCredential) {
       _authenticateWithoutEmail();
     } else {
@@ -310,13 +323,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           MyAppState.currentUser = user;
           MyAppState.reduxStore!.dispatch(CreateUserAction(user));
           setFinishedOnBoarding();
-          pushAndRemoveUntil(
-            context,
-            NavScreen(),
-            false,
-            true,
-            'Signing up, Please wait...',
-          );
+          push(context, NavScreen());
         } else if (user is String) {
           setState(() {
             usernameSignupButton = 'Sign up';
@@ -328,6 +335,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
     } catch (error) {
       setState(() {
         usernameSignupButton = 'Sign up';
+        isLoading = false;
       });
       String message = 'Couldn\'t sign up. Please try again.';
       final snackBar = SnackBar(content: Text(message.toString()));
@@ -360,13 +368,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           MyAppState.currentUser = user;
           MyAppState.reduxStore!.dispatch(CreateUserAction(user));
           setFinishedOnBoarding();
-          pushAndRemoveUntil(
-            context,
-            NavScreen(),
-            false,
-            true,
-            'Signing up, Please wait...',
-          );
+          push(context, NavScreen());
         } else if (user is String) {
           setState(() {
             usernameSignupButton = 'Sign up';
@@ -378,6 +380,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
     } on auth.FirebaseAuthException catch (error) {
       setState(() {
         usernameSignupButton = 'Sign up';
+        isLoading = false;
       });
       String message = 'Couldn\'t sign up. Please try again.';
       switch (error.code) {
@@ -401,6 +404,10 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
       final snackBar = SnackBar(content: Text(message.toString()));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } catch (e) {
+      setState(() {
+        usernameSignupButton = 'Sign up';
+        isLoading = false;
+      });
       final snackBar = SnackBar(content: Text('Error creating an account. Try again later'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }

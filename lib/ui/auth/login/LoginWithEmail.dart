@@ -34,79 +34,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
   bool userPasswordDoesNotExist = false;
   int usernameLength = 0;
   String loginButtonText = 'Log in';
-
-  Future<bool> setFinishedOnBoarding() async {
-    return _sharedPreferences.setSharedPreferencesBool(FINISHED_ON_BOARDING, true);
-  }
-
-  Future<void> checkIfEmailExist() async {
-    setState(() {
-      userEmailDoesNotExist = false;
-    });
-    bool emailExist = await _authService.checkIfEmailExist(_emailController.text.trim());
-    if (emailExist) {
-      _loginWithEmail();
-    } else {
-      setState(() {
-        userEmailDoesNotExist = true;
-        loginButtonText = 'Log in';
-      });
-    }
-  }
-
-  Future _loginWithEmail() async {
-    setState(() {
-      userPasswordDoesNotExist = false;
-    });
-    try {
-      auth.UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      User user = await _authService.loginWithEmailAndPassword(result.user?.uid ?? '');
-      if (user is User) {
-        MyAppState.currentUser = user;
-        setFinishedOnBoarding();
-        pushAndRemoveUntil(
-          context,
-          NavScreen(),
-          false,
-          true,
-          'Please wait...',
-        );
-      } else if (user is String) {
-        setState(() {
-          loginButtonText = 'Log in';
-        });
-        final snackBar = SnackBar(content: Text(user.toString()));
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
-    } on auth.FirebaseAuthException catch (error) {
-      setState(() {
-        loginButtonText = 'Log in';
-      });
-      switch (error.code) {
-        case "invalid-email":
-          return 'Email address is malformed.';
-        case "wrong-password":
-          setState(() {
-            userPasswordDoesNotExist = true;
-          });
-          return 'Wrong password.';
-        case "user-not-found":
-          return 'No user corresponding to the given email address.';
-        case "user-disabled":
-          return 'This user has been disabled.';
-        case 'too-many-requests':
-          return 'Too many attempts to sign in as this user.';
-      }
-      // to be removed
-      final snackBar = SnackBar(content: Text('Login failed'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } catch (e) {
-      print(e);
-    }
-  }
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -131,7 +59,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
             size: 30,
             color: ColorPalette.primary,
           ),
-          onPressed: () => pushAndRemoveUntil(context, LoginScreen(), false, false),
+          onPressed: () => push(context, LoginScreen()),
         ),
       ),
       body: Form(
@@ -345,21 +273,36 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
+                    shadowColor: Colors.transparent,
+                    onPrimary: Colors.grey.shade200,
+                    primary: (!validEmail && !validPassword)
+                        ? Colors.grey.shade200
+                        : !isLoading
+                            ? ColorPalette.primary
+                            : Colors.grey.shade200,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                   ),
-                  onPressed: validEmail && validPassword ? () => checkIfEmailExist() : null,
-                  child: Text(
-                    loginButtonText,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: ColorPalette.white,
-                    ),
-                  ),
+                  onPressed: validEmail && validPassword ? () => !isLoading ? checkIfEmailExist() : null : null,
+                  child: isLoading
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 21,
+                              height: 21,
+                              child: CircularProgressIndicator(color: Colors.blue),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          loginButtonText,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: ColorPalette.white,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -367,5 +310,81 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
         ),
       ),
     );
+  }
+
+  Future<bool> setFinishedOnBoarding() async {
+    return _sharedPreferences.setSharedPreferencesBool(FINISHED_ON_BOARDING, true);
+  }
+
+  Future<void> checkIfEmailExist() async {
+    setState(() {
+      userEmailDoesNotExist = false;
+      isLoading = true;
+    });
+    bool emailExist = await _authService.checkIfEmailExist(_emailController.text.trim());
+    if (emailExist) {
+      _loginWithEmail();
+    } else {
+      setState(() {
+        userEmailDoesNotExist = true;
+        loginButtonText = 'Log in';
+        isLoading = false;
+      });
+    }
+  }
+
+  Future _loginWithEmail() async {
+    setState(() {
+      userPasswordDoesNotExist = false;
+      isLoading = true;
+    });
+    try {
+      auth.UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      User user = await _authService.loginWithEmailAndPassword(result.user?.uid ?? '');
+      if (user is User) {
+        MyAppState.currentUser = user;
+        setFinishedOnBoarding();
+        push(context, NavScreen());
+      } else if (user is String) {
+        setState(() {
+          loginButtonText = 'Log in';
+          isLoading = false;
+        });
+        final snackBar = SnackBar(content: Text(user.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    } on auth.FirebaseAuthException catch (error) {
+      setState(() {
+        loginButtonText = 'Log in';
+        isLoading = false;
+      });
+      switch (error.code) {
+        case "invalid-email":
+          return 'Email address is malformed.';
+        case "wrong-password":
+          setState(() {
+            userPasswordDoesNotExist = true;
+            isLoading = false;
+          });
+          return 'Wrong password.';
+        case "user-not-found":
+          return 'No user corresponding to the given email address.';
+        case "user-disabled":
+          return 'This user has been disabled.';
+        case 'too-many-requests':
+          return 'Too many attempts to sign in as this user.';
+      }
+      // to be removed
+      final snackBar = SnackBar(content: Text('Login failed'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } catch (e) {
+      setState(() {
+        loginButtonText = 'Log in';
+        isLoading = false;
+      });
+    }
   }
 }
