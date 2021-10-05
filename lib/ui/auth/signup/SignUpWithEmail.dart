@@ -27,35 +27,8 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
   bool togglePassword = false;
   bool userEmailExist = false;
   String signupNextButton = 'Next';
-
-  Future<void> checkIfEmailExist() async {
-    setState(() {
-      userEmailExist = false;
-    });
-    var emailExist = await _authService.checkIfEmailExist(
-      _emailController.text.trim(),
-    );
-    if (!emailExist) {
-      MyAppState.reduxStore!.dispatch(CreateUserAction(
-        User(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        ),
-      ));
-      pushAndRemoveUntil(
-        context,
-        DateOfBirthScreen('signup', 'email', ''),
-        false,
-        true,
-        'Please wait...',
-      );
-    } else {
-      setState(() {
-        userEmailExist = true;
-        signupNextButton = 'Next';
-      });
-    }
-  }
+  String emailErrorMessage = '';
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -185,7 +158,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                 padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
                 child: userEmailExist
                     ? Text(
-                        'Email is already in use',
+                        emailErrorMessage,
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 14,
@@ -343,21 +316,36 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: (!validEmail && !validPassword) ? ColorPalette.grey : ColorPalette.primary,
+                    shadowColor: Colors.transparent,
+                    onPrimary: Colors.grey.shade200,
+                    primary: (!validEmail && !validPassword)
+                        ? Colors.grey.shade200
+                        : !isLoading
+                            ? ColorPalette.primary
+                            : Colors.grey.shade200,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                   ),
-                  onPressed: validEmail && validPassword ? () => checkIfEmailExist() : null,
-                  child: Text(
-                    signupNextButton,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: ColorPalette.white,
-                    ),
-                  ),
+                  onPressed: validEmail && validPassword ? () => !isLoading ? checkIfEmailExist() : null : null,
+                  child: isLoading
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 21,
+                              height: 21,
+                              child: CircularProgressIndicator(color: Colors.blue),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          signupNextButton,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: ColorPalette.white,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -365,5 +353,45 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
         ),
       ),
     );
+  }
+
+  Future<void> checkIfEmailExist() async {
+    setState(() {
+      userEmailExist = false;
+      isLoading = true;
+    });
+    // whenever you are testing, you can comment this part
+    var validateEmail = await _authService.validateEmail(_emailController.text.trim());
+    if (!validateEmail['validators']['mx']['valid'] &&
+        !validateEmail['validators']['smtp']['valid'] &&
+        !validateEmail['valid']) {
+      setState(() {
+        emailErrorMessage = 'Email is invalid';
+        userEmailExist = true;
+        signupNextButton = 'Next';
+        isLoading = false;
+      });
+      return;
+    }
+
+    var emailExist = await _authService.checkIfEmailExist(
+      _emailController.text.trim(),
+    );
+    if (!emailExist) {
+      MyAppState.reduxStore!.dispatch(CreateUserAction(
+        User(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        ),
+      ));
+      push(context, DateOfBirthScreen('signup', 'email', ''));
+    } else {
+      setState(() {
+        emailErrorMessage = 'Email is already in use';
+        userEmailExist = true;
+        signupNextButton = 'Next';
+        isLoading = false;
+      });
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ class AuthService {
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   UserService _userService = UserService();
+  String kickchatBackendUrl = dotenv.get('KICK_CHAT_BACKEND_URL');
 
   static getUserIpInfo() async {
     var url = Uri.parse('http://ip-api.com/json');
@@ -21,6 +23,17 @@ class AuthService {
       return jsonDecode(response.body);
     } else {
       return null;
+    }
+  }
+
+  validateEmail(String email) async {
+    String baseUrl = '$kickchatBackendUrl/validate_email?email=$email';
+    final response = await http.get(Uri.parse(baseUrl));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw 'Could not validate email.';
     }
   }
 

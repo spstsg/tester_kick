@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+String kickchatBackendUrl = dotenv.get('KICK_CHAT_BACKEND_URL');
+
 class AgoraService {
-  String baseUrl = 'https://kickchat-agora-token.vercel.app/access_token';
+  String baseUrl = '$kickchatBackendUrl/access_token';
 
   Future getToken(String channelName, String role, int uid) async {
     final response = await http.get(

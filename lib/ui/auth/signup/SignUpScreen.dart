@@ -23,114 +23,6 @@ class SignUpScreen extends StatelessWidget {
   final FacebookAuthService _facebookAuthService = FacebookAuthService();
   final GoogleAuthService _googleAuthService = GoogleAuthService();
 
-  Route _createRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(-1.0, 0.0);
-        var end = Offset.zero;
-        var curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
-    );
-  }
-
-  Future<void> facebookAuth(BuildContext context) async {
-    try {
-      final LoginResult fbResult = await FacebookAuth.instance.login(
-        permissions: ['public_profile', 'email'],
-      );
-      var userData = await FacebookAuth.instance.getUserData();
-      dynamic result = await _facebookAuthService.loginWithFacebook(
-        userData,
-        fbResult,
-      );
-
-      if (result != null && result is User) {
-        result.active = true;
-        result.lastOnlineTimestamp = Timestamp.now();
-        result.emailPasswordLogin = false;
-        _userService.updateCurrentUser(result);
-        MyAppState.currentUser = result;
-        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
-        pushAndRemoveUntil(
-          context,
-          NavScreen(),
-          false,
-          true,
-          'Signing up, Please wait...',
-        );
-      } else if (result != null && result is auth.UserCredential) {
-        MyAppState.reduxStore!.dispatch(
-          CreateUserAction(
-            User(
-              email: result.user?.email ?? '',
-              password: '',
-              profilePictureURL: userData['picture']['data']['url'],
-            ),
-          ),
-        );
-        pushAndRemoveUntil(
-          context,
-          DateOfBirthScreen('signup', 'facebook', result),
-          false,
-          true,
-          'Please wait...',
-        );
-      }
-    } catch (error) {
-      print(error);
-    }
-  }
-
-  Future<void> googleAuth(BuildContext context) async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      dynamic result = await _googleAuthService.signInWithGoogle(googleUser);
-
-      if (result != null && result is User) {
-        result.active = true;
-        result.lastOnlineTimestamp = Timestamp.now();
-        result.emailPasswordLogin = false;
-        _userService.updateCurrentUser(result);
-        MyAppState.currentUser = result;
-        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
-        pushAndRemoveUntil(
-          context,
-          NavScreen(),
-          false,
-          true,
-          'Signing up, Please wait...',
-        );
-      } else if (result != null && result is auth.UserCredential) {
-        MyAppState.reduxStore!.dispatch(
-          CreateUserAction(
-            User(
-              email: result.user?.email ?? '',
-              password: '',
-              profilePictureURL: googleUser!.photoUrl!,
-            ),
-          ),
-        );
-        pushAndRemoveUntil(
-          context,
-          DateOfBirthScreen('signup', 'google', result),
-          false,
-          true,
-          'Please wait...',
-        );
-      }
-    } catch (error) {
-      print(error);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -425,5 +317,115 @@ class SignUpScreen extends StatelessWidget {
             ),
           )),
     );
+  }
+
+  Route _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = Offset(-1.0, 0.0);
+        var end = Offset.zero;
+        var curve = Curves.ease;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
+
+  Future<void> facebookAuth(BuildContext context) async {
+    try {
+      final LoginResult fbResult = await FacebookAuth.instance.login(
+        permissions: ['public_profile', 'email'],
+      );
+      var userData = await FacebookAuth.instance.getUserData();
+      dynamic result = await _facebookAuthService.loginWithFacebook(
+        userData,
+        fbResult,
+      );
+
+      if (result != null && result is User) {
+        result.active = true;
+        result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
+        _userService.updateCurrentUser(result);
+        MyAppState.currentUser = result;
+        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
+        pushAndRemoveUntil(
+          context,
+          NavScreen(),
+          false,
+          true,
+          'Signing up, Please wait...',
+        );
+      } else if (result != null && result is auth.UserCredential) {
+        MyAppState.reduxStore!.dispatch(
+          CreateUserAction(
+            User(
+              email: result.user?.email ?? '',
+              password: '',
+              profilePictureURL: userData['picture']['data']['url'],
+            ),
+          ),
+        );
+        pushAndRemoveUntil(
+          context,
+          DateOfBirthScreen('signup', 'facebook', result),
+          false,
+          true,
+          'Please wait...',
+        );
+      }
+    } catch (error) {
+      final snackBar = SnackBar(content: Text('Error authenticating. Please try again later.'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  Future<void> googleAuth(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      dynamic result = await _googleAuthService.signInWithGoogle(googleUser);
+
+      if (result != null && result is User) {
+        result.active = true;
+        result.lastOnlineTimestamp = Timestamp.now();
+        result.emailPasswordLogin = false;
+        _userService.updateCurrentUser(result);
+        MyAppState.currentUser = result;
+        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
+        pushAndRemoveUntil(
+          context,
+          NavScreen(),
+          false,
+          true,
+          'Signing up, Please wait...',
+        );
+      } else if (result != null && result is auth.UserCredential) {
+        MyAppState.reduxStore!.dispatch(
+          CreateUserAction(
+            User(
+              email: result.user?.email ?? '',
+              password: '',
+              profilePictureURL: googleUser!.photoUrl!,
+            ),
+          ),
+        );
+        pushAndRemoveUntil(
+          context,
+          DateOfBirthScreen('signup', 'google', result),
+          false,
+          true,
+          'Please wait...',
+        );
+      }
+    } catch (error) {
+      final snackBar = SnackBar(content: Text('Error authenticating. Please try again later.'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 }

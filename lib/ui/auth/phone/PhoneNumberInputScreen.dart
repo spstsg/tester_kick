@@ -44,157 +44,55 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
   int phoneNumberLength = 0;
   User? userData;
   String deviceCountry = '';
+  bool isLoading = false;
 
   @override
   void initState() {
     userData = MyAppState.reduxStore!.state.user;
-    getUserIPInfo();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      setState(() {
+        getUserIPInfo();
+      });
+    });
     super.initState();
   }
 
-  Future<void> getUserIPInfo() async {
-    var userIPInfo = await AuthService.getUserIpInfo();
-    if (userIPInfo != null) {
-      deviceCountry = userIPInfo['countryCode'];
-    } else {
-      deviceCountry = 'US';
-    }
+  @override
+  void dispose() {
+    // _otpController.dispose();
+    super.dispose();
   }
 
-  Future<bool> setFinishedOnBoarding() async {
-    return _sharedPreferences.setSharedPreferencesBool(FINISHED_ON_BOARDING, true);
-  }
-
-  /// sends a request to firebase to create a new user using phone number and
-  /// navigate to [ContainerScreen] after wards
-  phoneAuth() async {
-    await _authService.firebaseSubmitPhoneNumber(
-      _phoneNumber,
-      (String verificationId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Code verification timeout, request new code.'),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0.0,
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: ColorPalette.white),
+        title: Text(
+          widget.type == 'login' ? "Sign in" : 'Sign up',
+          style: TextStyle(
+            color: ColorPalette.black,
+            fontSize: 18,
           ),
-        );
-        setState(() {
-          verificationID = verificationId;
-          buttonName = 'Send code';
-        });
-      },
-      (String verificationId, int? forceResendingToken) {
-        setState(() {
-          verificationID = verificationId;
-          currentState = AppVerificationState.SHOW_OTP_STATE;
-        });
-      },
-      (auth.FirebaseAuthException error) {
-        String message = 'An error has occurred, please try again.';
-        print(error);
-        switch (error.code) {
-          case 'invalid-verification-code':
-            message = 'Invalid code or has been expired.';
-            break;
-          case 'user-disabled':
-            message = 'This user has been disabled.';
-            break;
-          default:
-            message = 'An error has occurred, please try again.';
-            break;
-        }
-        setState(() {
-          phoneNumberLength = 0;
-          buttonName = 'Send code';
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      },
-      (auth.PhoneAuthCredential credential) async {},
+        ),
+        leading: IconButton(
+          icon: Icon(
+            MdiIcons.chevronLeft,
+            size: 30,
+            color: ColorPalette.primary,
+          ),
+          onPressed: () => push(context, widget.type == 'login' ? LoginScreen() : SignUpScreen()),
+        ),
+      ),
+      body: SafeArea(
+        child: currentState == AppVerificationState.SHOW_PHONE_NUMBER_STATE
+            ? phoneNumberWidget(deviceCountry)
+            : otpWidget(),
+      ),
     );
-  }
-
-  /// submits the code to firebase to be validated, then get get the user
-  /// object from firebase database
-  void _submitCode() async {
-    try {
-      if (verificationID != '') {
-        dynamic result = await _authService.firebaseSubmitPhoneNumberCode(
-          verificationID,
-          _otpController.text.trim(),
-          _phoneNumber,
-        );
-        if (result != null && result is User) {
-          result.active = true;
-          result.lastOnlineTimestamp = Timestamp.now();
-          _userService.updateCurrentUser(result);
-          MyAppState.currentUser = result;
-          MyAppState.reduxStore!.dispatch(CreateUserAction(result));
-          setFinishedOnBoarding();
-          pushAndRemoveUntil(
-            context,
-            NavScreen(),
-            false,
-            true,
-            'Please wait...',
-          );
-        } else {
-          MyAppState.reduxStore!.dispatch(
-            CreateUserAction(
-              User(
-                email: userData!.email,
-                password: userData!.password,
-                dob: userData!.dob,
-                phoneNumber: _phoneNumber,
-              ),
-            ),
-          );
-          pushAndRemoveUntil(
-            context,
-            DateOfBirthScreen(
-              widget.type == 'login' ? "login" : 'signup',
-              'phone',
-              result,
-            ),
-            false,
-            true,
-            'Please wait...',
-          );
-        }
-      } else {
-        setState(() {
-          currentState = AppVerificationState.SHOW_OTP_STATE;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Couldn\'t get verification ID'),
-          duration: Duration(seconds: 6),
-        ));
-      }
-    } on auth.FirebaseAuthException catch (exception) {
-      String message = 'An error has occurred, please try again.';
-      switch (exception.code) {
-        case 'invalid-verification-code':
-          message = 'Invalid code or has been expired.';
-          break;
-        case 'user-disabled':
-          message = 'This user has been disabled.';
-          break;
-        default:
-          message = 'An error has occurred, please try again.';
-          break;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-        ),
-      );
-    } catch (e, s) {
-      print('_PhoneNumberInputScreenState._submitCode $e $s');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An error has occurred, please try again.'),
-        ),
-      );
-    }
   }
 
   Widget phoneNumberWidget(String deviceCountry) {
@@ -252,33 +150,36 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: phoneNumberLength < 8 ? ColorPalette.grey : ColorPalette.primary,
+                    shadowColor: Colors.transparent,
+                    onPrimary: Colors.grey.shade200,
+                    primary: phoneNumberLength < 8
+                        ? Colors.grey.shade200
+                        : !isLoading
+                            ? ColorPalette.primary
+                            : Colors.grey.shade200,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                   ),
-                  // onPressed: wait
-                  //     ? null
-                  //     : () {
-                  //         startTimer();
-                  //         setState(
-                  //           () {
-                  //             start = 30;
-                  //             wait = true;
-                  //             buttonName = 'Resend code';
-                  //           },
-                  //         );
-                  //       },
-                  onPressed: phoneNumberLength > 8 ? () => phoneAuth() : null,
-                  child: Text(
-                    buttonName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: ColorPalette.white,
-                    ),
-                  ),
+                  onPressed: phoneNumberLength > 8 ? () => !isLoading ? phoneAuth() : null : null,
+                  child: isLoading
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 21,
+                              height: 21,
+                              child: CircularProgressIndicator(color: Colors.blue),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          buttonName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: ColorPalette.white,
+                          ),
+                        ),
                 ),
               ),
             )
@@ -295,9 +196,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
         child: Column(
           children: [
             new Align(
-              alignment: Directionality.of(context) == TextDirection.ltr
-                  ? Alignment.topLeft
-                  : Alignment.topRight,
+              alignment: Alignment.center,
               child: Text(
                 'Verify your phone number',
                 style: TextStyle(
@@ -307,34 +206,31 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 15),
-            new Align(
-              alignment: Directionality.of(context) == TextDirection.ltr
-                  ? Alignment.topLeft
-                  : Alignment.topRight,
+            Container(
+              alignment: Alignment.center,
+              height: 40,
               child: Text(
-                'We have sent an sms code to $_phoneNumber',
+                truncateString('We have sent an sms code to $_phoneNumber', 42),
                 style: TextStyle(
                   color: ColorPalette.black,
-                  fontSize: 20,
+                  fontSize: 16,
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 30.0),
+              padding: EdgeInsets.only(top: 50.0),
               child: PinCodeTextField(
                 length: 6,
                 appContext: context,
                 keyboardType: TextInputType.phone,
                 backgroundColor: Colors.transparent,
                 textStyle: TextStyle(fontSize: 22),
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 controller: _otpController,
                 pinTheme: PinTheme(
                   shape: PinCodeFieldShape.box,
                   borderRadius: BorderRadius.circular(5),
-                  fieldHeight: 50,
-                  fieldWidth: 50,
+                  fieldHeight: 45,
+                  fieldWidth: 45,
                   activeColor: ColorPalette.primary,
                   activeFillColor: Colors.grey.shade100,
                   selectedFillColor: Colors.transparent,
@@ -353,18 +249,13 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.blue,
+                    shadowColor: Colors.transparent,
+                    onPrimary: Colors.grey.shade200,
+                    primary: !isLoading ? ColorPalette.primary : Colors.grey.shade200,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0),
-                      side: BorderSide(
-                        color: Colors.blue,
-                      ),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                   ),
-                  onPressed: () {
-                    _submitCode();
-                  },
+                  onPressed: !isLoading ? () => _submitCode() : null,
                   child: Text(
                     'Verify',
                     style: TextStyle(
@@ -382,46 +273,140 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _otpController.dispose();
-    super.dispose();
+  Future<void> getUserIPInfo() async {
+    var userIPInfo = await AuthService.getUserIpInfo();
+    setState(() {
+      if (userIPInfo != null) {
+        deviceCountry = userIPInfo['countryCode'];
+      } else {
+        deviceCountry = 'US';
+      }
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: ColorPalette.white),
-        title: Text(
-          widget.type == 'login' ? "Sign in" : 'Sign up',
-          style: TextStyle(
-            color: ColorPalette.black,
-            fontSize: 18,
-          ),
+  Future<bool> setFinishedOnBoarding() async {
+    return _sharedPreferences.setSharedPreferencesBool(FINISHED_ON_BOARDING, true);
+  }
+
+  /// sends a request to firebase to create a new user using phone number and
+  /// navigate to [ContainerScreen] after wards
+  phoneAuth() async {
+    setState(() => isLoading = true);
+    try {
+      await _authService.firebaseSubmitPhoneNumber(
+        _phoneNumber,
+        (String verificationId) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Code verification timeout, request new code.'),
+            ),
+          );
+          setState(() {
+            verificationID = verificationId;
+            buttonName = 'Send code';
+          });
+        },
+        (String verificationId, int? forceResendingToken) {
+          setState(() {
+            verificationID = verificationId;
+            currentState = AppVerificationState.SHOW_OTP_STATE;
+          });
+        },
+        (auth.FirebaseAuthException error) {
+          String message = 'An error has occurred, please try again.';
+          switch (error.code) {
+            case 'invalid-verification-code':
+              message = 'Invalid code or has been expired.';
+              break;
+            case 'user-disabled':
+              message = 'This user has been disabled.';
+              break;
+            default:
+              message = 'An error has occurred, please try again.';
+              break;
+          }
+          setState(() {
+            phoneNumberLength = 0;
+            buttonName = 'Send code';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        },
+        (auth.PhoneAuthCredential credential) async {},
+      );
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  /// submits the code to firebase to be validated, then get get the user
+  /// object from firebase database
+  void _submitCode() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      if (verificationID != '') {
+        dynamic result = await _authService.firebaseSubmitPhoneNumberCode(
+          verificationID,
+          _otpController.text.trim(),
+          _phoneNumber,
+        );
+        if (result != null && result is User) {
+          result.active = true;
+          result.lastOnlineTimestamp = Timestamp.now();
+          _userService.updateCurrentUser(result);
+          MyAppState.currentUser = result;
+          MyAppState.reduxStore!.dispatch(CreateUserAction(result));
+          setFinishedOnBoarding();
+          push(context, NavScreen());
+        } else {
+          MyAppState.reduxStore!.dispatch(
+            CreateUserAction(
+              User(
+                email: userData!.email,
+                password: userData!.password,
+                dob: userData!.dob,
+                phoneNumber: _phoneNumber,
+              ),
+            ),
+          );
+          push(context, DateOfBirthScreen(widget.type == 'login' ? "login" : 'signup', 'phone', result));
+        }
+      } else {
+        setState(() {
+          currentState = AppVerificationState.SHOW_OTP_STATE;
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Couldn\'t get verification ID'),
+          duration: Duration(seconds: 6),
+        ));
+      }
+    } on auth.FirebaseAuthException catch (exception) {
+      String message = 'An error has occurred, please try again.';
+      switch (exception.code) {
+        case 'invalid-verification-code':
+          message = 'Invalid code or has been expired.';
+          break;
+        case 'user-disabled':
+          message = 'This user has been disabled.';
+          break;
+        default:
+          message = 'An error has occurred, please try again.';
+          break;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error has occurred, please try again.'),
         ),
-        leading: IconButton(
-          icon: Icon(
-            MdiIcons.chevronLeft,
-            size: 30,
-            color: ColorPalette.primary,
-          ),
-          onPressed: () => pushAndRemoveUntil(
-            context,
-            widget.type == 'login' ? LoginScreen() : SignUpScreen(),
-            false,
-            false,
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: currentState == AppVerificationState.SHOW_PHONE_NUMBER_STATE
-            ? phoneNumberWidget(deviceCountry)
-            : otpWidget(),
-      ),
-    );
+      );
+    }
   }
 }

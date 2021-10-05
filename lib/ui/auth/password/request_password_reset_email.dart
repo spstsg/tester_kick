@@ -125,13 +125,13 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
                 constraints: BoxConstraints(minWidth: double.infinity),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.blue,
+                    shadowColor: Colors.transparent,
+                    onPrimary: Colors.grey.shade200,
+                    primary: !isLoading ? ColorPalette.primary : Colors.grey.shade200,
                     padding: EdgeInsets.only(top: 10, bottom: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                   ),
-                  onPressed: validEmail ? () => checkIfEmailExist() : null,
+                  onPressed: validEmail ? () => !isLoading ? checkIfEmailExist() : null : null,
                   child: isLoading
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -202,7 +202,6 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
         false,
       );
     } catch (e) {
-      print(e);
       setState(() => isLoading = false);
       showCupertinoAlert(
         context,
