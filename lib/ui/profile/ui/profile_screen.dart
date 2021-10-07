@@ -27,6 +27,7 @@ import 'package:kick_chat/ui/profile/ui/settings_screen.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_images.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_post.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_videos.dart';
+import 'package:kick_chat/ui/profile/widgets/user_favorite_games.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -56,31 +57,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isBlocked = false;
   int _followersCount = 0;
   int _followingCount = 0;
-
-  Stream<bool> checkIfUserIsFollowed() async* {
-    userExistStream = new StreamController<bool>();
-    bool isFollowingThisUser =
-        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
-    if (!userExistStream.isClosed) {
-      userExistStream.sink.add(isFollowingThisUser);
-    }
-    yield* userExistStream.stream;
-  }
-
-  userIsFollowed() async {
-    bool isFollowingThisUser =
-        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
-    setState(() {
-      _isFollowing = isFollowingThisUser;
-    });
-  }
-
-  userIsBlocked() async {
-    bool isUserBlocked = await _blockedUserService.validateIfUserBlocked(widget.user.userID);
-    setState(() {
-      _isBlocked = isUserBlocked;
-    });
-  }
 
   @override
   void initState() {
@@ -187,14 +163,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 70,
                               width: 70,
                               child: ProfileAvatar(
-                                imageUrl: imageFileList.isEmpty
-                                    ? widget.user.profilePictureURL
-                                    : imageFileList[0],
+                                imageUrl: imageFileList.isEmpty ? widget.user.profilePictureURL : imageFileList[0],
                                 username: widget.user.username,
                                 avatarColor: widget.user.avatarColor,
                                 showIcon:
-                                    widget.user.username == MyAppState.currentUser!.username &&
-                                        imageFileList.isEmpty,
+                                    widget.user.username == MyAppState.currentUser!.username && imageFileList.isEmpty,
                                 radius: 70,
                                 fontSize: 30,
                                 onPressed: () => selectImage(),
@@ -274,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Container(
                   child: DefaultTabController(
-                    length: 3,
+                    length: 4,
                     initialIndex: 0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,6 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Tab(icon: Icon(MdiIcons.grid)),
                               Tab(icon: Icon(MdiIcons.imageMultipleOutline)),
                               Tab(icon: Icon(MdiIcons.videoOutline)),
+                              Tab(icon: Icon(MdiIcons.gamepad)),
                             ],
                           ),
                         ),
@@ -297,8 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               storeUser.postCount > 0 || widget.user.postCount > 0
                                   ? ProfilePost(user: widget.user)
                                   : Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 32.0, vertical: 150),
+                                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
                                       child: Center(
                                         child: showEmptyState(
                                           'No posts found',
@@ -308,6 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                               ProfileImages(user: widget.user),
                               ProfileVideos(user: widget.user),
+                              UserFavoriteGames(),
                             ],
                           ),
                         )
@@ -440,8 +414,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         GestureDetector(
                           onTap: () async {
                             User friend = widget.user;
-                            ConversationModel? conversationModel =
-                                await _chatService.getSingleConversation(
+                            ConversationModel? conversationModel = await _chatService.getSingleConversation(
                               MyAppState.currentUser!.userID,
                               friend.userID,
                             );
@@ -486,8 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: GestureDetector(
                             onTap: () async {
                               try {
-                                _followService.unFollowUser(
-                                    MyAppState.currentUser!.userID, widget.user.userID);
+                                _followService.unFollowUser(MyAppState.currentUser!.userID, widget.user.userID);
                                 MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                                 setState(() {
                                   _followersCount--;
@@ -571,8 +543,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? GestureDetector(
                 onTap: () async {
                   if (widget.user.userID != MyAppState.currentUser!.userID) {
-                    bool isSuccessful =
-                        await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
+                    bool isSuccessful = await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
                     if (!isSuccessful) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -673,9 +644,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context,
               FriendsTabScreen(
                 tabIndex: 0,
-                user: widget.user.userID == MyAppState.currentUser!.userID
-                    ? MyAppState.currentUser!
-                    : widget.user,
+                user: widget.user.userID == MyAppState.currentUser!.userID ? MyAppState.currentUser! : widget.user,
               ),
             );
           },
@@ -725,6 +694,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Stream<bool> checkIfUserIsFollowed() async* {
+    userExistStream = new StreamController<bool>();
+    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    if (!userExistStream.isClosed) {
+      userExistStream.sink.add(isFollowingThisUser);
+    }
+    yield* userExistStream.stream;
+  }
+
+  userIsFollowed() async {
+    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    setState(() {
+      _isFollowing = isFollowingThisUser;
+    });
+  }
+
+  userIsBlocked() async {
+    bool isUserBlocked = await _blockedUserService.validateIfUserBlocked(widget.user.userID);
+    setState(() {
+      _isBlocked = isUserBlocked;
+    });
   }
 
   void selectImage() async {

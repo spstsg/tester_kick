@@ -90,7 +90,7 @@ class _GameChatScreenState extends State<GameChatScreen> {
                 return ListView.builder(
                   key: PageStorageKey(1),
                   padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: ScrollPhysics(),
                   scrollDirection: Axis.vertical,
                   controller: _scrollController,
                   shrinkWrap: true,

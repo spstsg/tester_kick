@@ -46,7 +46,7 @@ class _MatchStatsScreenState extends State<MatchStatsScreen> {
     if (statistics.isEmpty) {
       return ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
-        physics: NeverScrollableScrollPhysics(),
+        physics: ScrollPhysics(),
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
         itemCount: 1,

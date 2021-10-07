@@ -32,6 +32,7 @@ const UPCOMING_AUDIO_ROOMS = 'upcoming_audio_rooms';
 const AUDIO_ROOM_CHAT = 'audio_rooms_messages';
 const USER_VIDEOS = 'videos';
 const CHAT_NOTIFICATIONS = 'chat_notifications';
+const FAVORITE_GAMES = 'favorite_games';
 
 /// helpful formatting constants
 const SECOND_MILLIS = 1000;
