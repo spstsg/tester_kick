@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
@@ -23,7 +23,7 @@ class AudioHomeScreen extends StatefulWidget {
   _AudioHomeScreenState createState() => _AudioHomeScreenState();
 }
 
-class _AudioHomeScreenState extends State<AudioHomeScreen> {
+class _AudioHomeScreenState extends State<AudioHomeScreen> with SingleTickerProviderStateMixin {
   AudoChatService _audioChatService = AudoChatService();
 
   @override
@@ -188,18 +188,7 @@ class _AudioHomeScreenState extends State<AudioHomeScreen> {
                 child: TabBarView(
                   children: <Widget>[
                     LiveAudioRooms(),
-                    Container(
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        physics: ScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemCount: 1,
-                        itemBuilder: (BuildContext context, int index) {
-                          return UpcomingAudioCard();
-                        },
-                      ),
-                    ),
+                    UpcomingAudioCard(),
                   ],
                 ),
               ),
@@ -236,10 +225,12 @@ class _AudioHomeScreenState extends State<AudioHomeScreen> {
 
   checkParticipant(Room room) {
     var participants = room.participants;
-    var user =
-        participants.where((participant) => participant['username'] == MyAppState.currentUser!.username).toList();
+    var user = participants
+        .where((participant) => participant['username'] == MyAppState.currentUser!.username)
+        .toList();
     if (user.isNotEmpty && room.creator.username != user[0]['username']) {
-      participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
+      participants.removeWhere(
+          (participant) => participant['username'] == MyAppState.currentUser!.username);
       MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
       _audioChatService.removeSpeaker(room.id);
       _audioChatService.removeParticipant(

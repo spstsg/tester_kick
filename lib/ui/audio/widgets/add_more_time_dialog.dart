@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 

@@ -1,4 +1,4 @@
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/models/post_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 

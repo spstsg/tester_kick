@@ -48,6 +48,7 @@ class _NavScreenState extends State<NavScreen> {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       setState(() {
         _selectedIndex = widget.tabIndex;
+        currentScreen = _tabElements[_selectedIndex]['screen'];
       });
     });
   }
@@ -62,7 +63,8 @@ class _NavScreenState extends State<NavScreen> {
       provisional: false,
       sound: true,
     );
-    if (settings.authorizationStatus == AuthorizationStatus.denied && MyAppState.currentUser!.settings.notifications) {
+    if (settings.authorizationStatus == AuthorizationStatus.denied &&
+        MyAppState.currentUser!.settings.notifications) {
       await _userService.updatePushNotificationSetting(false);
     }
   }
@@ -106,7 +108,7 @@ class _NavScreenState extends State<NavScreen> {
                           item['name'],
                           style: TextStyle(
                             color: _selectedIndex == item['index'] ? Colors.blue : Colors.grey,
-                            fontSize: fontSizeForScreen(context).toDouble(),
+                            fontSize: fontSizeForScreen(context),
                           ),
                         ),
                       ],
@@ -120,13 +122,13 @@ class _NavScreenState extends State<NavScreen> {
     );
   }
 
-  int fontSizeForScreen(BuildContext context) {
+  double fontSizeForScreen(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     if (width < 400) {
-      return 10;
+      return 10.0;
     } else if (width > 400 && width < 500) {
-      return 12;
+      return 12.0;
     }
-    return 14;
+    return 14.0;
   }
 }

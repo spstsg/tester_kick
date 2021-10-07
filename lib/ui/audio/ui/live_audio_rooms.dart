@@ -1,18 +1,18 @@
-// import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
-// import 'package:kick_chat/redux/actions/selected_room_action.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
+import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
-// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/audio/ui/user_live_widget.dart';
 import 'package:kick_chat/ui/audio/widgets/audio_card.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LiveAudioRooms extends StatefulWidget {
   const LiveAudioRooms({Key? key}) : super(key: key);
@@ -46,6 +46,7 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
       converter: (store) => store.state.selectedRoom,
       builder: (context, storeSelectedRoom) {
         WidgetsBinding.instance!.addPostFrameCallback((_) {
+          if (!mounted) return;
           setState(() {
             selectedRoom = storeSelectedRoom;
           });
@@ -99,22 +100,21 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
                       shrinkWrap: true,
                       itemCount: liveAudioRooms.length,
                       itemBuilder: (BuildContext context, int index) {
-                        // ClientRole role;
-                        // if (liveAudioRooms[index].creator.username ==
-                        //     MyAppState.currentUser!.username) {
-                        //   role = ClientRole.Broadcaster;
-                        // } else {
-                        //   role = ClientRole.Audience;
-                        // }
+                        ClientRole role;
+                        if (liveAudioRooms[index].creator.username == MyAppState.currentUser!.username) {
+                          role = ClientRole.Broadcaster;
+                        } else {
+                          role = ClientRole.Audience;
+                        }
 
                         return AudioCard(
                           onPressed: () async {
-                            // audioCardOnPressed(
-                            //   storeSelectedRoom,
-                            //   liveAudioRooms,
-                            //   index,
-                            //   role,
-                            // );
+                            audioCardOnPressed(
+                              storeSelectedRoom,
+                              liveAudioRooms,
+                              index,
+                              role,
+                            );
                           },
                           room: liveAudioRooms[index],
                         );
@@ -136,78 +136,74 @@ class _LiveAudioRoomsState extends State<LiveAudioRooms> {
     );
   }
 
-  // audioCardOnPressed(storeSelectedRoom, liveAudioRooms, int index, ClientRole role) async {
-  //   String roomCreatorId = await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
-  //   String selectedRoomId = await _sharedPreferences.getSharedPreferencesString('roomId');
-  //   if (roomCreatorId == MyAppState.currentUser!.userID &&
-  //       selectedRoomId != liveAudioRooms[index].id) {
-  //     await showCupertinoAlert(
-  //       context,
-  //       'Message',
-  //       'You have to end your active room before you can join another room',
-  //       'OK',
-  //       '',
-  //       false,
-  //     );
-  //     return;
-  //   }
+  audioCardOnPressed(storeSelectedRoom, liveAudioRooms, int index, ClientRole role) async {
+    String roomCreatorId = await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
+    String selectedRoomId = await _sharedPreferences.getSharedPreferencesString('roomId');
+    if (roomCreatorId == MyAppState.currentUser!.userID && selectedRoomId != liveAudioRooms[index].id) {
+      await showCupertinoAlert(
+        context,
+        'Message',
+        'You have to end your active room before you can join another room',
+        'OK',
+        '',
+        '',
+        false,
+      );
+      return;
+    }
 
-  //   removeUserFromRoom(storeSelectedRoom.participants, roomCreatorId, selectedRoomId);
+    removeUserFromRoom(storeSelectedRoom.participants, roomCreatorId, selectedRoomId);
 
-  //   var participants = liveAudioRooms[index].participants;
-  //   var result = participants
-  //       .where((participant) => participant['username'] == MyAppState.currentUser!.username);
-  //   hasParticipant = result.isNotEmpty ? true : false;
-  //   Room room = Room(
-  //     id: liveAudioRooms[index].id,
-  //     title: liveAudioRooms[index].title,
-  //     tags: liveAudioRooms[index].tags,
-  //     creator: liveAudioRooms[index].creator,
-  //     status: liveAudioRooms[index].status,
-  //     channel: liveAudioRooms[index].channel,
-  //     speakers: liveAudioRooms[index].speakers,
-  //     participants: liveAudioRooms[index].participants,
-  //     startTime: liveAudioRooms[index].startTime,
-  //     endTime: liveAudioRooms[index].endTime,
-  //   );
-  //   await [Permission.microphone].request();
-  //   if (!hasParticipant) {
-  //     var newParticipants = {
-  //       'id': MyAppState.currentUser!.userID,
-  //       'username': MyAppState.currentUser!.username,
-  //       'avatarColor': MyAppState.currentUser!.avatarColor,
-  //       'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
-  //     };
-  //     room.participants.add(newParticipants);
-  //     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
+    var participants = liveAudioRooms[index].participants;
+    var result = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
+    hasParticipant = result.isNotEmpty ? true : false;
+    Room room = Room(
+      id: liveAudioRooms[index].id,
+      title: liveAudioRooms[index].title,
+      tags: liveAudioRooms[index].tags,
+      creator: liveAudioRooms[index].creator,
+      status: liveAudioRooms[index].status,
+      channel: liveAudioRooms[index].channel,
+      speakers: liveAudioRooms[index].speakers,
+      participants: liveAudioRooms[index].participants,
+      startTime: liveAudioRooms[index].startTime,
+      endTime: liveAudioRooms[index].endTime,
+    );
+    await [Permission.microphone].request();
+    if (!hasParticipant) {
+      var newParticipants = {
+        'id': MyAppState.currentUser!.userID,
+        'username': MyAppState.currentUser!.username,
+        'avatarColor': MyAppState.currentUser!.avatarColor,
+        'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
+      };
+      room.participants.add(newParticipants);
+      MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
 
-  //     _audioChatService.addParticipants(
-  //       liveAudioRooms[index].id,
-  //       newParticipants,
-  //     );
+      _audioChatService.addParticipants(liveAudioRooms[index].id, newParticipants);
 
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => AudioRoomScreen(
-  //           room: liveAudioRooms[index],
-  //           role: role,
-  //         ),
-  //       ),
-  //     );
-  //   } else {
-  //     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => AudioRoomScreen(
-  //           room: liveAudioRooms[index],
-  //           role: role,
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioRoomScreen(
+            room: liveAudioRooms[index],
+            role: role,
+          ),
+        ),
+      );
+    } else {
+      MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioRoomScreen(
+            room: liveAudioRooms[index],
+            role: role,
+          ),
+        ),
+      );
+    }
+  }
 
   removeUserFromRoom(List participants, String roomCreatorId, String selectedRoomId) {
     var user = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);

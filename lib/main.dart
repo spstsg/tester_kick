@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/constants.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/models/conversation_model.dart';
 import 'package:kick_chat/models/home_conversation_model.dart';
 import 'package:kick_chat/models/user_model.dart';

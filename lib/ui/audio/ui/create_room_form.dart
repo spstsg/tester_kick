@@ -1,17 +1,17 @@
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
-// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
-// import 'package:agora_rtc_engine/rtc_engine.dart';
 
 class CreateRoomFormDialog extends StatefulWidget {
   const CreateRoomFormDialog({Key? key}) : super(key: key);
@@ -164,10 +164,7 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
                       textAlignVertical: TextAlignVertical.center,
                       textInputAction: TextInputAction.next,
                       controller: _tagsController,
-                      onSaved: (val) {},
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
+                      style: TextStyle(fontSize: 17),
                       keyboardType: TextInputType.text,
                       cursorColor: ColorPalette.primary,
                       autofocus: false,
@@ -345,102 +342,82 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
 
   validateFields(String title, String tags) {
     if (title.isEmpty) {
-      final snackBar = SnackBar(
-        content: Text(
-          'Please add a title',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-          ),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+      return 'Please add a title';
     }
 
     if (tags.isEmpty) {
-      final snackBar = SnackBar(
-        content: Text(
-          'Add at least one tag',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-          ),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+      return 'Add at least one tag';
     }
 
     List roomTags = tags.split(',');
     if (roomTags.length > 3) {
-      final snackBar = SnackBar(
-        content: Text(
-          'Tags must not exceed the maximum',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-          ),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+      return 'Tags must not exceed the maximum';
     }
   }
 
   Future createLiveRoom(String title, String tags) async {
-    validateFields(title, tags);
-    SimpleFontelicoProgressDialog _dialog = SimpleFontelicoProgressDialog(
-      context: context,
-      barrierDimisable: false,
-    );
-    var timeOfDay = TimeOfDay.fromDateTime(DateTime.now());
-    startTime = DateTimeField.convert(timeOfDay);
-    try {
-      progressDialog(
-        context,
-        _dialog,
-        SimpleFontelicoProgressDialogType.normal,
-        'Creating room...',
+    String result = validateFields(title, tags);
+    if (result.isNotEmpty) {
+      final snackBar = SnackBar(
+        content: Text(
+          result,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
       );
-      await Future.delayed(Duration(seconds: 1));
-      Room room = Room(
-        id: getRandomString(20),
-        title: title,
-        tags: tags.split(','),
-        creator: MyAppState.currentUser!,
-        status: 'live',
-        channel: getRandomString(10),
-        startTime: startTime.toString(),
-        endTime: endTime.toString(),
-        participants: [
-          {
-            'id': MyAppState.currentUser!.userID,
-            'username': MyAppState.currentUser!.username,
-            'avatarColor': MyAppState.currentUser!.avatarColor,
-            'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
-          }
-        ],
-      );
-      MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
-
-      var result = await _audioChatService.createLiveRoom(room);
-      await Permission.microphone.request();
-      if (result is Room) {
-        _dialog.hide();
-        // pushAndRemoveUntil(
-        //   context,
-        //   AudioRoomScreen(room: result, role: ClientRole.Broadcaster),
-        //   false,
-        //   false,
-        //   '',
-        // );
-      }
-    } catch (e) {
-      print(e);
-      _dialog.hide();
-      final snackBar = SnackBar(content: Text('Error creating room. Try again'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      SimpleFontelicoProgressDialog _dialog = SimpleFontelicoProgressDialog(
+        context: context,
+        barrierDimisable: false,
+      );
+      var timeOfDay = TimeOfDay.fromDateTime(DateTime.now());
+      startTime = DateTimeField.convert(timeOfDay);
+      try {
+        progressDialog(
+          context,
+          _dialog,
+          SimpleFontelicoProgressDialogType.normal,
+          'Creating room...',
+        );
+        await Future.delayed(Duration(seconds: 1));
+        Room room = Room(
+          id: getRandomString(20),
+          title: title,
+          tags: tags.split(','),
+          creator: MyAppState.currentUser!,
+          status: 'live',
+          channel: getRandomString(10),
+          startTime: startTime.toString(),
+          endTime: endTime.toString(),
+          participants: [
+            {
+              'id': MyAppState.currentUser!.userID,
+              'username': MyAppState.currentUser!.username,
+              'avatarColor': MyAppState.currentUser!.avatarColor,
+              'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
+            }
+          ],
+        );
+        MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
+
+        var result = await _audioChatService.createLiveRoom(room);
+        await Permission.microphone.request();
+        if (result is Room) {
+          _dialog.hide();
+          pushAndRemoveUntil(
+            context,
+            AudioRoomScreen(room: result, role: ClientRole.Broadcaster),
+            false,
+            false,
+            '',
+          );
+        }
+      } catch (e) {
+        _dialog.hide();
+        final snackBar = SnackBar(content: Text('Error creating room. Try again'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 }

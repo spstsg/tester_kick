@@ -361,18 +361,18 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
       isLoading = true;
     });
     // whenever you are testing, you can comment this part
-    var validateEmail = await _authService.validateEmail(_emailController.text.trim());
-    if (!validateEmail['validators']['mx']['valid'] &&
-        !validateEmail['validators']['smtp']['valid'] &&
-        !validateEmail['valid']) {
-      setState(() {
-        emailErrorMessage = 'Email is invalid';
-        userEmailExist = true;
-        signupNextButton = 'Next';
-        isLoading = false;
-      });
-      return;
-    }
+    // var validateEmail = await _authService.validateEmail(_emailController.text.trim());
+    // if (!validateEmail['validators']['mx']['valid'] &&
+    //     !validateEmail['validators']['smtp']['valid'] &&
+    //     !validateEmail['valid']) {
+    //   setState(() {
+    //     emailErrorMessage = 'Email is invalid';
+    //     userEmailExist = true;
+    //     signupNextButton = 'Next';
+    //     isLoading = false;
+    //   });
+    //   return;
+    // }
 
     var emailExist = await _authService.checkIfEmailExist(
       _emailController.text.trim(),

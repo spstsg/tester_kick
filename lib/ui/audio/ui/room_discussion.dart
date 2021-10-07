@@ -6,8 +6,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
+import 'package:kick_chat/models/audio_room_chat_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/chat/audio_room_chat.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -25,7 +25,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
   TextEditingController _messageController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
-  late Stream<List<AudioRoomModel>> _audioChatMessageStream;
+  late Stream<List<AudioChatRoomModel>> _audioChatMessageStream;
 
   @override
   void initState() {
@@ -291,7 +291,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
 
   _sendMessage(String roomId, String message) async {
     User user = MyAppState.currentUser!;
-    AudioRoomModel conversation = AudioRoomModel(
+    AudioChatRoomModel conversation = AudioChatRoomModel(
       id: roomId,
       lastMessageDate: Timestamp.now(),
       lastMessage: _messageController.text,

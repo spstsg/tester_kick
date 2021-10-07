@@ -28,6 +28,7 @@ const FOLLOWERS = 'followers';
 const FOLLOWING = 'following';
 const LIVESCORES_CHAT = 'livescores_chat';
 const AUDIO_LIVE_ROOMS = 'audio_live_rooms';
+const UPCOMING_AUDIO_ROOMS = 'upcoming_audio_rooms';
 const AUDIO_ROOM_CHAT = 'audio_rooms_messages';
 const USER_VIDEOS = 'videos';
 const CHAT_NOTIFICATIONS = 'chat_notifications';

@@ -1,15 +1,15 @@
-// import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
-// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/widgets/marquee.dart';
 import 'package:kick_chat/ui/widgets/ripple/circle_painter.dart';
 import 'package:kick_chat/ui/widgets/ripple/curve_wave.dart';
@@ -67,21 +67,21 @@ class _UserLiveWidgetState extends State<UserLiveWidget> with TickerProviderStat
               ),
               GestureDetector(
                 onTap: () {
-                  // ClientRole role;
-                  // if (storeSelectedRoom.creator.username == MyAppState.currentUser!.username) {
-                  //   role = ClientRole.Broadcaster;
-                  // } else {
-                  //   role = ClientRole.Audience;
-                  // }
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => AudioRoomScreen(
-                  //       room: storeSelectedRoom,
-                  //       role: role,
-                  //     ),
-                  //   ),
-                  // );
+                  ClientRole role;
+                  if (storeSelectedRoom.creator.username == MyAppState.currentUser!.username) {
+                    role = ClientRole.Broadcaster;
+                  } else {
+                    role = ClientRole.Audience;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AudioRoomScreen(
+                        room: storeSelectedRoom,
+                        role: role,
+                      ),
+                    ),
+                  );
                 },
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.75,
@@ -151,7 +151,7 @@ class _UserLiveWidgetState extends State<UserLiveWidget> with TickerProviderStat
   }
 
   removeUserFromRoom(Room room) async {
-    // AudioRoomScreenState.engine.leaveChannel();
+    AudioRoomScreenState.engine.leaveChannel();
     room.participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
     var result = await Future.wait([

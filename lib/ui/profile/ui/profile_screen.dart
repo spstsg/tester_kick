@@ -1,33 +1,33 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:intl/intl.dart';
+import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/conversation_model.dart';
 import 'package:kick_chat/models/home_conversation_model.dart';
+import 'package:kick_chat/models/image_model.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
+import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/chat/chat_service.dart';
+import 'package:kick_chat/services/files/file_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
+import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/friends/friends_tab_screen.dart';
 import 'package:kick_chat/ui/profile/ui/edit_profile.dart';
 import 'package:kick_chat/ui/profile/ui/settings_screen.dart';
-import 'package:kick_chat/ui/profile/widgets/profile_videos.dart';
-import 'package:kick_chat/ui/widgets/loading_overlay.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:intl/intl.dart';
-import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/image_model.dart';
-import 'package:kick_chat/models/user_model.dart';
-import 'package:kick_chat/redux/app_state.dart';
-import 'package:kick_chat/services/files/file_service.dart';
-import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_images.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_post.dart';
-import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/ui/profile/widgets/profile_videos.dart';
+import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -59,7 +59,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Stream<bool> checkIfUserIsFollowed() async* {
     userExistStream = new StreamController<bool>();
-    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    bool isFollowingThisUser =
+        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
     if (!userExistStream.isClosed) {
       userExistStream.sink.add(isFollowingThisUser);
     }
@@ -67,7 +68,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   userIsFollowed() async {
-    bool isFollowingThisUser = await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
+    bool isFollowingThisUser =
+        await _followService.isFollowingUser(MyAppState.currentUser!.userID, widget.user.userID);
     setState(() {
       _isFollowing = isFollowingThisUser;
     });
@@ -133,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       side: BorderSide(color: ColorPalette.primary),
                     ),
                   ),
-                  child: Text("View Best Eleven"),
+                  child: Text("Add Best Eleven"),
                 ),
               ),
               GestureDetector(
@@ -185,11 +187,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 70,
                               width: 70,
                               child: ProfileAvatar(
-                                imageUrl: imageFileList.isEmpty ? widget.user.profilePictureURL : imageFileList[0],
+                                imageUrl: imageFileList.isEmpty
+                                    ? widget.user.profilePictureURL
+                                    : imageFileList[0],
                                 username: widget.user.username,
                                 avatarColor: widget.user.avatarColor,
                                 showIcon:
-                                    widget.user.username == MyAppState.currentUser!.username && imageFileList.isEmpty,
+                                    widget.user.username == MyAppState.currentUser!.username &&
+                                        imageFileList.isEmpty,
                                 radius: 70,
                                 fontSize: 30,
                                 onPressed: () => selectImage(),
@@ -208,6 +213,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: ColorPalette.black,
                                       fontSize: 25,
                                       fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 2),
+                                    child: Text(
+                                      widget.user.team,
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        // fontSize: 25,
+                                        // fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(height: 10),
@@ -280,7 +297,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               storeUser.postCount > 0 || widget.user.postCount > 0
                                   ? ProfilePost(user: widget.user)
                                   : Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 150),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 32.0, vertical: 150),
                                       child: Center(
                                         child: showEmptyState(
                                           'No posts found',
@@ -422,7 +440,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         GestureDetector(
                           onTap: () async {
                             User friend = widget.user;
-                            ConversationModel? conversationModel = await _chatService.getSingleConversation(
+                            ConversationModel? conversationModel =
+                                await _chatService.getSingleConversation(
                               MyAppState.currentUser!.userID,
                               friend.userID,
                             );
@@ -467,7 +486,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: GestureDetector(
                             onTap: () async {
                               try {
-                                _followService.unFollowUser(MyAppState.currentUser!.userID, widget.user.userID);
+                                _followService.unFollowUser(
+                                    MyAppState.currentUser!.userID, widget.user.userID);
                                 MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                                 setState(() {
                                   _followersCount--;
@@ -551,7 +571,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? GestureDetector(
                 onTap: () async {
                   if (widget.user.userID != MyAppState.currentUser!.userID) {
-                    bool isSuccessful = await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
+                    bool isSuccessful =
+                        await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
                     if (!isSuccessful) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -652,7 +673,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context,
               FriendsTabScreen(
                 tabIndex: 0,
-                user: widget.user.userID == MyAppState.currentUser!.userID ? MyAppState.currentUser! : widget.user,
+                user: widget.user.userID == MyAppState.currentUser!.userID
+                    ? MyAppState.currentUser!
+                    : widget.user,
               ),
             );
           },

@@ -1,18 +1,18 @@
-// import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
-// import 'package:kick_chat/redux/actions/selected_room_action.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
+import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/search/search_service.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
-// import 'package:kick_chat/ui/audio/ui/audio_room.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:kick_chat/ui/audio/ui/audio_room.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AudioRoomSearch extends StatefulWidget {
   const AudioRoomSearch({Key? key}) : super(key: key);
@@ -171,17 +171,17 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
           ),
           trailing: ElevatedButton(
             onPressed: () {
-              // ClientRole role;
-              // if (room.creator.username == MyAppState.currentUser!.username) {
-              //   role = ClientRole.Broadcaster;
-              // } else {
-              //   role = ClientRole.Audience;
-              // }
-              // audioCardOnPressed(
-              //   storeSelectedRoom,
-              //   room,
-              //   role,
-              // );
+              ClientRole role;
+              if (room.creator.username == MyAppState.currentUser!.username) {
+                role = ClientRole.Broadcaster;
+              } else {
+                role = ClientRole.Audience;
+              }
+              audioCardOnPressed(
+                storeSelectedRoom,
+                room,
+                role,
+              );
             },
             style: ElevatedButton.styleFrom(
               elevation: 0.0,
@@ -210,77 +210,77 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
     );
   }
 
-  // audioCardOnPressed(storeSelectedRoom, liveAudioRoom, ClientRole role) async {
-  //   String roomCreatorId = await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
-  //   String selectedRoomId = await _sharedPreferences.getSharedPreferencesString('roomId');
-  //   if (roomCreatorId == MyAppState.currentUser!.userID && selectedRoomId != liveAudioRoom.id) {
-  //     await showCupertinoAlert(
-  //       context,
-  //       'Message',
-  //       'You have to end your active room before you can join another room',
-  //       'OK',
-  //       '',
-  //       false,
-  //     );
-  //     return;
-  //   }
+  audioCardOnPressed(storeSelectedRoom, liveAudioRoom, ClientRole role) async {
+    String roomCreatorId = await _sharedPreferences.getSharedPreferencesString('roomCreatorId');
+    String selectedRoomId = await _sharedPreferences.getSharedPreferencesString('roomId');
+    if (roomCreatorId == MyAppState.currentUser!.userID && selectedRoomId != liveAudioRoom.id) {
+      await showCupertinoAlert(
+        context,
+        'Message',
+        'You have to end your active room before you can join another room',
+        'OK',
+        '',
+        '',
+        false,
+      );
+      return;
+    }
 
-  //   removeUserFromRoom(storeSelectedRoom.participants, roomCreatorId, selectedRoomId);
+    removeUserFromRoom(storeSelectedRoom.participants, roomCreatorId, selectedRoomId);
 
-  //   var participants = liveAudioRoom.participants;
-  //   var result = participants
-  //       .where((participant) => participant['username'] == MyAppState.currentUser!.username);
-  //   hasParticipant = result.isNotEmpty ? true : false;
-  //   Room room = Room(
-  //     id: liveAudioRoom.id,
-  //     title: liveAudioRoom.title,
-  //     tags: liveAudioRoom.tags,
-  //     creator: liveAudioRoom.creator,
-  //     status: liveAudioRoom.status,
-  //     channel: liveAudioRoom.channel,
-  //     speakers: liveAudioRoom.speakers,
-  //     participants: liveAudioRoom.participants,
-  //     startTime: liveAudioRoom.startTime,
-  //     endTime: liveAudioRoom.endTime,
-  //   );
-  //   await [Permission.microphone].request();
-  //   if (!hasParticipant) {
-  //     var newParticipants = {
-  //       'id': MyAppState.currentUser!.userID,
-  //       'username': MyAppState.currentUser!.username,
-  //       'avatarColor': MyAppState.currentUser!.avatarColor,
-  //       'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
-  //     };
-  //     room.participants.add(newParticipants);
-  //     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
+    var participants = liveAudioRoom.participants;
+    var result = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
+    hasParticipant = result.isNotEmpty ? true : false;
+    Room room = Room(
+      id: liveAudioRoom.id,
+      title: liveAudioRoom.title,
+      tags: liveAudioRoom.tags,
+      creator: liveAudioRoom.creator,
+      status: liveAudioRoom.status,
+      channel: liveAudioRoom.channel,
+      speakers: liveAudioRoom.speakers,
+      participants: liveAudioRoom.participants,
+      startTime: liveAudioRoom.startTime,
+      endTime: liveAudioRoom.endTime,
+    );
+    await [Permission.microphone].request();
+    if (!hasParticipant) {
+      var newParticipants = {
+        'id': MyAppState.currentUser!.userID,
+        'username': MyAppState.currentUser!.username,
+        'avatarColor': MyAppState.currentUser!.avatarColor,
+        'profilePictureURL': MyAppState.currentUser!.profilePictureURL,
+      };
+      room.participants.add(newParticipants);
+      MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
 
-  //     _audioChatService.addParticipants(
-  //       liveAudioRoom.id,
-  //       newParticipants,
-  //     );
+      _audioChatService.addParticipants(
+        liveAudioRoom.id,
+        newParticipants,
+      );
 
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => AudioRoomScreen(
-  //           room: liveAudioRoom,
-  //           role: role,
-  //         ),
-  //       ),
-  //     );
-  //   } else {
-  //     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => AudioRoomScreen(
-  //           room: liveAudioRoom,
-  //           role: role,
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioRoomScreen(
+            room: liveAudioRoom,
+            role: role,
+          ),
+        ),
+      );
+    } else {
+      MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioRoomScreen(
+            room: liveAudioRoom,
+            role: role,
+          ),
+        ),
+      );
+    }
+  }
 
   removeUserFromRoom(List participants, String roomCreatorId, String selectedRoomId) {
     var user = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
