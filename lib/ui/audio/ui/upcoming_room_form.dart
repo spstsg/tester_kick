@@ -1,7 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:kick_chat/colors/color_palette.dart';
-import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/audio_upcoming_room_model.dart';
+import 'package:kick_chat/services/audio/audio_upcoming_service.dart';
+import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/ui/home/nav_screen.dart';
+import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
 
 class UpcomingRoomFormDialog extends StatefulWidget {
   const UpcomingRoomFormDialog({Key? key}) : super(key: key);
@@ -11,7 +17,28 @@ class UpcomingRoomFormDialog extends StatefulWidget {
 }
 
 class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
+  UpcomingAudioService _upcomingAudioService = UpcomingAudioService();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _titleController = TextEditingController();
+  TextEditingController _tagsController = TextEditingController();
+  TextEditingController _descriptionController = TextEditingController();
+  dynamic scheduledDate;
+  String _enteredTitleText = '';
+  String _enteredDescriptionText = '';
   final format = DateFormat("yyyy-MM-dd HH:mm");
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _tagsController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +54,7 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
         centerTitle: true,
       ),
       body: Form(
+        key: _formKey,
         child: ListView(
           children: [
             ConstrainedBox(
@@ -41,7 +69,7 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Name of room',
+                      'Title',
                       style: TextStyle(
                         color: ColorPalette.black,
                         fontSize: 20,
@@ -60,15 +88,20 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                     TextFormField(
                       textAlignVertical: TextAlignVertical.center,
                       textInputAction: TextInputAction.next,
-                      validator: null,
-                      onSaved: (val) {},
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
+                      controller: _titleController,
+                      onChanged: (text) {
+                        setState(() {
+                          _enteredTitleText = text;
+                        });
+                      },
+                      style: TextStyle(fontSize: 17),
                       keyboardType: TextInputType.text,
                       cursorColor: ColorPalette.primary,
                       autofocus: false,
+                      maxLength: 60,
                       decoration: InputDecoration(
+                        counterText: '${60 - _enteredTitleText.length} characters remaining',
+                        counterStyle: TextStyle(fontSize: 14),
                         contentPadding: EdgeInsets.only(left: 16, right: 16),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(0.0),
@@ -131,11 +164,8 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                     TextFormField(
                       textAlignVertical: TextAlignVertical.center,
                       textInputAction: TextInputAction.next,
-                      validator: null,
-                      onSaved: (val) {},
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
+                      controller: _tagsController,
+                      style: TextStyle(fontSize: 17),
                       keyboardType: TextInputType.text,
                       cursorColor: ColorPalette.primary,
                       autofocus: false,
@@ -223,9 +253,11 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                         if (date != null) {
                           final time = await showTimePicker(
                             context: context,
-                            initialTime: TimeOfDay.fromDateTime(
-                                currentValue ?? DateTime.now()),
+                            initialTime: TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
                           );
+                          setState(() {
+                            scheduledDate = DateTimeField.combine(date, time);
+                          });
                           return DateTimeField.combine(date, time);
                         } else {
                           return currentValue;
@@ -259,8 +291,15 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                     SizedBox(height: 10),
                     TextField(
                       keyboardType: TextInputType.multiline,
+                      controller: _descriptionController,
+                      maxLength: 100,
                       minLines: 1,
                       maxLines: 10,
+                      onChanged: (text) {
+                        setState(() {
+                          _enteredDescriptionText = text;
+                        });
+                      },
                       style: TextStyle(
                         fontSize: 20,
                         color: ColorPalette.black,
@@ -273,6 +312,8 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                           color: ColorPalette.white,
                           fontSize: 20,
                         ),
+                        counterText: '${100 - _enteredDescriptionText.length} characters remaining',
+                        counterStyle: TextStyle(fontSize: 14),
                         hintText: "What's on your mind?",
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(0.0),
@@ -287,18 +328,6 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          '1/60',
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        )
-                      ],
-                    )
                   ],
                 ),
               ),
@@ -318,7 +347,17 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                       ),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      await createUpcomingRoom(
+                        _titleController.text.trim(),
+                        _tagsController.text.trim(),
+                        scheduledDate,
+                        _descriptionController.text.trim(),
+                      );
+                    }
+                  },
                   child: Text(
                     'Schedule',
                     style: TextStyle(
@@ -334,5 +373,80 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
         ),
       ),
     );
+  }
+
+  validateFields(String title, String tags, dynamic scheduledDate, String description) {
+    if (title.isEmpty) {
+      return 'Please add a title';
+    }
+
+    if (tags.isEmpty) {
+      return 'Add at least one tag';
+    }
+
+    List roomTags = tags.split(',');
+    if (roomTags.length > 3) {
+      return 'Tags must not exceed the maximum';
+    }
+
+    if (scheduledDate == null) {
+      return 'Please add a date and time';
+    }
+
+    if (description.isEmpty) {
+      return 'Please add a description';
+    }
+
+    return '';
+  }
+
+  Future createUpcomingRoom(
+    String title,
+    String tags,
+    dynamic scheduledDate,
+    String description,
+  ) async {
+    String result = validateFields(title, tags, scheduledDate, description);
+    if (result.isNotEmpty) {
+      final snackBar = SnackBar(
+        content: Text(
+          result,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      SimpleFontelicoProgressDialog _dialog = SimpleFontelicoProgressDialog(
+        context: context,
+        barrierDimisable: false,
+      );
+      try {
+        progressDialog(
+          context,
+          _dialog,
+          SimpleFontelicoProgressDialogType.normal,
+          'Scheduling room...',
+        );
+        await Future.delayed(Duration(seconds: 1));
+        UpcomingRoom room = UpcomingRoom(
+          id: getRandomString(20),
+          title: title,
+          tags: tags.split(','),
+          creator: MyAppState.currentUser!,
+          createdDate: scheduledDate.toString(),
+          description: description,
+        );
+
+        await _upcomingAudioService.createUpcomingRoom(room);
+        _dialog.hide();
+        push(context, NavScreen(tabIndex: 1));
+      } catch (e) {
+        print(e);
+        _dialog.hide();
+        final snackBar = SnackBar(content: Text('Error scheduling room. Try again'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
   }
 }

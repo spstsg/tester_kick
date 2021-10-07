@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -329,8 +329,7 @@ class _EditRoomFormDialogState extends State<EditRoomFormDialog> {
         channel: widget.room.channel,
         startTime: '',
         endTime: '',
-        participants:
-            roomParticipants.isNotEmpty ? [...roomParticipants] : [...widget.room.participants],
+        participants: roomParticipants.isNotEmpty ? [...roomParticipants] : [...widget.room.participants],
         speakers: roomSpeakers.isNotEmpty ? [...roomSpeakers] : [...widget.room.speakers],
         raisedHands: raisedHands.isNotEmpty ? [...raisedHands] : [...widget.room.raisedHands],
       );

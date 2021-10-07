@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
+import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/services/helper.dart';
 // import 'package:kick_chat/ui/widgets/countdown/cupertino_timer.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
@@ -19,8 +19,7 @@ class AudioCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var participants = room.participants;
-    var result = participants
-        .where((participant) => participant['username'] == MyAppState.currentUser!.username);
+    var result = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
     bool hasParticipant = result.isNotEmpty ? true : false;
 
     return Container(
@@ -235,9 +234,7 @@ class AudioCard extends StatelessWidget {
     final startTimeDate = DateFormat("yyyy-MM-dd hh:mm:ss").parse(startTime);
     final endTimeDate = DateFormat("yyyy-MM-dd hh:mm:ss").parse(endTime);
     final Duration difference = endTimeDate.difference(startTimeDate);
-    if (difference.inHours > 0 &&
-        difference.inMinutes.remainder(60) == 0 &&
-        difference.inSeconds.remainder(60) == 0) {
+    if (difference.inHours > 0 && difference.inMinutes.remainder(60) == 0 && difference.inSeconds.remainder(60) == 0) {
       return difference.inHours == 1 ? '${difference.inHours} hour' : '${difference.inHours} hours';
     } else if (difference.inHours == 0 && difference.inMinutes.remainder(60) > 0) {
       return difference.inMinutes.remainder(60) == 1
@@ -250,8 +247,7 @@ class AudioCard extends StatelessWidget {
           ? '${difference.inSeconds.remainder(60)} second'
           : '${difference.inSeconds.remainder(60)} seconds';
     } else {
-      var hours =
-          difference.inHours == 1 ? '${difference.inHours} hour' : '${difference.inHours} hours';
+      var hours = difference.inHours == 1 ? '${difference.inHours} hour' : '${difference.inHours} hours';
       var minutes = difference.inMinutes.remainder(60) == 1
           ? '${difference.inMinutes.remainder(60)} minute'
           : '${difference.inMinutes.remainder(60)} minutes';

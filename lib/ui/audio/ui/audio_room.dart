@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
-// import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +9,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
-import 'package:kick_chat/models/audio_chat_model.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
+import 'package:kick_chat/models/audio_room_chat_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
-// import 'package:kick_chat/services/audio/agora_service.dart';
+import 'package:kick_chat/services/audio/agora_service.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/chat/audio_room_chat.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -28,8 +29,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 // ignore: must_be_immutable
 class AudioRoomScreen extends StatefulWidget {
   Room room;
-  // final ClientRole role;
-  AudioRoomScreen({required this.room});
+  final ClientRole role;
+  AudioRoomScreen({required this.room, required this.role});
 
   @override
   AudioRoomScreenState createState() => AudioRoomScreenState();
@@ -38,9 +39,9 @@ class AudioRoomScreen extends StatefulWidget {
 class AudioRoomScreenState extends State<AudioRoomScreen> {
   AudoChatService _audioChatService = AudoChatService();
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
-  // AgoraService _agoraService = AgoraService();
+  AgoraService _agoraService = AgoraService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
-  late Stream<List<AudioRoomModel>> _audioChatMessageStream;
+  late Stream<List<AudioChatRoomModel>> _audioChatMessageStream;
   List raisedHands = [];
   List speakers = [];
   List participants = [];
@@ -48,7 +49,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
   bool userHandRaised = false;
   bool muted = true;
   late int localUid;
-  // static late RtcEngine engine;
+  static late RtcEngine engine;
   String agoraAppId = dotenv.get('AGORA_APP_ID');
   TimerService timerService = TimerService();
   TextEditingController _messageController = new TextEditingController();
@@ -67,12 +68,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       _audioChatService.getLiveRoom(widget.room.id).listen((event) {
         widget.room = event;
         if (event.id == widget.room.id && event.status == 'ended') {
-          pushAndRemoveUntil(
-            context,
-            NavScreen(tabIndex: 1),
-            true,
-            false,
-          );
+          push(context, NavScreen(tabIndex: 1));
           return;
         }
         setParticipantsState(event);
@@ -80,7 +76,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     });
     super.initState();
 
-    // initialize();
+    initialize();
   }
 
   @override
@@ -116,11 +112,9 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
               'roomCreatorId',
               widget.room.creator.userID,
             );
-            pushAndRemoveUntil(
+            push(
               context,
-              NavScreen(tabIndex: 1),
-              true,
-              false,
+              NavScreen(tabIndex: 1)
             );
           },
         ),
@@ -202,7 +196,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: StreamBuilder<List<AudioRoomModel>>(
+              child: StreamBuilder<List<AudioChatRoomModel>>(
                   stream: _audioChatMessageStream,
                   initialData: [],
                   builder: (context, snapshot) {
@@ -211,9 +205,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                     } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
                       return Container(
                         child: Center(
-                          child: Text(
-                            'No conversations yet',
-                          ),
+                          child: Text('No conversations yet'),
                         ),
                       );
                     } else {
@@ -327,7 +319,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
 
   _sendMessage(String roomId, String message) async {
     User user = MyAppState.currentUser!;
-    AudioRoomModel conversation = AudioRoomModel(
+    AudioChatRoomModel conversation = AudioChatRoomModel(
       id: roomId,
       lastMessageDate: Timestamp.now(),
       lastMessage: _messageController.text,
@@ -342,70 +334,62 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     return isSuccessful;
   }
 
-  // Future<void> initialize() async {
-  //   var role = '';
-  //   if (widget.role == ClientRole.Audience) {
-  //     role = 'subscriber';
-  //   } else {
-  //     role = 'publisher';
-  //   }
+  Future<void> initialize() async {
+    var role = '';
+    if (widget.role == ClientRole.Audience) {
+      role = 'subscriber';
+    } else {
+      role = 'publisher';
+    }
 
-  //   await _initAgoraRtcEngine();
-  //   _addAgoraEventHandlers();
-  //   var result = await _agoraService.getToken(
-  //     widget.room.channel,
-  //     role,
-  //     MyAppState.currentUser!.uniqueId,
-  //   );
-  //   await engine.joinChannel(result, widget.room.channel, null, MyAppState.currentUser!.uniqueId);
-  // }
+    await _initAgoraRtcEngine();
+    _addAgoraEventHandlers();
+    var result = await _agoraService.getToken(widget.room.channel, role, 0);
+    await engine.joinChannel(result, widget.room.channel, null, 0);
+  }
 
-  // Future<void> _initAgoraRtcEngine() async {
-  //   engine = await RtcEngine.create(agoraAppId.toString());
-  //   await engine.disableVideo();
-  //   await engine.enableAudio();
-  //   await engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
-  //   await engine.setClientRole(widget.role);
-  //   engine.muteLocalAudioStream(muted);
-  // }
+  Future<void> _initAgoraRtcEngine() async {
+    engine = await RtcEngine.create(agoraAppId.toString());
+    await engine.disableVideo();
+    await engine.enableAudio();
+    await engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
+    await engine.setClientRole(widget.role);
+    await engine.muteLocalAudioStream(muted);
+  }
 
-  // void _addAgoraEventHandlers() {
-  //   engine.setEventHandler(
-  //     RtcEngineEventHandler(
-  //       error: (code) {
-  //         print(code);
-  //       },
-  //       joinChannelSuccess: (channel, uid, elapsed) async {
-  //         final info = 'onJoinChannel: $channel, uid: $uid';
-  //         print(info);
-  //       },
-  //       leaveChannel: (stats) async {
-  //         print('leaveChannel: $stats');
-  //       },
-  //       userJoined: (uid, elapsed) {
-  //         print('userJoined: $uid - $elapsed');
-  //       },
-  //       userOffline: (uid, reason) {
-  //         final info = 'userOffline: $uid , reason: $reason';
-  //         print(info);
-  //       },
-  //       tokenPrivilegeWillExpire: (token) async {
-  //         var role = '';
-  //         if (widget.role == ClientRole.Audience) {
-  //           role = 'subscriber';
-  //         } else {
-  //           role = 'publisher';
-  //         }
-  //         // var result = await _agoraService.getToken(
-  //         //   widget.room.channel,
-  //         //   role,
-  //         //   MyAppState.currentUser!.uniqueId,
-  //         // );
-  //         // await engine.renewToken(result);
-  //       },
-  //     ),
-  //   );
-  // }
+  void _addAgoraEventHandlers() {
+    engine.setEventHandler(
+      RtcEngineEventHandler(
+        error: (code) {
+          print(code);
+        },
+        joinChannelSuccess: (channel, uid, elapsed) async {
+          final info = 'onJoinChannel: $channel, uid: $uid';
+          print(info);
+        },
+        leaveChannel: (stats) async {
+          inspect('leaveChannel: $stats');
+        },
+        userJoined: (uid, elapsed) {
+          print('userJoined: $uid - $elapsed');
+        },
+        userOffline: (uid, reason) {
+          final info = 'userOffline: $uid , reason: $reason';
+          print(info);
+        },
+        tokenPrivilegeWillExpire: (token) async {
+          var role = '';
+          if (widget.role == ClientRole.Audience) {
+            role = 'subscriber';
+          } else {
+            role = 'publisher';
+          }
+          var result = await _agoraService.getToken(widget.room.channel, role, 0);
+          await engine.renewToken(result);
+        },
+      ),
+    );
+  }
 
   setParticipantsState(Room selectedRoom) {
     setState(() {
@@ -479,10 +463,10 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     if (result == null) {
       setState(() {
         muted = !muted;
-        // engine.muteLocalAudioStream(muted);
-        // if (!muted && widget.role == ClientRole.Audience) {
-        //   engine.setClientRole(ClientRole.Broadcaster);
-        // }
+        engine.muteLocalAudioStream(muted);
+        if (!muted && widget.role == ClientRole.Audience) {
+          engine.setClientRole(ClientRole.Broadcaster);
+        }
       });
     } else {
       final snackBar = SnackBar(content: Text('Error unmuting yourself. Try again'));
@@ -511,10 +495,10 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     if (result == null) {
       setState(() {
         muted = !muted;
-        // engine.muteLocalAudioStream(muted);
-        // if (!muted && widget.role == ClientRole.Audience) {
-        //   engine.setClientRole(ClientRole.Broadcaster);
-        // }
+        engine.muteLocalAudioStream(muted);
+        if (!muted && widget.role == ClientRole.Audience) {
+          engine.setClientRole(ClientRole.Broadcaster);
+        }
       });
     } else {
       final snackBar = SnackBar(content: Text('Error muting yourself. Try again'));
@@ -549,12 +533,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       )
     ]);
     if (result[0] == null && result[1] == null) {
-      pushAndRemoveUntil(
-        context,
-        NavScreen(tabIndex: 1),
-        true,
-        false,
-      );
+      push(context, NavScreen(tabIndex: 1));
     } else {
       final snackBar = SnackBar(content: Text('Error leaving room. Try again'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -633,7 +612,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
             widget.room.creator.username != MyAppState.currentUser!.username
                 ? ElevatedButton(
                     onPressed: () async {
-                      // engine.leaveChannel();
+                      engine.leaveChannel();
                       _sharedPreferences.deleteSharedPreferencesItem('roomId');
                       _sharedPreferences.deleteSharedPreferencesItem('roomCreatorId');
                       removeUserFromRoom(false);
@@ -766,8 +745,8 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                 _sharedPreferences.deleteSharedPreferencesItem('roomId');
                 _sharedPreferences.deleteSharedPreferencesItem('roomCreatorId');
                 removeUserFromRoom(true);
-                // engine.leaveChannel();
-                // engine.destroy();
+                engine.leaveChannel();
+                engine.destroy();
               } else {
                 await showCupertinoAlert(
                   context,

@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/constants.dart';
-import 'package:kick_chat/models/audio_room_model.dart';
+import 'package:kick_chat/models/audio_room_chat_model.dart';
 import 'package:kick_chat/services/helper.dart';
 
 class AudioRoomChatService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  late StreamController<List<AudioRoomModel>> conversationsStream;
+  late StreamController<List<AudioChatRoomModel>> conversationsStream;
 
-  Future<bool> addAudioRoomMessage(AudioRoomModel conversation) async {
+  Future<bool> addAudioRoomMessage(AudioChatRoomModel conversation) async {
     try {
       String uid = getRandomString(20);
       await firestore
@@ -24,9 +24,9 @@ class AudioRoomChatService {
     }
   }
 
-  Stream<List<AudioRoomModel>> getAudioRoomMessages(String roomId) async* {
-    conversationsStream = StreamController<List<AudioRoomModel>>();
-    List<AudioRoomModel> messages = [];
+  Stream<List<AudioChatRoomModel>> getAudioRoomMessages(String roomId) async* {
+    conversationsStream = StreamController<List<AudioChatRoomModel>>();
+    List<AudioChatRoomModel> messages = [];
     firestore
         .collection(AUDIO_ROOM_CHAT)
         .doc(roomId)
@@ -43,8 +43,7 @@ class AudioRoomChatService {
             querySnapshot.docs,
             (DocumentSnapshot document) async {
               if (document.exists) {
-                AudioRoomModel messageJson =
-                    AudioRoomModel.fromJson(document.data() as Map<String, dynamic>);
+                AudioChatRoomModel messageJson = AudioChatRoomModel.fromJson(document.data() as Map<String, dynamic>);
                 messages.add(messageJson);
                 if (!conversationsStream.isClosed) {
                   conversationsStream.sink.add(messages);

@@ -1,6 +1,20 @@
 - Add login/signup with Apple
-<!-- - Send verification code to email on signup
-- Try to see if you can integrate games into flutter app -->
+- Add polls
+- Try to see if you can integrate games into flutter app
+- A page with different users best eleven
+  - Users should be able to comment and like
+- Display users team on profile page -done
+- Moderator should be able to mute everyone at once
+- Detect internet connectivity
+- Take a look at agora setAudioProfile method if you can use it
+
+- For upcoming audio room chat
+  - when it gets to the time, notify the creator and other users
+  - the creator has to click a start button to start the room - done
+  - if the start time has passed and room has not been started, show a message that says "room was due to start x minutes ago"
+  - if creator has not started room, notify them that it will be ended in x minutes.
+
+<!-- - Send verification code to email on signup -->
 <!-- - After sharing a screenshot, delete from the users device -->
 - *Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
 - *Add stickers
@@ -11,9 +25,6 @@
 - * Consider using topics that users subscribe to send notifications
 
 <!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
-
-* A page with different users best eleven
-  - Users should be able to comment and like
 
 WHERE TO ADD NOTIFICATION
 - post reaction - done
@@ -60,6 +71,7 @@ WHERE TO ADD NOTIFICATION
 - Don't send notifications to yourself - done
 - Look for ways to validate email domain(So users won't use disposable emails). Decide if you need to send verification email (Not perfect but at least emails with domains @me, @test etc can be validated) - done
 - Instead of a loading when user is signing up or logging in, add the loader to the button - done
+- The back button from audio room to AudioHomeScreen does not work well - done
 
 
 This is the github url for the agora chat 
@@ -69,8 +81,6 @@ This is the link for ios device
 https://github.com/filsv/iPhoneOSDeviceSupport
 
 https://stackoverflow.com/questions/53630136/using-cocoapods-libraries-in-flutter-ios-platform-specific-code
-
-- On xcode, under build settings, I changed release to yes under build active architecture only
 
 Audio chat logic
 - *Try to see if you can persist the stopwatch timer as long as the room is not ended
