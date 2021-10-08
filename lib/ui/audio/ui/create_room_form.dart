@@ -204,101 +204,6 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
               ),
             ),
             SizedBox(height: 5),
-            // ConstrainedBox(
-            //   constraints: BoxConstraints(minWidth: double.infinity),
-            //   child: Padding(
-            //     padding: const EdgeInsets.only(
-            //       top: 20.0,
-            //       right: 24.0,
-            //       left: 24.0,
-            //     ),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Text(
-            //           'Add duration',
-            //           style: TextStyle(
-            //             color: ColorPalette.black,
-            //             fontSize: 20,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         SizedBox(height: 5),
-            //         Text(
-            //           'This will give participants a sense of how long the conversation will last. You will be able to increase the time within the room.',
-            //           style: TextStyle(
-            //             color: ColorPalette.grey,
-            //           ),
-            //         ),
-            //         SizedBox(height: 10),
-            //         Row(
-            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //           children: [
-            //             Container(
-            //               width: MediaQuery.of(context).size.width * 0.40,
-            //               child: TextField(
-            //                 style: TextStyle(fontSize: 17),
-            //                 readOnly: true,
-            //                 decoration: InputDecoration(
-            //                   contentPadding: EdgeInsets.only(left: 16, right: 16),
-            //                   hintText: 'Starts now',
-            //                   hintStyle: TextStyle(fontSize: 17),
-            //                   focusedBorder: OutlineInputBorder(
-            //                     borderRadius: BorderRadius.circular(0.0),
-            //                     borderSide: BorderSide(
-            //                       color: Colors.grey.shade200,
-            //                       width: 2.0,
-            //                     ),
-            //                   ),
-            //                   enabledBorder: OutlineInputBorder(
-            //                     borderSide: BorderSide(color: Colors.grey.shade200),
-            //                     borderRadius: BorderRadius.circular(0.0),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //             Container(
-            //               child: Text('—'),
-            //             ),
-            //             Container(
-            //               width: MediaQuery.of(context).size.width * 0.40,
-            //               child: DateTimeField(
-            //                 format: format,
-            //                 style: TextStyle(fontSize: 17),
-            //                 decoration: InputDecoration(
-            //                   contentPadding: EdgeInsets.only(left: 16, right: 16),
-            //                   hintText: 'Select end time',
-            //                   hintStyle: TextStyle(fontSize: 17),
-            //                   focusedBorder: OutlineInputBorder(
-            //                     borderRadius: BorderRadius.circular(0.0),
-            //                     borderSide: BorderSide(
-            //                       color: ColorPalette.primary,
-            //                       width: 2.0,
-            //                     ),
-            //                   ),
-            //                   enabledBorder: OutlineInputBorder(
-            //                     borderSide: BorderSide(color: Colors.grey.shade200),
-            //                     borderRadius: BorderRadius.circular(0.0),
-            //                   ),
-            //                 ),
-            //                 onShowPicker: (context, currentValue) async {
-            //                   final time = await showTimePicker(
-            //                     context: context,
-            //                     initialTime: TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-            //                   );
-            //                   setState(() {
-            //                     endTime = DateTimeField.convert(time);
-            //                   });
-            //                   return DateTimeField.convert(time);
-            //                 },
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             Padding(
               padding: const EdgeInsets.only(top: 30, left: 25, right: 25),
               child: ConstrainedBox(
@@ -353,6 +258,8 @@ class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
     if (roomTags.length > 3) {
       return 'Tags must not exceed the maximum';
     }
+
+    return '';
   }
 
   Future createLiveRoom(String title, String tags) async {

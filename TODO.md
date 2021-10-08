@@ -4,7 +4,7 @@
   - Users should be able to comment and like
 - Moderator should be able to mute everyone at once
 - Detect internet connectivity
-- Take a look at agora setAudioProfile method if you can use it
+<!-- - Take a look at agora setAudioProfile method if you can use it -->
 
 - For upcoming audio room chat
   - when it gets to the time, notify the creator and other users
@@ -72,6 +72,7 @@ WHERE TO ADD NOTIFICATION
 - The back button from audio room to AudioHomeScreen does not work well - done
 - Try to see if you can integrate games into flutter app - done
 - Display users team on profile page - done
+- Create audio room tags and title is always null when i click the create room button - done
 
 
 This is the github url for the agora chat 
