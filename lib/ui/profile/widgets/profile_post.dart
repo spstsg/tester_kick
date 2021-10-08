@@ -66,6 +66,7 @@ class _ProfilePostState extends State<ProfilePost> {
           } else {
             noPosts = false;
             WidgetsBinding.instance!.addPostFrameCallback((_) {
+              if (!mounted) return;
               setState(() {
                 usersPostList = snapshot.data!;
               });

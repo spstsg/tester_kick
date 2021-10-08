@@ -5,6 +5,7 @@ import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_home_screen.dart';
 import 'package:kick_chat/ui/fans/fans_screen.dart';
+import 'package:kick_chat/ui/games/games.dart';
 import 'package:kick_chat/ui/home/home_screen.dart';
 import 'package:kick_chat/ui/livescores/ui/screens/live_scores_tab.dart';
 import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
@@ -31,9 +32,10 @@ class _NavScreenState extends State<NavScreen> {
       'screen': LiveScoresTabScreen(),
     },
     {'name': 'Fans', 'index': 3, 'icon': Icons.people, 'screen': FanScreen()},
+    {'name': 'Games', 'index': 4, 'icon': Icons.gamepad_outlined, 'screen': Games()},
     {
       'name': 'Profile',
-      'index': 4,
+      'index': 5,
       'icon': Icons.person,
       'screen': ProfileScreen(user: MyAppState.currentUser!),
     },
@@ -63,8 +65,7 @@ class _NavScreenState extends State<NavScreen> {
       provisional: false,
       sound: true,
     );
-    if (settings.authorizationStatus == AuthorizationStatus.denied &&
-        MyAppState.currentUser!.settings.notifications) {
+    if (settings.authorizationStatus == AuthorizationStatus.denied && MyAppState.currentUser!.settings.notifications) {
       await _userService.updatePushNotificationSetting(false);
     }
   }

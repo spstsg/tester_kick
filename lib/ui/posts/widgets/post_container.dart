@@ -83,7 +83,7 @@ class PostContainerState extends State<PostContainer> {
             noPosts = false;
             return ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 4),
-              physics: NeverScrollableScrollPhysics(),
+              physics: ScrollPhysics(),
               itemCount: snapshot.data!.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {

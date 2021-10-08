@@ -1,12 +1,10 @@
 - Add login/signup with Apple
 - Add polls
-- Try to see if you can integrate games into flutter app
 - A page with different users best eleven
   - Users should be able to comment and like
-- Display users team on profile page -done
 - Moderator should be able to mute everyone at once
 - Detect internet connectivity
-- Take a look at agora setAudioProfile method if you can use it
+<!-- - Take a look at agora setAudioProfile method if you can use it -->
 
 - For upcoming audio room chat
   - when it gets to the time, notify the creator and other users
@@ -72,6 +70,9 @@ WHERE TO ADD NOTIFICATION
 - Look for ways to validate email domain(So users won't use disposable emails). Decide if you need to send verification email (Not perfect but at least emails with domains @me, @test etc can be validated) - done
 - Instead of a loading when user is signing up or logging in, add the loader to the button - done
 - The back button from audio room to AudioHomeScreen does not work well - done
+- Try to see if you can integrate games into flutter app - done
+- Display users team on profile page - done
+- Create audio room tags and title is always null when i click the create room button - done
 
 
 This is the github url for the agora chat 
