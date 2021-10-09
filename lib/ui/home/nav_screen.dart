@@ -55,7 +55,7 @@ class _NavScreenState extends State<NavScreen> {
     });
   }
 
-  requestNotificationPermission() async {
+  Future<void> requestNotificationPermission() async {
     NotificationSettings settings = await NotificationService.firebaseMessaging.requestPermission(
       alert: true,
       announcement: false,

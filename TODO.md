@@ -1,8 +1,7 @@
 - Add login/signup with Apple
-- A page with different users best eleven
-  - Users should be able to comment and like
+<!-- - A page with different users best eleven
+  - Users should be able to comment and like -->
 - Moderator should be able to mute everyone at once
-- Detect internet connectivity
 - make sure only admin sees the create poll page. Right now it is on the home page appbar.
 <!-- - Take a look at agora setAudioProfile method if you can use it -->
 
@@ -20,7 +19,7 @@
 - *Add pagination to posts page
 - *Invite friends to the app via facebook, whatsapp, contacts
 - *Add video controls to player
-- * Consider using topics that users subscribe to send notifications
+- *Consider using topics that users subscribe to send notifications
 
 <!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
 
