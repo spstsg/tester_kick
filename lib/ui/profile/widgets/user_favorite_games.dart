@@ -3,13 +3,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/games/games_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserFavoriteGames extends StatefulWidget {
-  const UserFavoriteGames({Key? key}) : super(key: key);
+  final User user;
+  const UserFavoriteGames({Key? key, required this.user}) : super(key: key);
 
   @override
   _UserFavoriteGamesState createState() => _UserFavoriteGamesState();
@@ -22,7 +24,7 @@ class _UserFavoriteGamesState extends State<UserFavoriteGames> {
   Widget build(BuildContext context) {
     return Container(
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: _gameService.getUserGameFavoritesStream(),
+        stream: _gameService.getUserGameFavoritesStream(widget.user.userID),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return PostSkeleton();

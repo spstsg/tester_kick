@@ -1,14 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/poll_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/notifications/chat_notification_service.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/poll/poll_service.dart';
 import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/home/user_search.dart';
 import 'package:kick_chat/ui/notifications/local_notification.dart';
-import 'package:kick_chat/ui/toberemoved/add_clubs.dart';
+import 'package:kick_chat/ui/polls/create_poll.dart';
+import 'package:kick_chat/ui/polls/widgets/live_poll_widget.dart';
+// import 'package:kick_chat/ui/toberemoved/add_clubs.dart';
 import 'package:kick_chat/ui/widgets/circle_button.dart';
 import 'package:kick_chat/ui/posts/widgets/create_post_container.dart';
 import 'package:kick_chat/ui/posts/widgets/post_container.dart';
@@ -22,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  PollService _pollService = PollService();
   NotificationService _notificationService = NotificationService();
   ChatNotificationService _chatNotificationService = ChatNotificationService();
 
@@ -88,6 +95,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               CircleButton(
+                icon: MdiIcons.poll,
+                iconSize: 30.0,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    new MaterialPageRoute<Null>(
+                      builder: (BuildContext context) {
+                        return new CreatePoll();
+                      },
+                      fullscreenDialog: true,
+                    ),
+                  );
+                },
+              ),
+              CircleButton(
                 icon: Icons.search,
                 iconSize: 30.0,
                 onPressed: () {
@@ -101,24 +122,42 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              CircleButton(
-                icon: MdiIcons.plus,
-                iconSize: 30.0,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    new MaterialPageRoute<Null>(
-                      builder: (BuildContext context) {
-                        return new AddClubsScreen();
-                      },
-                      fullscreenDialog: true,
-                    ),
-                  );
-                },
-              ),
+
+              // CircleButton(
+              //   icon: MdiIcons.plus,
+              //   iconSize: 30.0,
+              //   onPressed: () {
+              //     Navigator.of(context).push(
+              //       new MaterialPageRoute<Null>(
+              //         builder: (BuildContext context) {
+              //           return new AddClubsScreen();
+              //         },
+              //         fullscreenDialog: true,
+              //       ),
+              //     );
+              //   },
+              // ),
             ],
           ),
           SliverToBoxAdapter(
             child: CreatePostContainer(),
+          ),
+          SliverToBoxAdapter(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _pollService.getPollByStatusStream(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || (snapshot.data?.docs.isEmpty ?? true)) {
+                  return SizedBox.shrink();
+                } else {
+                  PollModel poll = PollModel.fromJson(snapshot.data!.docs[0].data() as Map<String, dynamic>);
+                  return Container(
+                    padding: EdgeInsets.only(top: 10),
+                    color: ColorPalette.greyWhite,
+                    child: LivePollWidget(poll: poll),
+                  );
+                }
+              },
+            ),
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(

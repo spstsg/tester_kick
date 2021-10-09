@@ -33,6 +33,7 @@ const AUDIO_ROOM_CHAT = 'audio_rooms_messages';
 const USER_VIDEOS = 'videos';
 const CHAT_NOTIFICATIONS = 'chat_notifications';
 const FAVORITE_GAMES = 'favorite_games';
+const POLLS = 'polls';
 
 /// helpful formatting constants
 const SECOND_MILLIS = 1000;
