@@ -6,19 +6,17 @@ import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/poll_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
-import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 
 class PollService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   UserService _userService = UserService();
-  SharedPreferencesService _sharedPreferences = SharedPreferencesService();
   StreamController<List<PollModel>> userPollsStreamController = StreamController();
   late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userPollStreamSubscription;
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> getPollStream(String pollId) {
+  Stream<QuerySnapshot> getPollByStatusStream() {
     try {
-      return firestore.collection(POLLS).doc(pollId).snapshots();
+      return firestore.collection(POLLS).where('status', isEqualTo: 'live').snapshots();
     } catch (e) {
       throw e;
     }
@@ -57,6 +55,8 @@ class PollService {
             },
           );
         }
+      } else {
+        userPollsStreamController.sink.add([]);
       }
       yield* userPollsStreamController.stream;
     } catch (e) {
@@ -72,7 +72,6 @@ class PollService {
     try {
       poll.pollResultPercentage = pollResult;
       await firestore.collection(POLLS).doc(poll.pollId).set(poll.toJson());
-      _sharedPreferences.setSharedPreferencesString('poll', poll.pollId);
     } catch (e) {
       throw e;
     }
@@ -104,7 +103,6 @@ class PollService {
       await firestore.collection(POLLS).doc(pollId).update({
         'status': 'ended',
       });
-      _sharedPreferences.deleteSharedPreferencesItem('poll');
     } catch (e) {
       throw e;
     }

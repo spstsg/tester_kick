@@ -1,12 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
+import 'package:kick_chat/models/poll_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/notifications/chat_notification_service.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
-import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
+import 'package:kick_chat/services/poll/poll_service.dart';
 import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/home/user_search.dart';
 import 'package:kick_chat/ui/notifications/local_notification.dart';
@@ -26,15 +28,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  PollService _pollService = PollService();
   NotificationService _notificationService = NotificationService();
   ChatNotificationService _chatNotificationService = ChatNotificationService();
-  SharedPreferencesService _sharedPreferences = SharedPreferencesService();
-  bool showLivePollWidget = false;
-  String pollID = '';
 
   @override
   void initState() {
-    getPollIdFromSharedPreferences();
     super.initState();
   }
 
@@ -144,13 +143,21 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CreatePostContainer(),
           ),
           SliverToBoxAdapter(
-            child: showLivePollWidget && pollID.isNotEmpty
-                ? Container(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _pollService.getPollByStatusStream(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || (snapshot.data?.docs.isEmpty ?? true)) {
+                  return SizedBox.shrink();
+                } else {
+                  PollModel poll = PollModel.fromJson(snapshot.data!.docs[0].data() as Map<String, dynamic>);
+                  return Container(
                     padding: EdgeInsets.only(top: 10),
                     color: ColorPalette.greyWhite,
-                    child: LivePollWidget(pollID: pollID),
-                  )
-                : SizedBox.shrink(),
+                    child: LivePollWidget(poll: poll),
+                  );
+                }
+              },
+            ),
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -163,18 +170,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> getPollIdFromSharedPreferences() async {
-    String createdPollID = await _sharedPreferences.getSharedPreferencesString('poll');
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (createdPollID.isNotEmpty) {
-        setState(() {
-          showLivePollWidget = true;
-          pollID = createdPollID;
-        });
-      }
-    });
   }
 }
