@@ -37,10 +37,10 @@ class GameService {
     }
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getUserGameFavoritesStream() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getUserGameFavoritesStream(String userId) {
     try {
-      return firestore.collection(FAVORITE_GAMES).doc(MyAppState.currentUser!.userID).collection('games').snapshots();
-    } on Exception catch (e) {
+      return firestore.collection(FAVORITE_GAMES).doc(userId).collection('games').snapshots();
+    } catch (e) {
       throw e;
     }
   }

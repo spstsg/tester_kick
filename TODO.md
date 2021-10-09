@@ -1,9 +1,9 @@
 - Add login/signup with Apple
-- Add polls
 - A page with different users best eleven
   - Users should be able to comment and like
 - Moderator should be able to mute everyone at once
 - Detect internet connectivity
+- make sure only admin sees the create poll page. Right now it is on the home page appbar.
 <!-- - Take a look at agora setAudioProfile method if you can use it -->
 
 - For upcoming audio room chat
@@ -73,6 +73,12 @@ WHERE TO ADD NOTIFICATION
 - Try to see if you can integrate games into flutter app - done
 - Display users team on profile page - done
 - Create audio room tags and title is always null when i click the create room button - done
+- Add polls - done
+- All users will see polls that are created - done
+- On their profile, they will only see polls they voted on - done
+- Add two properties to the polls model - done
+  - a date when it will end - done
+  - a boolean value called to specify its status - done
 
 
 This is the github url for the agora chat 

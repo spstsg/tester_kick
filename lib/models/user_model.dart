@@ -30,6 +30,7 @@ class User with ChangeNotifier {
   bool defaultImage;
   Map notifications;
   Map chat;
+  List polls;
 
   User({
     this.username = '',
@@ -52,6 +53,7 @@ class User with ChangeNotifier {
     this.postCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
+    this.polls = const [],
     emailPasswordLogin,
     defaultImage,
     notifications,
@@ -95,6 +97,7 @@ class User with ChangeNotifier {
     bool? defaultImage,
     Map? notifications,
     Map? chat,
+    List? polls,
   }) {
     return new User(
       username: username ?? this.username,
@@ -121,10 +124,12 @@ class User with ChangeNotifier {
       defaultImage: defaultImage ?? this.defaultImage,
       notifications: notifications ?? this.notifications,
       chat: chat ?? this.chat,
+      polls: polls ?? this.polls,
     );
   }
 
   factory User.fromJson(Map<String, dynamic> parsedJson) {
+    List _polls = parsedJson['polls'] ?? [];
     return new User(
       username: parsedJson['username'] ?? '',
       lowercaseUsername: parsedJson['lowercaseUsername'] ?? '',
@@ -148,6 +153,7 @@ class User with ChangeNotifier {
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
       chat: parsedJson['chat'] ?? {'userOne': '', 'userTwo': ''},
+      polls: _polls,
       notifications: parsedJson['notifications'] ??
           {
             'followers': true,
@@ -160,6 +166,7 @@ class User with ChangeNotifier {
   }
 
   factory User.fromPayload(Map<String, dynamic> parsedJson) {
+    List _polls = parsedJson['polls'] ?? [];
     return new User(
       username: parsedJson['username'] ?? '',
       lowercaseUsername: parsedJson['lowercaseUsername'] ?? '',
@@ -183,6 +190,7 @@ class User with ChangeNotifier {
       followingCount: parsedJson['followingCount'] ?? 0,
       avatarColor: parsedJson['avatarColor'] ?? '#ffffff',
       chat: parsedJson['chat'] ?? {'userOne': '', 'userTwo': ''},
+      polls: _polls,
       notifications: parsedJson['notifications'] ??
           {
             'followers': true,
@@ -220,6 +228,7 @@ class User with ChangeNotifier {
       'lowercaseTeam': this.lowercaseTeam,
       'notifications': this.notifications,
       'chat': this.chat,
+      'polls': this.polls,
     };
   }
 
@@ -248,6 +257,7 @@ class User with ChangeNotifier {
       'defaultImage': this.defaultImage,
       'notifications': this.notifications,
       'chat': this.chat,
+      'polls': this.polls,
     };
   }
 
@@ -277,6 +287,7 @@ class User with ChangeNotifier {
         other.team == team &&
         other.lowercaseTeam == lowercaseTeam &&
         other.defaultImage == defaultImage &&
+        listEquals(other.polls, polls) &&
         DeepCollectionEquality().equals(other.notifications, notifications) &&
         DeepCollectionEquality().equals(other.chat, chat);
   }
@@ -305,6 +316,7 @@ class User with ChangeNotifier {
         lowercaseTeam.hashCode ^
         defaultImage.hashCode ^
         chat.hashCode ^
+        polls.hashCode ^
         notifications.hashCode;
   }
 }

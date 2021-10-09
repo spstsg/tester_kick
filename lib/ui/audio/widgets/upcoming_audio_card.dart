@@ -49,9 +49,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   String calculateDifference(String dateString) {
     var date = DateTime.parse(dateString);
     DateTime now = DateTime.now();
-    int days = DateTime(date.year, date.month, date.day)
-        .difference(DateTime(now.year, now.month, now.day))
-        .inDays;
+    int days = DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays;
     if (days == 0) {
       return 'Today';
     } else if (days == 1) {
@@ -71,14 +69,14 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
     var now = DateTime.now();
     var date = DateTime.parse(dateString);
 
-    Duration duration = now.difference(date).abs();
-    final minutes = duration.inMinutes % 60;
+    Duration duration = date.difference(now);
+    final minutes = duration.inMinutes;
     if (minutes == 5) {
       // send notification to creator
       print('$minutes minutes remaining');
     }
 
-    if (minutes == 0) {
+    if (minutes <= 0) {
       // send notification to all users that matches the tags
       WidgetsBinding.instance!.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -131,8 +129,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
               },
             );
           } else {
-            List<UpcomingRoom> upcomingAudioRooms =
-                snapshot.data!.where((i) => i.status != true).toList();
+            List<UpcomingRoom> upcomingAudioRooms = snapshot.data!.where((i) => i.status != true).toList();
             if (upcomingAudioRooms.isEmpty) {
               return Container(
                 height: MediaQuery.of(context).size.height * 0.7,
@@ -263,8 +260,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                   ),
                                 ),
                                 showStartButton &&
-                                        upcomingAudioRooms[index].creator.username ==
-                                            MyAppState.currentUser!.username
+                                        upcomingAudioRooms[index].creator.username == MyAppState.currentUser!.username
                                     ? GestureDetector(
                                         onTap: () {
                                           startLiveRoom(upcomingAudioRooms[index]);

@@ -28,6 +28,7 @@ import 'package:kick_chat/ui/profile/widgets/profile_images.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_post.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_videos.dart';
 import 'package:kick_chat/ui/profile/widgets/user_favorite_games.dart';
+import 'package:kick_chat/ui/profile/widgets/user_polls.dart';
 import 'package:kick_chat/ui/widgets/loading_overlay.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -247,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Container(
                   child: DefaultTabController(
-                    length: 4,
+                    length: 5,
                     initialIndex: 0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -261,6 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Tab(icon: Icon(MdiIcons.imageMultipleOutline)),
                               Tab(icon: Icon(MdiIcons.videoOutline)),
                               Tab(icon: Icon(MdiIcons.gamepad)),
+                              Tab(icon: Icon(MdiIcons.poll)),
                             ],
                           ),
                         ),
@@ -281,7 +283,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                               ProfileImages(user: widget.user),
                               ProfileVideos(user: widget.user),
-                              UserFavoriteGames(),
+                              UserFavoriteGames(user: widget.user),
+                              UserPolls(user: widget.user),
                             ],
                           ),
                         )

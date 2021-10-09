@@ -28,11 +28,6 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
   final format = DateFormat("yyyy-MM-dd HH:mm");
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _titleController.dispose();
     _tagsController.dispose();
