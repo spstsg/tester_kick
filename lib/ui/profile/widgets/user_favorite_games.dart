@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/games/games_service.dart';
 import 'package:kick_chat/services/helper.dart';
@@ -179,18 +180,21 @@ class _UserFavoriteGamesState extends State<UserFavoriteGames> {
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: GestureDetector(
-            onTap: () {
-              _gameService.removeGameFromFavorites(game['code']);
-            },
-            child: Container(
-              padding: EdgeInsets.all(10),
-              child: Icon(
-                Icons.delete,
-                color: Colors.red,
-                size: 30,
+        Visibility(
+          visible: MyAppState.currentUser!.username == widget.user.username,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {
+                _gameService.removeGameFromFavorites(game['code']);
+              },
+              child: Container(
+                padding: EdgeInsets.all(10),
+                child: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                  size: 30,
+                ),
               ),
             ),
           ),

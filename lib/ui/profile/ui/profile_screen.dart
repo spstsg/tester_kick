@@ -97,24 +97,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               )
             : Text(''),
+        title: Text(
+          'Profile',
+          style: TextStyle(
+            color: ColorPalette.primary,
+          ),
+        ),
         actions: [
           Row(
             children: [
               SizedBox(width: MediaQuery.of(context).size.width / 8),
-              Container(
-                margin: EdgeInsets.only(right: 20),
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    elevation: 0.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      side: BorderSide(color: ColorPalette.primary),
-                    ),
-                  ),
-                  child: Text("Add Best Eleven"),
-                ),
-              ),
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
