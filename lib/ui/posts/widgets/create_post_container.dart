@@ -270,7 +270,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          MdiIcons.gif,
+                          Icons.gif,
                           color: Colors.orange,
                           size: 18,
                         ),

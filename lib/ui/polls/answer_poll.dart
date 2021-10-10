@@ -35,7 +35,6 @@ class _AnswerPollState extends State<AnswerPoll> {
             color: Colors.blue,
           ),
         ),
-        actions: [],
       ),
       body: Container(
         alignment: Alignment.center,

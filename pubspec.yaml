@@ -82,6 +82,9 @@ dependencies:
   flutter_native_image: ^0.0.6+1
   progress_indicators: ^1.0.0
   badges: ^2.0.1
+  firebase_dynamic_links: ^2.0.10
+  contacts_service: ^0.6.3
+  flutter_sms: ^2.3.2
 
 dev_dependencies:
   flutter_test:
