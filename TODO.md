@@ -4,8 +4,8 @@
 - Moderator should be able to mute everyone at once
 - make sure only admin sees the create poll page. Right now it is on the home page appbar.
 <!-- - Take a look at agora setAudioProfile method if you can use it -->
-- Invite from phone contacts
-  - find out how to detect if a user already has the app installed
+- Invite to audio chat
+- Find a way to know which of your contacts have kickchat installed
 
 - Dynamic links
 * In other for dynamic links to work on IOS, make sure you enable "Associated domains" under identifiers on apple developer account.
@@ -88,6 +88,7 @@ WHERE TO ADD NOTIFICATION
 - Add two properties to the polls model - done
   - a date when it will end - done
   - a boolean value called to specify its status - done
+- Invite from phone contacts - done
 
 
 This is the github url for the agora chat 

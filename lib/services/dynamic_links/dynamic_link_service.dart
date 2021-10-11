@@ -31,6 +31,11 @@ class DynamicLinkService {
         minimumVersion: '1',
         appStoreId: '1477718839', // change later
       ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: 'Download KickChat',
+        description: 'Checkout KickChat app for your smartphone. Download it now from',
+        imageUrl: Uri.parse(""), // add kickchat logo here
+      ),
     );
     final ShortDynamicLink shortLink = await parameters.buildShortLink();
     return shortLink.shortUrl;

@@ -6,7 +6,6 @@ import 'package:kick_chat/models/contact_model.dart';
 import 'package:kick_chat/services/dynamic_links/dynamic_link_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/ui/invites/contact_avatar.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 
 class PhoneContacts extends StatefulWidget {
@@ -23,27 +22,14 @@ class _PhoneContactsState extends State<PhoneContacts> {
   @override
   void initState() {
     super.initState();
-    getPermissions();
-  }
-
-  getPermissions() async {
     getAllContacts();
-    if (await Permission.contacts.request().isGranted) {
-      setState(() {
-        permissionDenied = false;
-      });
-    } else {
-      setState(() {
-        permissionDenied = true;
-      });
-    }
   }
 
-  String flattenPhoneNumber(String phoneStr) {
-    return phoneStr.replaceAllMapped(RegExp(r'^(\+)|\D'), (Match m) {
-      return m[0] == "+" ? "+" : "";
-    });
-  }
+  // String flattenPhoneNumber(String phoneStr) {
+  //   return phoneStr.replaceAllMapped(RegExp(r'^(\+)|\D'), (Match m) {
+  //     return m[0] == "+" ? "+" : "";
+  //   });
+  // }
 
   getAllContacts() async {
     List colors = [Colors.green, Colors.indigo, Colors.yellow, Colors.orange];
@@ -81,43 +67,32 @@ class _PhoneContactsState extends State<PhoneContacts> {
           style: TextStyle(color: Colors.blue),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: !permissionDenied
-            ? Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    itemCount: contacts.length,
-                    itemBuilder: (context, index) {
-                      AppContact contact = contacts[index];
-                      return ListTile(
-                        leading: ContactAvatar(contact, 40),
-                        title: Text(
-                          '${truncateString(contact.info.displayName.toString(), 25)}',
-                          style: TextStyle(
-                            color: ColorPalette.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          contact.info.phones!.length > 0 ? '${contact.info.phones!.elementAt(0).value}' : '',
-                        ),
-                        trailing: inviteButton(contact),
-                      );
-                    },
-                  ),
-                ],
-              )
-            : Container(
-                child: Center(
-                  child: showEmptyState(
-                    'Access to contact data denied.',
-                    'You can enable contacts access from your settings.',
-                  ),
+      body: Container(
+        padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: contacts.length,
+          physics: ScrollPhysics(),
+          itemBuilder: (context, index) {
+            AppContact contact = contacts[index];
+            if (contact.info.displayName == null) return SizedBox.shrink();
+            return ListTile(
+              leading: ContactAvatar(contact, 40),
+              title: Text(
+                '${truncateString(contact.info.displayName.toString(), 25)}',
+                style: TextStyle(
+                  color: ColorPalette.black,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              subtitle: Text(
+                contact.info.phones!.length > 0 ? '${contact.info.phones!.elementAt(0).value}' : '',
+              ),
+              trailing: inviteButton(contact),
+            );
+          },
+        ),
       ),
     );
   }
@@ -137,10 +112,10 @@ class _PhoneContactsState extends State<PhoneContacts> {
           try {
             DynamicLinkService _dynamicLinkService = DynamicLinkService();
             var uri = await _dynamicLinkService.createDynamicLink();
-            // await sendSMS(message: uri.toString(), recipients: ['${contact.info.phones![0].value}']);
-            await sendSMS(message: uri.toString(), recipients: ['+4915222338270']);
+            await sendSMS(message: uri.toString(), recipients: ['${contact.info.phones![0].value}']);
+            final snackBar = SnackBar(content: Text('Invitation sent'));
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
           } catch (e) {
-            print(e);
             final snackBar = SnackBar(content: Text('Error sending invites. Try again later.'));
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
           }

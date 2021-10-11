@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/ui/invites/phone_contacts.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class InviteScreen extends StatefulWidget {
   const InviteScreen({Key? key}) : super(key: key);
@@ -13,6 +13,30 @@ class InviteScreen extends StatefulWidget {
 }
 
 class _InviteScreenState extends State<InviteScreen> {
+  bool hasContactPermission = true;
+
+  @override
+  void initState() {
+    super.initState();
+    checkPermission();
+  }
+
+  checkPermission() async {
+    if (await Permission.contacts.request().isGranted) {
+      if (mounted) {
+        setState(() {
+          hasContactPermission = true;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          hasContactPermission = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,9 +56,31 @@ class _InviteScreenState extends State<InviteScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: EdgeInsets.all(10.0),
         child: Column(
           children: <Widget>[
+            Visibility(
+              visible: true,
+              child: Container(
+                margin: EdgeInsets.only(left: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Text(
+                    //   'Enable contact permission.',
+                    //   style: TextStyle(color: Colors.red),
+                    // ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(Icons.settings, color: Colors.grey),
+                      onPressed: () async {
+                        openAppSettings();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
             ListTile(
               leading: CircleAvatar(
                 radius: 20,
@@ -80,31 +126,4 @@ class _InviteScreenState extends State<InviteScreen> {
       ),
     );
   }
-
-  // Future<void> _askPermissions() async {
-  //   PermissionStatus permissionStatus = await _getContactPermission();
-  //   if (permissionStatus != PermissionStatus.granted) {
-  //     _handleInvalidPermissions(permissionStatus);
-  //   }
-  // }
-
-  // Future<PermissionStatus> _getContactPermission() async {
-  //   PermissionStatus permission = await Permission.contacts.status;
-  //   if (permission != PermissionStatus.granted && permission != PermissionStatus.permanentlyDenied) {
-  //     PermissionStatus permissionStatus = await Permission.contacts.request();
-  //     return permissionStatus;
-  //   } else {
-  //     return permission;
-  //   }
-  // }
-
-  // void _handleInvalidPermissions(PermissionStatus permissionStatus) {
-  //   if (permissionStatus == PermissionStatus.denied) {
-  //     final snackBar = SnackBar(content: Text('Access to contact data denied'));
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //   } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
-  //     final snackBar = SnackBar(content: Text('Contact data not available on device'));
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //   }
-  // }
 }
