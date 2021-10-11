@@ -4,6 +4,16 @@
 - Moderator should be able to mute everyone at once
 - make sure only admin sees the create poll page. Right now it is on the home page appbar.
 <!-- - Take a look at agora setAudioProfile method if you can use it -->
+- Invite to audio chat
+- Find a way to know which of your contacts have kickchat installed
+
+- Dynamic links
+* In other for dynamic links to work on IOS, make sure you enable "Associated domains" under identifiers on apple developer account.
+* Any profile associated with the identifier that you are enabling the associated domains, will become invalid. You will have to create a new profile.
+* Open project on xcode and add a new url type with $(PRODUCT_BUNDLE_IDENTIFIER) as url schemes
+* Go to signing & capabilities and add associated domains. Make sure you have the correct provisioning profile
+* Add your firebase link to the domain section of the associated domain capability
+  - It has to be in the format: applinks:<firebase-dynamic-link>
 
 - For upcoming audio room chat
   - when it gets to the time, notify the creator and other users
@@ -78,6 +88,7 @@ WHERE TO ADD NOTIFICATION
 - Add two properties to the polls model - done
   - a date when it will end - done
   - a boolean value called to specify its status - done
+- Invite from phone contacts - done
 
 
 This is the github url for the agora chat 

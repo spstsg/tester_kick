@@ -20,6 +20,7 @@ import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/redux/app_state.dart';
 import 'package:kick_chat/redux/reducers/app_reducers.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
+import 'package:kick_chat/services/dynamic_links/dynamic_link_service.dart';
 import 'package:kick_chat/services/helper.dart';
 // import 'package:kick_chat/services/mock/mock_user_service.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
@@ -70,77 +71,23 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// this key is used to navigate to the appropriate screen when the
   /// notification is clicked from the system tray
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
-
   static User? currentUser;
   static DevToolsStore<AppState>? reduxStore;
 
   /// a stream to listen for firebase messaging token changes
   late StreamSubscription tokenStream;
-
   // /// true when firebase has been initialized
   bool _initialized = false;
-
   // /// true if firebase had an error during initialization
   bool _error = false;
-
   UserService _userService = UserService();
-
   AudoChatService _audioChatService = AudoChatService();
-
-  /// we attempt to initialize firebase app
-  void initializeFlutterFire() async {
-    try {
-      /// configure the firebase messaging , required for notifications handling
-      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-      if (initialMessage != null) {
-        _handleNotification(initialMessage.data, navigatorKey);
-      }
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? remoteMessage) {
-        if (remoteMessage != null) {
-          _handleNotification(remoteMessage.data, navigatorKey);
-        }
-      });
-      FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
-        RemoteNotification? message = remoteMessage!.notification;
-        if (message!.title != '' && message.body != '') {
-          await flutterLocalNotificationsPlugin.show(
-            0,
-            message.title,
-            message.body,
-            const NotificationDetails(
-              iOS: IOSNotificationDetails(
-                presentAlert: true,
-                presentBadge: true,
-                presentSound: true,
-              ),
-            ),
-          );
-        }
-      });
-
-      /// listen to firebase token changes and update the user object in the
-      /// database with it's new token
-      tokenStream = NotificationService.firebaseMessaging.onTokenRefresh.listen((event) {
-        if (currentUser != null) {
-          currentUser!.fcmToken = event;
-          _userService.updateCurrentUser(currentUser!);
-        }
-      });
-      setState(() {
-        _initialized = true;
-      });
-    } catch (e) {
-      /// Set `_error` state to true if Firebase initialization fails
-      setState(() {
-        _error = true;
-      });
-    }
-  }
+  DynamicLinkService _dynamicLinkService = DynamicLinkService();
 
   @override
   void initState() {
     initializeFlutterFire();
-
+    initDynamicLinks();
     WidgetsBinding.instance?.addObserver(this);
     super.initState();
     // MockPostService _mockPostService = MockPostService();
@@ -251,6 +198,60 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
     );
   }
+
+  /// we attempt to initialize firebase app
+  void initializeFlutterFire() async {
+    try {
+      /// configure the firebase messaging , required for notifications handling
+      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+      if (initialMessage != null) {
+        _handleNotification(initialMessage.data, navigatorKey);
+      }
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? remoteMessage) {
+        if (remoteMessage != null) {
+          _handleNotification(remoteMessage.data, navigatorKey);
+        }
+      });
+      FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
+        RemoteNotification? message = remoteMessage!.notification;
+        if (message!.title != '' && message.body != '') {
+          await flutterLocalNotificationsPlugin.show(
+            0,
+            message.title,
+            message.body,
+            const NotificationDetails(
+              iOS: IOSNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+              ),
+            ),
+          );
+        }
+      });
+
+      /// listen to firebase token changes and update the user object in the
+      /// database with it's new token
+      tokenStream = NotificationService.firebaseMessaging.onTokenRefresh.listen((event) {
+        if (currentUser != null) {
+          currentUser!.fcmToken = event;
+          _userService.updateCurrentUser(currentUser!);
+        }
+      });
+      setState(() {
+        _initialized = true;
+      });
+    } catch (e) {
+      /// Set `_error` state to true if Firebase initialization fails
+      setState(() {
+        _error = true;
+      });
+    }
+  }
+
+  initDynamicLinks() async {
+    await _dynamicLinkService.handleDynamicLink();
+  }
 }
 
 class OnBoarding extends StatefulWidget {
@@ -262,6 +263,31 @@ class OnBoarding extends StatefulWidget {
 
 class OnBoardingState extends State<OnBoarding> {
   UserService _userService = UserService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// check which screen should the user navigate to
+    hasFinishedOnBoarding();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    /// this is a placeholder widget that has a spinning indicator while we
+    /// determine which screens should the user navigate to
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Image(
+          height: MediaQuery.of(context).size.height * 0.5,
+          width: MediaQuery.of(context).size.width * 0.5,
+          image: AssetImage('assets/images/splash.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
 
   Future hasFinishedOnBoarding() async {
     /// first we check if the user has seen the onBoarding screen or not
@@ -315,31 +341,6 @@ class OnBoardingState extends State<OnBoarding> {
       /// screen one time only at first installation of the app
       pushReplacement(context, new SignUpScreen());
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    /// check which screen should the user navigate to
-    hasFinishedOnBoarding();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    /// this is a placeholder widget that has a spinning indicator while we
-    /// determine which screens should the user navigate to
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Image(
-          height: MediaQuery.of(context).size.height * 0.5,
-          width: MediaQuery.of(context).size.width * 0.5,
-          image: AssetImage('assets/images/splash.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
   }
 }
 

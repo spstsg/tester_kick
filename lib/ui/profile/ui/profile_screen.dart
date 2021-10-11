@@ -22,6 +22,7 @@ import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/friends/friends_tab_screen.dart';
+import 'package:kick_chat/ui/invites/invites_screen.dart';
 import 'package:kick_chat/ui/profile/ui/edit_profile.dart';
 import 'package:kick_chat/ui/profile/ui/settings_screen.dart';
 import 'package:kick_chat/ui/profile/widgets/profile_images.dart';
@@ -96,7 +97,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.pop(context);
                 },
               )
-            : Text(''),
+            : IconButton(
+                icon: Icon(
+                  Icons.person_add_sharp,
+                  size: 30,
+                  color: ColorPalette.primary,
+                ),
+                onPressed: () {
+                  push(context, InviteScreen());
+                },
+              ),
         title: Text(
           'Profile',
           style: TextStyle(
