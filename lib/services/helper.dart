@@ -337,6 +337,13 @@ Future shareScreenshot(BuildContext context, Uint8List bytes, String text) async
   );
 }
 
+// Future createSharedFilePath(Uint8List bytes) async {
+//   final directory = await getApplicationDocumentsDirectory();
+//   final image = File('${directory.path}/flutter.png');
+//   image.writeAsBytesSync(bytes);
+//   return image.path;
+// }
+
 Future shareText(BuildContext context, String text) async {
   final box = context.findRenderObject() as RenderBox?;
 

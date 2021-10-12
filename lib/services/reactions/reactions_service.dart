@@ -77,11 +77,17 @@ class ReactionService {
       );
 
       if (user.settings.notifications && user.notifications['reactions']) {
-        await notificationService.sendNotification(
+        await notificationService.sendPushNotification(
           user.fcmToken,
           MyAppState.currentUser!.username,
           'reacted to your post.',
-          null,
+          {
+            'type': 'reaction',
+            'postId': post.id,
+            'username': MyAppState.currentUser!.username,
+            'imageUrl': MyAppState.currentUser!.profilePictureURL,
+            'reaction': newReaction,
+          },
         );
       }
     }

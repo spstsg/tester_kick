@@ -21,11 +21,8 @@ class _AnswerPollState extends State<AnswerPoll> {
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0.0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.blue),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        iconTheme: IconThemeData(
+          color: Colors.blue,
         ),
         title: Text(
           'Poll',

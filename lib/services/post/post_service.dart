@@ -75,6 +75,17 @@ class PostService {
     return _postsList;
   }
 
+  Future<Post> getSinglePost(String postId) async {
+    List<Post> _postsList = [];
+    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).where('id', isEqualTo: postId).get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot post) {
+      Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
+      _postsList.add(postModel);
+    });
+    return _postsList[0];
+  }
+
   Future<List<Comment>> getPostComments(Post post) async {
     List<Comment> _commentsList = [];
     QuerySnapshot result = await firestore.collection(POSTS_COMMENTS).where('postId', isEqualTo: post.id).get();
@@ -114,11 +125,11 @@ class PostService {
           );
 
           if (author.settings.notifications && author.notifications['shared']) {
-            await notificationService.sendNotification(
+            await notificationService.sendPushNotification(
               author.fcmToken,
               MyAppState.currentUser!.username,
               'shared your post.',
-              null,
+              {'type': 'shared', 'postId': post.id},
             );
           }
         }
@@ -194,11 +205,11 @@ class PostService {
       );
 
       if (user.settings.notifications && user.notifications['comments']) {
-        await notificationService.sendNotification(
+        await notificationService.sendPushNotification(
           user.fcmToken,
-          MyAppState.currentUser!.username,
-          'commented on your post.',
-          null,
+          '${truncateString('${MyAppState.currentUser!.username} commented on your post', 40)}',
+          '${truncateString(newComment.commentText, 40)}',
+          {'type': 'comment', 'postId': post.id, 'commentId': newComment.commentId},
         );
       }
     }

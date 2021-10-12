@@ -49,7 +49,7 @@ class NotificationService {
     return _userNotifications;
   }
 
-  Future sendNotification(String token, String title, String body, Map<String, dynamic>? payload) async {
+  Future sendPushNotification(String token, String title, String body, Map<String, dynamic>? payload) async {
     await http.post(
       Uri.parse('https://fcm.googleapis.com/fcm/send'),
       headers: <String, String>{

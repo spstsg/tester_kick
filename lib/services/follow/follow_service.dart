@@ -67,11 +67,11 @@ class FollowService {
         );
 
         if (visitedUserData.settings.notifications && visitedUserData.notifications['followers']) {
-          await _notificationService.sendNotification(
+          await _notificationService.sendPushNotification(
             visitedUserData.fcmToken,
             MyAppState.currentUser!.username,
             'started following you.',
-            null,
+            {'type': 'follow'},
           );
         }
       }

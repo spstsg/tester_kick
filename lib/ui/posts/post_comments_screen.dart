@@ -11,8 +11,9 @@ import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 
 class PostCommentsScreen extends StatefulWidget {
   final Post post;
+  final String commentId;
 
-  const PostCommentsScreen({Key? key, required this.post}) : super(key: key);
+  const PostCommentsScreen({Key? key, required this.post, this.commentId = ''}) : super(key: key);
 
   @override
   _PostCommentsScreenState createState() => _PostCommentsScreenState();
@@ -156,6 +157,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
             );
           } else {
             snapshot.data!.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
             return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
@@ -167,6 +169,9 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                 return Column(
                   children: [
                     ListTile(
+                      tileColor:
+                          widget.commentId != '' && comment.commentId == widget.commentId ? Colors.blue.shade100 : null,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       leading: Container(
                         width: 40,
                         child: ProfileAvatar(
