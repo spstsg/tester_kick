@@ -48,6 +48,10 @@
 	<string>03d9f4da300e20b97b740b6ca44746a2</string>
 	<key>FacebookDisplayName</key>
 	<string>KickChat Dev</string>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://kickchatapp.com/invite</string>
+	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>
@@ -62,12 +66,12 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>KickChat would like to access your camera to take photos.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>KickChat would like to access contacts for invites to app.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>KickChat would like to access your microphone for audio chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>KickChat would like to access your photos.</string>
-	<key>NSContactsUsageDescription</key>  
-	<string>KickChat would like to access contacts for invites to app.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -92,9 +96,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>FirebaseDynamicLinksCustomDomains</key>
-	<array>
-		<string>https://kickchatapp.com/invite</string>
-	</array>
 </dict>
 </plist>
