@@ -299,11 +299,11 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
 
   Future addParticipantToRoom(UpcomingRoom upcomingRoom) async {
     Room activeRoom = await _audioChatService.geSingleActiveRoom(upcomingRoom.id);
-    if (activeRoom.id.isNotEmpty && activeRoom.id == upcomingRoom.id) {
+    if (activeRoom.id.isEmpty) {
       await showCupertinoAlert(
         context,
         'Message',
-        'Room not started yet by its creator. Check back.',
+        'Room has not been started by its creator. Check back.',
         'OK',
         '',
         '',
@@ -313,8 +313,9 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
     }
 
     var participants = activeRoom.participants;
-    var result = participants.where((participant) => participant['username'] == MyAppState.currentUser!.username);
-    hasParticipant = result.isNotEmpty ? true : false;
+    var result =
+        participants.where((participant) => participant['username'] == MyAppState.currentUser!.username).toList();
+    hasParticipant = result.isNotEmpty;
     Room room = Room(
       id: activeRoom.id,
       title: activeRoom.title,
@@ -337,7 +338,6 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
       };
       room.participants.add(newParticipants);
       MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
-
       _audioChatService.addParticipants(activeRoom.id, newParticipants);
 
       Navigator.push(

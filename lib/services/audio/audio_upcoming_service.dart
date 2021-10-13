@@ -49,6 +49,17 @@ class UpcomingAudioService {
     }
   }
 
+  Future addFcmTokens(String roomId, String token) async {
+    await firestore.collection(UPCOMING_AUDIO_ROOMS).doc(roomId).update({
+      'fcmTokens': FieldValue.arrayUnion([token])
+    }).then(
+      (value) => null,
+      onError: (e) {
+        throw e;
+      },
+    );
+  }
+
   Future updateUpcomingRoom(UpcomingRoom room) async {
     await firestore.collection(UPCOMING_AUDIO_ROOMS).doc(room.id).update(room.toJson()).then(
       (value) => null,

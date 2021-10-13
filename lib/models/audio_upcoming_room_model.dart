@@ -12,12 +12,14 @@ class UpcomingRoom {
   bool status;
   bool notificationSent;
   bool creatorReminderSent;
+  List fcmTokens;
 
   UpcomingRoom({
     creator,
     this.id = '',
     this.title = '',
     this.tags = const [],
+    this.fcmTokens = const [],
     this.description = '',
     this.scheduledDate = '',
     createdDate,
@@ -32,6 +34,7 @@ class UpcomingRoom {
 
   factory UpcomingRoom.fromJson(Map<String, dynamic> parsedJson) {
     List _tags = parsedJson['tags'] ?? [];
+    List _fcmTokens = parsedJson['fcmTokens'] ?? [];
     return new UpcomingRoom(
       creator: parsedJson.containsKey('creator') ? User.fromJson(parsedJson['creator']) : User(),
       id: parsedJson['id'] ?? '',
@@ -39,6 +42,7 @@ class UpcomingRoom {
       description: parsedJson['description'] ?? '',
       scheduledDate: parsedJson['scheduledDate'] ?? '',
       tags: _tags,
+      fcmTokens: _fcmTokens,
       status: parsedJson['status'] ?? false,
       notificationSent: parsedJson['notificationSent'] ?? false,
       creatorReminderSent: parsedJson['creatorReminderSent'] ?? false,
@@ -52,6 +56,7 @@ class UpcomingRoom {
       "id": this.id,
       'title': this.title,
       'tags': this.tags,
+      'fcmTokens': this.fcmTokens,
       'status': this.status,
       'notificationSent': this.notificationSent,
       'creatorReminderSent': this.creatorReminderSent,

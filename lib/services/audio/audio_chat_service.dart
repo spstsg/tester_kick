@@ -59,17 +59,17 @@ class AudioChatService {
   }
 
   Future<Room> geSingleActiveRoom(String roomId) async {
-    List<Room> activeRoom = [];
+    Room activeRoom = Room();
     QuerySnapshot result = await firestore.collection(AUDIO_LIVE_ROOMS).where('id', isEqualTo: roomId).get();
 
     await Future.forEach(result.docs, (DocumentSnapshot room) {
       try {
-        activeRoom.add(Room.fromJson(room.data() as Map<String, dynamic>));
+        activeRoom = Room.fromJson(room.data() as Map<String, dynamic>);
       } catch (e) {
         throw e;
       }
     });
-    return activeRoom[0];
+    return activeRoom;
   }
 
   Future createLiveRoom(Room room) async {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
@@ -17,6 +18,7 @@ import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
 
@@ -33,8 +35,6 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   UserService _userService = UserService();
   NotificationService notificationService = NotificationService();
   late Stream<List<UpcomingRoom>> _upcomingRoomsStream;
-  bool showStartButton = false;
-  bool showJoinButton = false;
 
   @override
   void initState() {
@@ -96,6 +96,10 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
               itemCount: upcomingAudioRooms.length,
               itemBuilder: (BuildContext context, int index) {
                 checkEventTime(upcomingAudioRooms[index]);
+                var result = upcomingAudioRooms[index]
+                    .fcmTokens
+                    .where((token) => token == MyAppState.currentUser!.fcmToken)
+                    .toList();
 
                 return Container(
                   decoration: BoxDecoration(color: ColorPalette.greyWhite),
@@ -204,11 +208,10 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                     style: TextStyle(
                                       color: ColorPalette.black,
                                       fontSize: 16.0,
-                                      // fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                                showStartButton &&
+                                upcomingAudioRooms[index].notificationSent &&
                                         upcomingAudioRooms[index].creator.username == MyAppState.currentUser!.username
                                     ? GestureDetector(
                                         onTap: () {
@@ -234,14 +237,14 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 15),
                           Container(
                             child: Row(
                               children: [
                                 Expanded(
                                   flex: 3,
                                   child: Text(
-                                    upcomingAudioRooms[index].description,
+                                    '${truncateString(upcomingAudioRooms[index].description, 70)}',
                                     style: TextStyle(
                                       color: ColorPalette.grey,
                                       fontSize: 16.0,
@@ -249,6 +252,64 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                   ),
                                 ),
                               ],
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          GestureDetector(
+                            onTap: !upcomingAudioRooms[index].notificationSent
+                                ? () async {
+                                    if (upcomingAudioRooms[index].creator.userID == MyAppState.currentUser!.userID)
+                                      return;
+                                    if (result.isNotEmpty && result[0] == MyAppState.currentUser!.fcmToken) return;
+
+                                    User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+                                    if (user!.settings.notifications) {
+                                      _upcomingAudioService.addFcmTokens(
+                                        upcomingAudioRooms[index].id,
+                                        user.fcmToken,
+                                      );
+                                    } else {
+                                      await showCupertinoAlert(
+                                        context,
+                                        'Notification',
+                                        'Notification is disabled. Go to your settings to enable.',
+                                        'OK',
+                                        '',
+                                        '',
+                                        false,
+                                      );
+                                      return;
+                                    }
+                                  }
+                                : null,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 8.0),
+                                margin: EdgeInsets.only(right: 8),
+                                width: 130,
+                                decoration: BoxDecoration(
+                                  color: result.isNotEmpty && result[0] == MyAppState.currentUser!.fcmToken
+                                      ? Colors.blue.shade200
+                                      : !upcomingAudioRooms[index].notificationSent
+                                          ? Colors.blue
+                                          : Colors.blue.shade200,
+                                  borderRadius: BorderRadius.circular(20.0),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(MdiIcons.bellOutline, color: Colors.white),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      'Notifiy me',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                           SizedBox(height: 10),
@@ -314,13 +375,14 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
 
   notifyUsers(UpcomingRoom room) async {
     _upcomingAudioService.updateNotificationStatus(room.id, 'notificationSent');
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() {
-        showStartButton = true;
-        showJoinButton = true;
-      });
-    });
+    for (var token in room.fcmTokens) {
+      await notificationService.sendPushNotification(
+        token,
+        'Audio room reminder',
+        '${truncateString(room.title, 40)} has started.',
+        {'type': 'upcomingRoom', 'roomId': room.id},
+      );
+    }
   }
 
   Future startLiveRoom(UpcomingRoom upcomingRoom) async {
@@ -339,7 +401,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
       );
       await Future.delayed(Duration(seconds: 5));
       Room room = Room(
-        id: getRandomString(20),
+        id: upcomingRoom.id,
         title: title,
         tags: tags,
         creator: MyAppState.currentUser!,
