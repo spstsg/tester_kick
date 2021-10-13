@@ -37,7 +37,7 @@ class AudioRoomScreen extends StatefulWidget {
 }
 
 class AudioRoomScreenState extends State<AudioRoomScreen> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
   AgoraService _agoraService = AgoraService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
@@ -112,10 +112,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
               'roomCreatorId',
               widget.room.creator.userID,
             );
-            push(
-              context,
-              NavScreen(tabIndex: 1)
-            );
+            push(context, NavScreen(tabIndex: 1));
           },
         ),
         actions: [

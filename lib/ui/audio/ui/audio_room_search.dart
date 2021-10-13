@@ -22,7 +22,7 @@ class AudioRoomSearch extends StatefulWidget {
 }
 
 class _AudioRoomSearchState extends State<AudioRoomSearch> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
   SearchService _searchService = SearchService();
   TextEditingController _searchController = TextEditingController();

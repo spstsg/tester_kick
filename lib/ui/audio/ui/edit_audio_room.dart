@@ -19,7 +19,7 @@ class EditRoomFormDialog extends StatefulWidget {
 }
 
 class _EditRoomFormDialogState extends State<EditRoomFormDialog> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _tagsController = TextEditingController();

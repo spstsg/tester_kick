@@ -22,7 +22,7 @@ class LiveAudioRooms extends StatefulWidget {
 }
 
 class _LiveAudioRoomsState extends State<LiveAudioRooms> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
   late Stream<List<Room>> _liveRoomsStream;
   bool hasParticipant = false;

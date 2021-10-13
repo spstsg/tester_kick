@@ -577,7 +577,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future sendMessageNotification(MessageData message) async {
     if (homeConversationModel.members.isNotEmpty) {
       receiver = await _userService.getCurrentUser(homeConversationModel.members.first.userID);
-      if (receiver!.active && receiver!.chat['userTwo'] != MyAppState.currentUser!.username) {
+      if (receiver!.chat['userTwo'] != MyAppState.currentUser!.username) {
         _chatNotificationService.saveChatNotification(
           'chat_message',
           '${truncateString(message.content, 40)}',

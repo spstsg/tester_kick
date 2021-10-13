@@ -24,7 +24,7 @@ class AudioHomeScreen extends StatefulWidget {
 }
 
 class _AudioHomeScreenState extends State<AudioHomeScreen> with SingleTickerProviderStateMixin {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
 
   @override
   Widget build(BuildContext context) {
@@ -225,12 +225,10 @@ class _AudioHomeScreenState extends State<AudioHomeScreen> with SingleTickerProv
 
   checkParticipant(Room room) {
     var participants = room.participants;
-    var user = participants
-        .where((participant) => participant['username'] == MyAppState.currentUser!.username)
-        .toList();
+    var user =
+        participants.where((participant) => participant['username'] == MyAppState.currentUser!.username).toList();
     if (user.isNotEmpty && room.creator.username != user[0]['username']) {
-      participants.removeWhere(
-          (participant) => participant['username'] == MyAppState.currentUser!.username);
+      participants.removeWhere((participant) => participant['username'] == MyAppState.currentUser!.username);
       MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(room));
       _audioChatService.removeSpeaker(room.id);
       _audioChatService.removeParticipant(

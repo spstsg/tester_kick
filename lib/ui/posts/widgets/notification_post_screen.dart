@@ -55,23 +55,27 @@ class NotificationPostState extends State<NotificationPost> {
           color: Colors.blue,
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(color: ColorPalette.greyWhite),
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              physics: ScrollPhysics(),
-              itemCount: 1,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return _buildPostWidget(widget.post);
-              },
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(color: ColorPalette.greyWhite),
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                physics: ScrollPhysics(),
+                itemCount: 1,
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemBuilder: (context, index) {
+                  return _buildPostWidget(widget.post);
+                },
+              ),
             ),
-          ),
-          SizedBox(height: 20),
-          widget.reaction != '' && widget.username != '' ? _buildReactionWIdget() : SizedBox.shrink(),
-        ],
+            SizedBox(height: 20),
+            widget.reaction != '' && widget.username != '' ? _buildReactionWIdget() : SizedBox.shrink(),
+            SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }
@@ -195,7 +199,10 @@ class NotificationPostState extends State<NotificationPost> {
                   )
                 : SizedBox.shrink(),
             post.postVideo.isNotEmpty
-                ? videoDisplay(context, post, _postService.updateVideoViewCount)
+                ? Container(
+                    height: MediaQuery.of(context).size.height * 0.65,
+                    child: videoDisplay(context, post, _postService.updateVideoViewCount),
+                  )
                 : SizedBox.shrink(),
             post.postMedia.isEmpty && post.gifUrl != ''
                 ? Container(

@@ -1,4 +1,3 @@
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
@@ -8,10 +7,13 @@ import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/models/audio_upcoming_room_model.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/audio/audio_upcoming_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
@@ -27,10 +29,12 @@ class UpcomingAudioCard extends StatefulWidget {
 
 class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   UpcomingAudioService _upcomingAudioService = UpcomingAudioService();
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
+  UserService _userService = UserService();
+  NotificationService notificationService = NotificationService();
   late Stream<List<UpcomingRoom>> _upcomingRoomsStream;
-  // late StreamSubscription<dynamic> periodicStreamSubscription;
   bool showStartButton = false;
+  bool showJoinButton = false;
 
   @override
   void initState() {
@@ -42,62 +46,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   @override
   void dispose() {
     _upcomingAudioService.disposeUpcomingRoomsStream();
-    // periodicStreamSubscription.cancel();
     super.dispose();
-  }
-
-  String calculateDifference(String dateString) {
-    var date = DateTime.parse(dateString);
-    DateTime now = DateTime.now();
-    int days = DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays;
-    if (days == 0) {
-      return 'Today';
-    } else if (days == 1) {
-      return 'Tomorrow';
-    }
-    final DateFormat format = DateFormat('dd/MM/yyyy');
-    return format.format(date);
-  }
-
-  getTime(String dateString) {
-    var date = DateTime.parse(dateString);
-    final DateFormat format = DateFormat('HH:m a');
-    return format.format(date.toUtc().toLocal());
-  }
-
-  checkEventTime(String dateString) {
-    var now = DateTime.now();
-    var date = DateTime.parse(dateString);
-
-    Duration duration = date.difference(now);
-    final minutes = duration.inMinutes;
-    if (minutes == 5) {
-      // send notification to creator
-      print('$minutes minutes remaining');
-    }
-
-    if (minutes <= 0) {
-      // send notification to all users that matches the tags
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() {
-          showStartButton = true;
-        });
-      });
-    }
-    // print('$minutes minutes');
-  }
-
-  // notifications to be implemented after i have implemented dynamic links
-  checkPeriodicEvent(String dateString) {
-    // var stream = new Stream.periodic(Duration(seconds: 1), (count) {
-    //   return count;
-    // });
-
-    // store this is a subscription and then cancel the subscription in the dispose method
-    // periodicStreamSubscription = stream.listen((result) {
-    //   checkEventTime(dateString);
-    // });
   }
 
   @override
@@ -146,7 +95,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
               shrinkWrap: true,
               itemCount: upcomingAudioRooms.length,
               itemBuilder: (BuildContext context, int index) {
-                checkEventTime(upcomingAudioRooms[index].createdDate);
+                checkEventTime(upcomingAudioRooms[index]);
 
                 return Container(
                   decoration: BoxDecoration(color: ColorPalette.greyWhite),
@@ -173,7 +122,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                     vertical: 1.0,
                                   ),
                                   child: Text(
-                                    '${calculateDifference(upcomingAudioRooms[index].createdDate)},',
+                                    '${calculateDifference(upcomingAudioRooms[index].scheduledDate)},',
                                     style: TextStyle(
                                       color: ColorPalette.primary,
                                       fontWeight: FontWeight.bold,
@@ -188,7 +137,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                   ),
                                   width: MediaQuery.of(context).size.width * 0.47,
                                   child: Text(
-                                    '${getTime(upcomingAudioRooms[index].createdDate)}',
+                                    '${getTime(upcomingAudioRooms[index].scheduledDate)}',
                                     style: TextStyle(
                                       color: ColorPalette.black,
                                       fontWeight: FontWeight.bold,
@@ -314,6 +263,64 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
         },
       ),
     );
+  }
+
+  String calculateDifference(String dateString) {
+    var date = DateTime.parse(dateString);
+    DateTime now = DateTime.now();
+    int days = DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (days == 0) {
+      return 'Today';
+    } else if (days == 1) {
+      return 'Tomorrow';
+    }
+    final DateFormat format = DateFormat('dd/MM/yyyy');
+    return format.format(date);
+  }
+
+  String getTime(String dateString) {
+    var date = DateTime.parse(dateString);
+    final DateFormat format = DateFormat('HH:m a');
+    return format.format(date.toUtc().toLocal());
+  }
+
+  Future<void> checkEventTime(UpcomingRoom room) async {
+    var now = DateTime.now();
+    var date = DateTime.parse(room.scheduledDate);
+
+    Duration duration = date.difference(now);
+    final minutes = duration.inMinutes;
+    if (minutes <= 5 && !room.creatorReminderSent) {
+      sendCreatorNotification(room);
+    }
+
+    if (minutes <= 0 && !room.notificationSent) {
+      notifyUsers(room);
+    }
+  }
+
+  sendCreatorNotification(UpcomingRoom room) async {
+    User? user = await _userService.getCurrentUser(room.creator.userID);
+    _upcomingAudioService.updateNotificationStatus(room.id, 'creatorReminderSent');
+    if (user!.settings.notifications) {
+      await notificationService.sendPushNotification(
+        user.fcmToken,
+        'Audio room reminder',
+        '5 minutes remaining before start.',
+        {'type': 'upcomingRoom', 'roomId': room.id},
+      );
+    }
+  }
+
+  notifyUsers(UpcomingRoom room) async {
+    _upcomingAudioService.updateNotificationStatus(room.id, 'notificationSent');
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        showStartButton = true;
+        showJoinButton = true;
+      });
+    });
   }
 
   Future startLiveRoom(UpcomingRoom upcomingRoom) async {

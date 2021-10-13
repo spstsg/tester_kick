@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
@@ -42,6 +43,8 @@ void main() async {
   _handleNotificationService.initializeFlutterNotificationPlugin();
 
   FirebaseMessaging.onBackgroundMessage(_handleNotificationService.backgroundMessageHandler);
+
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(MyApp());
 }
 
@@ -64,7 +67,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // /// true if firebase had an error during initialization
   bool _error = false;
   UserService _userService = UserService();
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   DynamicLinkService _dynamicLinkService = DynamicLinkService();
 
   @override

@@ -5,7 +5,7 @@ import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
 
-class AudoChatService {
+class AudioChatService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   StreamController<List<Room>> liveRoomsStream = StreamController();
   StreamController<Room> singleLiveRoomStream = StreamController();
@@ -56,6 +56,20 @@ class AudoChatService {
       liveRoomsStream.sink.add(liveRooms);
     });
     yield* liveRoomsStream.stream;
+  }
+
+  Future<Room> geSingleActiveRoom(String roomId) async {
+    List<Room> activeRoom = [];
+    QuerySnapshot result = await firestore.collection(AUDIO_LIVE_ROOMS).where('id', isEqualTo: roomId).get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot room) {
+      try {
+        activeRoom.add(Room.fromJson(room.data() as Map<String, dynamic>));
+      } catch (e) {
+        throw e;
+      }
+    });
+    return activeRoom[0];
   }
 
   Future createLiveRoom(Room room) async {

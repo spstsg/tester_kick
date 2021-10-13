@@ -11,42 +11,24 @@ class UpcomingAudioService {
   late StreamSubscription<QuerySnapshot> singleLiveRoomStreamSubscription;
   late StreamSubscription<QuerySnapshot> upcomingRoomsStreamSubscription;
 
-  // Stream<Room> getLiveRoom(String roomId) async* {
-  //   Stream<QuerySnapshot> result = firestore.collection(AUDIO_LIVE_ROOMS).where('id', isEqualTo: roomId).snapshots();
-  //
-  //   singleLiveRoomStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
-  //     await Future.forEach(querySnapshot.docs, (DocumentSnapshot room) {
-  //       try {
-  //         singleLiveRoomStream.sink.add(Room.fromJson(room.data() as Map<String, dynamic>));
-  //       } catch (e) {
-  //         throw e;
-  //       }
-  //     });
-  //   });
-  //   yield* singleLiveRoomStream.stream;
-  // }
-  //
-  // Future checkUserLiveRooms() async {
-  //   List<Room> _roomList = [];
-  //   QuerySnapshot result = await firestore
-  //       .collection(AUDIO_LIVE_ROOMS)
-  //       .where('creator.username', isEqualTo: MyAppState.currentUser!.username)
-  //       .where('status', isEqualTo: 'live')
-  //       .get();
-  //
-  //   await Future.forEach(result.docs, (DocumentSnapshot post) {
-  //     Room postModel = Room.fromJson(post.data() as Map<String, dynamic>);
-  //     _roomList.add(postModel);
-  //   });
-  //   return _roomList;
-  // }
-  //
+  Future<UpcomingRoom> getSingleUpcomingRoom(String roomId) async {
+    List<UpcomingRoom> upcomingRoom = [];
+    QuerySnapshot result = await firestore.collection(UPCOMING_AUDIO_ROOMS).where('id', isEqualTo: roomId).get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot room) {
+      try {
+        upcomingRoom.add(UpcomingRoom.fromJson(room.data() as Map<String, dynamic>));
+      } catch (e) {
+        throw e;
+      }
+    });
+    return upcomingRoom[0];
+  }
+
   Stream<List<UpcomingRoom>> getUpcomingRooms() async* {
     List<UpcomingRoom> upcomingRooms = [];
-    Stream<QuerySnapshot> result = firestore
-        .collection(UPCOMING_AUDIO_ROOMS)
-        .orderBy('createdDate', descending: true)
-        .snapshots();
+    Stream<QuerySnapshot> result =
+        firestore.collection(UPCOMING_AUDIO_ROOMS).orderBy('scheduledDate', descending: true).snapshots();
 
     upcomingRoomsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       upcomingRooms.clear();
@@ -69,6 +51,17 @@ class UpcomingAudioService {
 
   Future updateUpcomingRoom(UpcomingRoom room) async {
     await firestore.collection(UPCOMING_AUDIO_ROOMS).doc(room.id).update(room.toJson()).then(
+      (value) => null,
+      onError: (e) {
+        throw e;
+      },
+    );
+  }
+
+  Future updateNotificationStatus(String roomId, String key) async {
+    await firestore.collection(UPCOMING_AUDIO_ROOMS).doc(roomId).update({
+      '${key}': true,
+    }).then(
       (value) => null,
       onError: (e) {
         throw e;

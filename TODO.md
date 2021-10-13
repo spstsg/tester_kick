@@ -29,7 +29,6 @@
 - \*Add stickers
 - \*Add dynamic links thats take a user directly to a specific page when the user clicks on a notification
 - \*Add pagination to posts page
-- \*Invite friends to the app via facebook, whatsapp, contacts
 - \*Add video controls to player
 - \*Consider using topics that users subscribe to send notifications
 
@@ -58,7 +57,6 @@ THINGS TO ADD
 - localization
 - add clubs data
 - ability for users to delete their account
-- try to make device orientation dynamic because some games require the screen to be rotated
 - try to figure out why the dynamic links does not display social tags
 
 ...........
@@ -101,6 +99,8 @@ THINGS TO ADD
   - a date when it will end - done
   - a boolean value called to specify its status - done
 - Invite from phone contacts - done
+- try to make device orientation dynamic because some games require the screen to be rotated - done
+- Invite friends to the app via facebook, whatsapp, contacts by sending links - done
 
 This is the github url for the agora chat
 https://github.com/InolabSF/flutter_voice_chat_using_agora

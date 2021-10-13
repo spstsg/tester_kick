@@ -21,7 +21,7 @@ class CreateRoomFormDialog extends StatefulWidget {
 }
 
 class _CreateRoomFormDialogState extends State<CreateRoomFormDialog> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _tagsController = TextEditingController();
