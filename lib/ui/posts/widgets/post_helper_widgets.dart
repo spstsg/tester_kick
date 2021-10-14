@@ -49,10 +49,10 @@ class PostHeader extends StatelessWidget {
       child: Row(
         children: [
           ProfileAvatar(
-            imageUrl: post.profilePicture,
-            username: post.username,
-            avatarColor: post.avatarColor,
-            radius: post.profilePicture != '' ? 20 : 45.0,
+            imageUrl: post.author!.profilePictureURL,
+            username: post.author!.username,
+            avatarColor: post.author!.avatarColor,
+            radius: post.author!.profilePictureURL != '' ? 20 : 45.0,
             fontSize: 20,
           ),
           SizedBox(width: 8.0),
@@ -63,14 +63,14 @@ class PostHeader extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () async {
-                    if (post.author.userID != MyAppState.currentUser!.userID) {
-                      User? user = await _userService.getCurrentUser(post.author.userID);
+                    if (post.authorId != MyAppState.currentUser!.userID) {
+                      User? user = await _userService.getCurrentUser(post.authorId);
                       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
                       push(context, ProfileScreen(user: user));
                     }
                   },
                   child: Text(
-                    post.username,
+                    post.author!.username,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -108,7 +108,7 @@ class PostHeader extends StatelessWidget {
                     screenshotController: screenshotController,
                   ),
                 )
-              : post.username == MyAppState.currentUser!.username
+              : post.author!.username == MyAppState.currentUser!.username
                   ? Container(
                       child: Row(
                         children: [
@@ -162,7 +162,7 @@ class PostHeader extends StatelessWidget {
       if (!proceed) {
         return;
       } else {
-        await postService.deletePost(post);
+        postService.deletePost(post);
       }
     } catch (e) {
       await showCupertinoAlert(

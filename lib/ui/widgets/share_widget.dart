@@ -271,7 +271,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
   }
 
   sendNotification(Post post) async {
-    User? author = await _userService.getCurrentUser(post.sharedPost.author.userID);
+    User? author = await _userService.getCurrentUser(post.sharedPost.authorId);
     if (author!.userID != MyAppState.currentUser!.userID) {
       await notificationService.saveNotification(
         'posts_shared',

@@ -47,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      decoration: BoxDecoration(color: ColorPalette.greyWhite),
       child: CustomScrollView(
-        controller: null,
         slivers: [
           SliverAppBar(
             systemOverlayStyle: SystemUiOverlayStyle.light,

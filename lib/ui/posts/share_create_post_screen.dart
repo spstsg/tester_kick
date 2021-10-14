@@ -118,12 +118,8 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
     LoadingOverlay.of(context).show();
     try {
       SharedPost sharedPost = SharedPost(
-        author: widget.post.author,
         id: widget.post.id,
         authorId: widget.post.authorId,
-        username: widget.post.username,
-        avatarColor: widget.post.avatarColor,
-        profilePicture: widget.post.profilePicture,
         bgColor: widget.post.bgColor,
         createdAt: widget.post.createdAt,
         post: widget.post.post,
@@ -134,12 +130,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
       );
 
       Post post = Post(
-        author: MyAppState.currentUser,
         authorId: MyAppState.currentUser!.userID,
-        username: MyAppState.currentUser!.username,
-        email: MyAppState.currentUser!.email,
-        avatarColor: MyAppState.currentUser!.avatarColor,
-        profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: '#ffffff',
         post: _postController.text.trim(),
         gifUrl: '',

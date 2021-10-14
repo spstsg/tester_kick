@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/posts/widgets/post_helper_widgets.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/posts/widgets/shared_post_container.dart';
@@ -26,18 +30,26 @@ class _ProfilePostState extends State<ProfilePost> {
   int displayedImageIndex = 0;
   late Stream<List<Post>> userPosts;
   PostService _postService = PostService();
+  UserService _userService = UserService();
   List<Post> usersPostList = [];
+  List<Post> updatedPostList = [];
+  StreamController<List<Post>> userPostStream = StreamController.broadcast();
 
   @override
   void initState() {
-    userPosts = _postService.getProfilePosts(widget.user.userID).asBroadcastStream();
+    getProfilePosts();
+    _postService.getProfilePostsStream(widget.user.userID).listen((event) {
+      addAuthorToPost(event);
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _postService.disposeProfilePostsStream();
+    userPostStream.close();
+    super.dispose();
   }
 
   @override
@@ -46,11 +58,11 @@ class _ProfilePostState extends State<ProfilePost> {
       decoration: BoxDecoration(color: usersPostList.isEmpty ? ColorPalette.white : ColorPalette.greyWhite),
       height: noPosts ? MediaQuery.of(context).size.height : null,
       child: StreamBuilder<List<Post>>(
-        stream: userPosts,
+        stream: userPostStream.stream,
         initialData: [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            if (usersPostList.isEmpty) return SizedBox.shrink();
+            if (usersPostList.isEmpty) return PostSkeleton();
             return PostSkeleton();
           } else if (!snapshot.hasData || snapshot.hasData && snapshot.data!.isEmpty) {
             noPosts = true;
@@ -234,5 +246,31 @@ class _ProfilePostState extends State<ProfilePost> {
         ),
       ),
     );
+  }
+
+  Future<void> getProfilePosts() async {
+    List<Post> postList = await _postService.getProfilePosts(widget.user.userID);
+    addAuthorToPost(postList);
+  }
+
+  Future<void> addAuthorToPost(List<Post> postList) async {
+    updatedPostList.clear();
+    for (var item in postList) {
+      if (item.authorId == MyAppState.currentUser!.userID) {
+        item.author = MyAppState.currentUser!;
+        if (item.sharedPost.authorId.isNotEmpty && item.sharedPost.authorId == MyAppState.currentUser!.userID) {
+          item.sharedPost.author = MyAppState.currentUser!;
+        }
+      } else {
+        User? author = await _userService.getCurrentUser(item.authorId);
+        item.author = author;
+        if (item.sharedPost.authorId.isNotEmpty) {
+          User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+          item.sharedPost.author = sharedPostAuthor!;
+        }
+      }
+      updatedPostList.add(item);
+    }
+    userPostStream.sink.add(updatedPostList);
   }
 }

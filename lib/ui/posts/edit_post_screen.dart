@@ -545,12 +545,7 @@ class EditPostScreenState extends State<EditPostScreen> {
 
       Post updatedPost = Post(
         id: currentPost.id,
-        author: MyAppState.currentUser,
         authorId: MyAppState.currentUser!.userID,
-        username: MyAppState.currentUser!.username,
-        email: MyAppState.currentUser!.email,
-        avatarColor: MyAppState.currentUser!.avatarColor,
-        profilePicture: MyAppState.reduxStore!.state.user.profilePictureURL,
         bgColor: _bgColor,
         reactions: currentPost.reactions,
         post: _editPostController.text.trim(),
