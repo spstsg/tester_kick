@@ -21,7 +21,7 @@ class UserLiveWidget extends StatefulWidget {
 }
 
 class _UserLiveWidgetState extends State<UserLiveWidget> with TickerProviderStateMixin {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   Room room = Room();
   late AnimationController _controller;
 

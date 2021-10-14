@@ -19,6 +19,7 @@ import 'package:kick_chat/services/chat/chat_service.dart';
 import 'package:kick_chat/services/files/file_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/notifications/chat_notification_service.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/receiver_chat_widgets.dart';
 import 'package:kick_chat/ui/chat/sender_chat_widgets.dart';
@@ -38,6 +39,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   ChatService _chatService = ChatService();
+  NotificationService _notificationService = NotificationService();
   UserService _userService = UserService();
   FileService _fileService = FileService();
   ChatNotificationService _chatNotificationService = ChatNotificationService();
@@ -575,14 +577,23 @@ class _ChatScreenState extends State<ChatScreen> {
   Future sendMessageNotification(MessageData message) async {
     if (homeConversationModel.members.isNotEmpty) {
       receiver = await _userService.getCurrentUser(homeConversationModel.members.first.userID);
-      if (receiver!.active && receiver!.chat['userTwo'] != MyAppState.currentUser!.username) {
+      if (receiver!.chat['userTwo'] != MyAppState.currentUser!.username) {
         _chatNotificationService.saveChatNotification(
           'chat_message',
-          'sent you a message.',
+          '${truncateString(message.content, 40)}',
           homeConversationModel.members[0],
           MyAppState.currentUser!.username,
           {'outBound': MyAppState.currentUser!.toJson(), 'chat': message.toJson()},
         );
+
+        if (receiver!.settings.notifications && receiver!.notifications['messages']) {
+          await _notificationService.sendPushNotification(
+            receiver!.fcmToken,
+            MyAppState.currentUser!.username,
+            '${truncateString(message.content, 40)}',
+            {'type': 'chat', 'senderId': MyAppState.currentUser!.userID, 'receiverId': receiver!.userID},
+          );
+        }
       }
     }
   }

@@ -21,7 +21,7 @@ class DialogWithTextField extends StatefulWidget {
 }
 
 class DialogWithTextFieldState extends State<DialogWithTextField> {
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   final format = DateFormat("HH:mm");
   dynamic newEndTime;
   static StreamController<String> events = new StreamController<String>.broadcast();

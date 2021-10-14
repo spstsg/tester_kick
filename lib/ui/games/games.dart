@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/services/games/games_service.dart';
@@ -28,6 +29,12 @@ class _GamesState extends State<Games> {
   }
 
   @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -42,7 +49,43 @@ class _GamesState extends State<Games> {
             color: Colors.blue,
           ),
         ),
-        actions: [],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+                  },
+                  child: Image(
+                    height: 40,
+                    width: 40,
+                    color: Colors.blue,
+                    image: AssetImage('assets/images/portrait.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                SizedBox(width: 20),
+                GestureDetector(
+                  onTap: () async {
+                    await SystemChrome.setPreferredOrientations([
+                      DeviceOrientation.landscapeLeft,
+                      DeviceOrientation.landscapeRight,
+                    ]);
+                  },
+                  child: Image(
+                    height: 40,
+                    width: 40,
+                    color: Colors.blue,
+                    image: AssetImage('assets/images/landscape.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
       ),
       body: Container(
         child: FutureBuilder<List<dynamic>>(
@@ -105,8 +148,9 @@ class _GamesState extends State<Games> {
 
   Widget gameDisplay(BuildContext context, game) {
     return Container(
-      // height: game['height'].toDouble(),
-      height: MediaQuery.of(context).size.height * 0.3,
+      height: MediaQuery.of(context).orientation == Orientation.landscape
+          ? MediaQuery.of(context).size.height
+          : MediaQuery.of(context).size.height * 0.3,
       width: game['width'].toDouble(),
       decoration: BoxDecoration(
         color: Colors.black,

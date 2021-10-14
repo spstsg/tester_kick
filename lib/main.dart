@@ -1,19 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
-import 'package:kick_chat/models/conversation_model.dart';
-import 'package:kick_chat/models/home_conversation_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/redux/actions/user_action.dart';
@@ -22,20 +19,20 @@ import 'package:kick_chat/redux/reducers/app_reducers.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/dynamic_links/dynamic_link_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/handle_notification_service.dart';
 // import 'package:kick_chat/services/mock/mock_user_service.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/auth/signup/SignUpScreen.dart';
-import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/home/nav_screen.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 // import 'services/mock/mock_post_service.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+HandleNotificationService _handleNotificationService = HandleNotificationService();
 
 void main() async {
   await dotenv.load(fileName: "assets/.env");
@@ -43,22 +40,11 @@ void main() async {
   // Wait for Firebase to initialize and set `_initialized` state to true
   await Firebase.initializeApp();
 
-  final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-    onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {},
-  );
-  var initializationSettings = new InitializationSettings(iOS: initializationSettingsIOS);
+  _handleNotificationService.initializeFlutterNotificationPlugin();
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: (String? payload) async {
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
-    }
-  });
+  FirebaseMessaging.onBackgroundMessage(_handleNotificationService.backgroundMessageHandler);
 
-  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(MyApp());
 }
 
@@ -70,7 +56,7 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// this key is used to navigate to the appropriate screen when the
   /// notification is clicked from the system tray
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
   static User? currentUser;
   static DevToolsStore<AppState>? reduxStore;
 
@@ -81,7 +67,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // /// true if firebase had an error during initialization
   bool _error = false;
   UserService _userService = UserService();
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
   DynamicLinkService _dynamicLinkService = DynamicLinkService();
 
   @override
@@ -176,11 +162,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    final store = DevToolsStore<AppState>(
-      appStateReducer,
-      initialState: AppState.initialState(),
-      // middleware: [thunkMiddleware],
-    );
+    final store = DevToolsStore<AppState>(appStateReducer, initialState: AppState.initialState());
     MyAppState.reduxStore = store;
 
     return StoreProvider<AppState>(
@@ -202,33 +184,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// we attempt to initialize firebase app
   void initializeFlutterFire() async {
     try {
-      /// configure the firebase messaging , required for notifications handling
-      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-      if (initialMessage != null) {
-        _handleNotification(initialMessage.data, navigatorKey);
-      }
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? remoteMessage) {
-        if (remoteMessage != null) {
-          _handleNotification(remoteMessage.data, navigatorKey);
-        }
-      });
-      FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
-        RemoteNotification? message = remoteMessage!.notification;
-        if (message!.title != '' && message.body != '') {
-          await flutterLocalNotificationsPlugin.show(
-            0,
-            message.title,
-            message.body,
-            const NotificationDetails(
-              iOS: IOSNotificationDetails(
-                presentAlert: true,
-                presentBadge: true,
-                presentSound: true,
-              ),
-            ),
-          );
-        }
-      });
+      await _handleNotificationService.listenForNotifications(navigatorKey);
 
       /// listen to firebase token changes and update the user object in the
       /// database with it's new token
@@ -341,48 +297,5 @@ class OnBoardingState extends State<OnBoarding> {
       /// screen one time only at first installation of the app
       pushReplacement(context, new SignUpScreen());
     }
-  }
-}
-
-/// this fuction is called when the notification is clicked from system tray
-/// when the app is in the background or completely killed
-void _handleNotification(Map<String, dynamic> message, GlobalKey<NavigatorState> navigatorKey) {
-  try {
-    Map<dynamic, dynamic> data = message['data'];
-    if (data.containsKey('members') && data.containsKey('conversationModel')) {
-      List<User> members =
-          List<User>.from((jsonDecode(data['members']) as List<dynamic>).map((e) => User.fromPayload(e))).toList();
-      ConversationModel conversationModel = ConversationModel.fromPayload(jsonDecode(data['conversationModel']));
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            homeConversationModel: HomeConversationModel(
-              members: members,
-              conversationModel: conversationModel,
-            ),
-            user: members.first,
-          ),
-        ),
-      );
-    }
-  } catch (e, s) {
-    print('MyAppState._handleNotification $e $s');
-  }
-}
-
-/// this fuction is called when the user receives a notification while the
-/// app is in the background or completely killed
-Future<dynamic> backgroundMessageHandler(RemoteMessage remoteMessage) async {
-  await Firebase.initializeApp();
-  Map<dynamic, dynamic> message = remoteMessage.data;
-  if (message.containsKey('data')) {
-    // Handle data message
-    // final dynamic data = message['data'];
-
-  }
-
-  if (message.containsKey('notification')) {
-    // Handle notification message
-    // final dynamic notification = message['notification'];
   }
 }

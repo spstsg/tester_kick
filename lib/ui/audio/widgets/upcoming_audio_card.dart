@@ -1,20 +1,25 @@
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/audio_room_model.dart';
 import 'package:kick_chat/models/audio_upcoming_room_model.dart';
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/redux/actions/selected_room_action.dart';
 import 'package:kick_chat/services/audio/audio_chat_service.dart';
 import 'package:kick_chat/services/audio/audio_upcoming_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/audio_room.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
 
@@ -27,10 +32,10 @@ class UpcomingAudioCard extends StatefulWidget {
 
 class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   UpcomingAudioService _upcomingAudioService = UpcomingAudioService();
-  AudoChatService _audioChatService = AudoChatService();
+  AudioChatService _audioChatService = AudioChatService();
+  UserService _userService = UserService();
+  NotificationService _notificationService = NotificationService();
   late Stream<List<UpcomingRoom>> _upcomingRoomsStream;
-  // late StreamSubscription<dynamic> periodicStreamSubscription;
-  bool showStartButton = false;
 
   @override
   void initState() {
@@ -42,62 +47,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   @override
   void dispose() {
     _upcomingAudioService.disposeUpcomingRoomsStream();
-    // periodicStreamSubscription.cancel();
     super.dispose();
-  }
-
-  String calculateDifference(String dateString) {
-    var date = DateTime.parse(dateString);
-    DateTime now = DateTime.now();
-    int days = DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays;
-    if (days == 0) {
-      return 'Today';
-    } else if (days == 1) {
-      return 'Tomorrow';
-    }
-    final DateFormat format = DateFormat('dd/MM/yyyy');
-    return format.format(date);
-  }
-
-  getTime(String dateString) {
-    var date = DateTime.parse(dateString);
-    final DateFormat format = DateFormat('HH:m a');
-    return format.format(date.toUtc().toLocal());
-  }
-
-  checkEventTime(String dateString) {
-    var now = DateTime.now();
-    var date = DateTime.parse(dateString);
-
-    Duration duration = date.difference(now);
-    final minutes = duration.inMinutes;
-    if (minutes == 5) {
-      // send notification to creator
-      print('$minutes minutes remaining');
-    }
-
-    if (minutes <= 0) {
-      // send notification to all users that matches the tags
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() {
-          showStartButton = true;
-        });
-      });
-    }
-    // print('$minutes minutes');
-  }
-
-  // notifications to be implemented after i have implemented dynamic links
-  checkPeriodicEvent(String dateString) {
-    // var stream = new Stream.periodic(Duration(seconds: 1), (count) {
-    //   return count;
-    // });
-
-    // store this is a subscription and then cancel the subscription in the dispose method
-    // periodicStreamSubscription = stream.listen((result) {
-    //   checkEventTime(dateString);
-    // });
   }
 
   @override
@@ -146,7 +96,11 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
               shrinkWrap: true,
               itemCount: upcomingAudioRooms.length,
               itemBuilder: (BuildContext context, int index) {
-                checkEventTime(upcomingAudioRooms[index].createdDate);
+                checkEventTime(upcomingAudioRooms[index]);
+                var result = upcomingAudioRooms[index]
+                    .fcmTokens
+                    .where((token) => token == MyAppState.currentUser!.fcmToken)
+                    .toList();
 
                 return Container(
                   decoration: BoxDecoration(color: ColorPalette.greyWhite),
@@ -157,154 +111,231 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                       side: BorderSide(color: ColorPalette.grey, width: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Container(
-                      padding: EdgeInsets.only(top: 12, bottom: 10, left: 15, right: 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      children: [
+                        InkWell(
+                          splashColor: Colors.white,
+                          highlightColor: Colors.white,
+                          onTap: () async {
+                            await showCupertinoAlert(
+                              context,
+                              '${upcomingAudioRooms[index].title}',
+                              '${upcomingAudioRooms[index].description}',
+                              'OK',
+                              '',
+                              '',
+                              false,
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.only(top: 12, bottom: 10, left: 15, right: 15),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 1.0,
-                                    vertical: 1.0,
-                                  ),
-                                  child: Text(
-                                    '${calculateDifference(upcomingAudioRooms[index].createdDate)},',
-                                    style: TextStyle(
-                                      color: ColorPalette.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 5.0,
-                                    vertical: 1.0,
-                                  ),
-                                  width: MediaQuery.of(context).size.width * 0.47,
-                                  child: Text(
-                                    '${getTime(upcomingAudioRooms[index].createdDate)}',
-                                    style: TextStyle(
-                                      color: ColorPalette.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 15),
-                          Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                for (var tag in upcomingAudioRooms[index].tags)
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 1.0),
-                                    margin: EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      border: Border.all(color: Colors.blueAccent),
-                                    ),
-                                    child: Tooltip(
-                                      message: tag,
-                                      preferBelow: false,
-                                      child: Text(
-                                        '#${truncateString(tag, 10)}',
-                                        style: TextStyle(color: ColorPalette.black),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Container(
-                            child: Text(
-                              upcomingAudioRooms[index].title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: ColorPalette.primary,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 15),
-                          Container(
-                            child: Row(
-                              children: [
-                                ProfileAvatar(
-                                  imageUrl: upcomingAudioRooms[index].creator.profilePictureURL,
-                                  username: upcomingAudioRooms[index].creator.username,
-                                  avatarColor: upcomingAudioRooms[index].creator.avatarColor,
-                                  radius: 22,
-                                  fontSize: 30,
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    'Hosted by ${upcomingAudioRooms[index].creator.username}',
-                                    style: TextStyle(
-                                      color: ColorPalette.black,
-                                      fontSize: 16.0,
-                                      // fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                showStartButton &&
-                                        upcomingAudioRooms[index].creator.username == MyAppState.currentUser!.username
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          startLiveRoom(upcomingAudioRooms[index]);
-                                        },
-                                        child: Container(
-                                          alignment: Alignment.centerRight,
-                                          padding: EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius: BorderRadius.circular(40),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 1.0,
+                                          vertical: 1.0,
+                                        ),
+                                        child: Text(
+                                          '${calculateDifference(upcomingAudioRooms[index].scheduledDate)},',
+                                          style: TextStyle(
+                                            color: ColorPalette.primary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
                                           ),
-                                          child: Text(
-                                            'START ROOM',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ColorPalette.white,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 5.0,
+                                          vertical: 1.0,
+                                        ),
+                                        width: MediaQuery.of(context).size.width * 0.47,
+                                        child: Text(
+                                          '${getTime(upcomingAudioRooms[index].scheduledDate)}',
+                                          style: TextStyle(
+                                            color: ColorPalette.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 15),
+                                Container(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      for (var tag in upcomingAudioRooms[index].tags)
+                                        Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 1.0),
+                                          margin: EdgeInsets.only(right: 8),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(10.0),
+                                            border: Border.all(color: Colors.blueAccent),
+                                          ),
+                                          child: Tooltip(
+                                            message: tag,
+                                            preferBelow: false,
+                                            child: Text(
+                                              '#${truncateString(tag, 10)}',
+                                              style: TextStyle(color: ColorPalette.black),
                                             ),
                                           ),
                                         ),
-                                      )
-                                    : SizedBox.shrink(),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Container(
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                Container(
                                   child: Text(
-                                    upcomingAudioRooms[index].description,
+                                    upcomingAudioRooms[index].title,
                                     style: TextStyle(
-                                      color: ColorPalette.grey,
-                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22,
+                                      color: ColorPalette.primary,
                                     ),
                                   ),
                                 ),
+                                SizedBox(height: 15),
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      ProfileAvatar(
+                                        imageUrl: upcomingAudioRooms[index].creator.profilePictureURL,
+                                        username: upcomingAudioRooms[index].creator.username,
+                                        avatarColor: upcomingAudioRooms[index].creator.avatarColor,
+                                        radius: 22,
+                                        fontSize: 30,
+                                      ),
+                                      SizedBox(width: 10),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          'Hosted by ${upcomingAudioRooms[index].creator.username}',
+                                          style: TextStyle(
+                                            color: ColorPalette.black,
+                                            fontSize: 16.0,
+                                          ),
+                                        ),
+                                      ),
+                                      upcomingAudioRooms[index].notificationSent &&
+                                              upcomingAudioRooms[index].creator.username ==
+                                                  MyAppState.currentUser!.username
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                startLiveRoom(upcomingAudioRooms[index]);
+                                              },
+                                              child: Container(
+                                                alignment: Alignment.centerRight,
+                                                padding: EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius.circular(40),
+                                                ),
+                                                child: Text(
+                                                  'START ROOM',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: ColorPalette.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : SizedBox.shrink(),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 15),
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          '${truncateString(upcomingAudioRooms[index].description, 70)}',
+                                          style: TextStyle(
+                                            color: ColorPalette.grey,
+                                            fontSize: 16.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 5),
                               ],
                             ),
                           ),
-                          SizedBox(height: 10),
-                        ],
-                      ),
+                        ),
+                        GestureDetector(
+                          onTap: !upcomingAudioRooms[index].notificationSent
+                              ? () async {
+                                  if (upcomingAudioRooms[index].creator.userID == MyAppState.currentUser!.userID)
+                                    return;
+                                  if (result.isNotEmpty && result[0] == MyAppState.currentUser!.fcmToken) return;
+
+                                  User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
+                                  if (user!.settings.notifications) {
+                                    _upcomingAudioService.addFcmTokens(
+                                      upcomingAudioRooms[index].id,
+                                      user.fcmToken,
+                                    );
+                                  } else {
+                                    await showCupertinoAlert(
+                                      context,
+                                      'Notification',
+                                      'Notification is disabled. Go to your settings to enable.',
+                                      'OK',
+                                      '',
+                                      '',
+                                      false,
+                                    );
+                                    return;
+                                  }
+                                }
+                              : null,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 8.0),
+                              margin: EdgeInsets.only(right: 20),
+                              width: 130,
+                              decoration: BoxDecoration(
+                                color: result.isNotEmpty && result[0] == MyAppState.currentUser!.fcmToken
+                                    ? Colors.blue.shade200
+                                    : !upcomingAudioRooms[index].notificationSent
+                                        ? Colors.blue
+                                        : Colors.blue.shade200,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(MdiIcons.bellOutline, color: Colors.white),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Notifiy me',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                      ],
                     ),
                   ),
                 );
@@ -314,6 +345,65 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
         },
       ),
     );
+  }
+
+  String calculateDifference(String dateString) {
+    var date = DateTime.parse(dateString);
+    DateTime now = DateTime.now();
+    int days = DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (days == 0) {
+      return 'Today';
+    } else if (days == 1) {
+      return 'Tomorrow';
+    }
+    final DateFormat format = DateFormat('dd/MM/yyyy');
+    return format.format(date);
+  }
+
+  String getTime(String dateString) {
+    var date = DateTime.parse(dateString);
+    final DateFormat format = DateFormat('HH:m a');
+    return format.format(date.toUtc().toLocal());
+  }
+
+  Future<void> checkEventTime(UpcomingRoom room) async {
+    var now = DateTime.now();
+    var date = DateTime.parse(room.scheduledDate);
+
+    Duration duration = date.difference(now);
+    final minutes = duration.inMinutes;
+    if (minutes <= 5 && !room.creatorReminderSent) {
+      sendCreatorNotification(room);
+    }
+
+    if (minutes <= 0 && !room.notificationSent) {
+      notifyUsers(room);
+    }
+  }
+
+  sendCreatorNotification(UpcomingRoom room) async {
+    User? user = await _userService.getCurrentUser(room.creator.userID);
+    _upcomingAudioService.updateNotificationStatus(room.id, 'creatorReminderSent');
+    if (user!.settings.notifications) {
+      await _notificationService.sendPushNotification(
+        user.fcmToken,
+        'Audio room reminder',
+        '5 minutes remaining before start.',
+        {'type': 'upcomingRoom', 'roomId': room.id},
+      );
+    }
+  }
+
+  notifyUsers(UpcomingRoom room) async {
+    _upcomingAudioService.updateNotificationStatus(room.id, 'notificationSent');
+    for (var token in room.fcmTokens) {
+      await _notificationService.sendPushNotification(
+        token,
+        'Audio room reminder',
+        '${truncateString(room.title, 40)} has started.',
+        {'type': 'upcomingRoom', 'roomId': room.id},
+      );
+    }
   }
 
   Future startLiveRoom(UpcomingRoom upcomingRoom) async {
@@ -332,7 +422,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
       );
       await Future.delayed(Duration(seconds: 5));
       Room room = Room(
-        id: getRandomString(20),
+        id: upcomingRoom.id,
         title: title,
         tags: tags,
         creator: MyAppState.currentUser!,

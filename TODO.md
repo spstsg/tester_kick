@@ -8,6 +8,7 @@
 - Find a way to know which of your contacts have kickchat installed
 
 - Dynamic links
+
 * In other for dynamic links to work on IOS, make sure you enable "Associated domains" under identifiers on apple developer account.
 * Any profile associated with the identifier that you are enabling the associated domains, will become invalid. You will have to create a new profile.
 * Open project on xcode and add a new url type with $(PRODUCT_BUNDLE_IDENTIFIER) as url schemes
@@ -23,17 +24,18 @@
 
 <!-- - Send verification code to email on signup -->
 <!-- - After sharing a screenshot, delete from the users device -->
-- *Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
-- *Add stickers
-- *Add dynamic links thats take a user directly to a specific page when the user clicks on a notification
-- *Add pagination to posts page
-- *Invite friends to the app via facebook, whatsapp, contacts
-- *Add video controls to player
-- *Consider using topics that users subscribe to send notifications
+
+- \*Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
+- \*Add stickers
+- \*Add dynamic links thats take a user directly to a specific page when the user clicks on a notification
+- \*Add pagination to posts page
+- \*Add video controls to player
+- \*Consider using topics that users subscribe to send notifications
 
 <!-- - If a user is sending a message to another user for the first time, the page remains in a loading state after the message is sent. -->
 
 WHERE TO ADD NOTIFICATION
+
 - post reaction - done
 - post comment - done
 - follow user - done
@@ -42,7 +44,6 @@ WHERE TO ADD NOTIFICATION
 
 <!-- - When a user creates a post, notify all his followers
 - Send chat
-  - Only send push notification if the receiver is not online
   - If the receiver is still on the app but on a different page, use local notification
 - Any post related to the teams you are following
 - Any audio room related to the team you are following
@@ -50,7 +51,15 @@ WHERE TO ADD NOTIFICATION
 - Breaking news
 - Voting -->
 
+THINGS TO ADD
+
+- localization
+- add clubs data
+- ability for users to delete their account
+- try to figure out why the dynamic links does not display social tags
+
 ...........
+
 - The gif select for post create is not working - done
 - Work on edit post with video - done
 - Display user's added videos on profile page - done
@@ -89,9 +98,10 @@ WHERE TO ADD NOTIFICATION
   - a date when it will end - done
   - a boolean value called to specify its status - done
 - Invite from phone contacts - done
+- try to make device orientation dynamic because some games require the screen to be rotated - done
+- Invite friends to the app via facebook, whatsapp, contacts by sending links - done
 
-
-This is the github url for the agora chat 
+This is the github url for the agora chat
 https://github.com/InolabSF/flutter_voice_chat_using_agora
 
 This is the link for ios device
@@ -100,29 +110,32 @@ https://github.com/filsv/iPhoneOSDeviceSupport
 https://stackoverflow.com/questions/53630136/using-cocoapods-libraries-in-flutter-ios-platform-specific-code
 
 Audio chat logic
-- *Try to see if you can persist the stopwatch timer as long as the room is not ended
+
+- \*Try to see if you can persist the stopwatch timer as long as the room is not ended
 
 .......................................................
-* Not needed because i am not using a count down timer
-.......................................................
-- Make room timer continue from where it is on the creators page. It should not start from begininning every time a user enters the room.
-- Show a notification in the room if the time is remaining 5 minutes
-- Make the time update automatically when a creator adds more time
-- Make the add more button show up immediately the time hits zero
 
+- Not needed because i am not using a count down timer
+  .......................................................
+
+* Make room timer continue from where it is on the creators page. It should not start from begininning every time a user enters the room.
+* Show a notification in the room if the time is remaining 5 minutes
+* Make the time update automatically when a creator adds more time
+* Make the add more button show up immediately the time hits zero
 
 Note
 This was added to AppDelegate.swift for IOS in other for flutter_local_notification to work. There is a corresponding code for android. Check the docs.
-if #available(iOS 10.0, *) {
-    UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+if #available(iOS 10.0, \*) {
+UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
 }
 
 TEMPORAL FIX FOR AGORA IOS SDK ISSUE
+
 - Change platform version inside Podfile to something higher than 8
 - Add after flutter_additional_ios_build_settings(target) in the Podfile
   target.build_configurations.each do |config|
-    config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
-    config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 arm64'
+  config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+  config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 arm64'
   end
 - Go into ios folder and delete Podfile.lock
 - Go to the root folder and run

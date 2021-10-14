@@ -63,15 +63,15 @@ class FollowService {
           'started following you.',
           visitedUserData,
           MyAppState.currentUser!.username,
-          {'outBound': MyAppState.currentUser!.toJson()},
+          {'outBound': MyAppState.currentUser!.toJson(), 'userId': MyAppState.currentUser!.userID},
         );
 
         if (visitedUserData.settings.notifications && visitedUserData.notifications['followers']) {
-          await _notificationService.sendNotification(
+          await _notificationService.sendPushNotification(
             visitedUserData.fcmToken,
             MyAppState.currentUser!.username,
             'started following you.',
-            null,
+            {'type': 'follow', 'userId': MyAppState.currentUser!.userID},
           );
         }
       }

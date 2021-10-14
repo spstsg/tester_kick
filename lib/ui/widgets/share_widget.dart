@@ -3,8 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
+import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/services/dynamic_links/dynamic_link_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/notification_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/widgets/fullscreen_carousel.dart';
 import 'package:kick_chat/ui/widgets/multi_photo_display.dart';
 
@@ -23,6 +28,8 @@ class ShareOutsideWidget extends StatefulWidget {
 }
 
 class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
+  NotificationService notificationService = NotificationService();
+  UserService _userService = UserService();
   TextEditingController _postController = TextEditingController();
 
   List<String> imageStringList = [];
@@ -63,9 +70,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
         centerTitle: true,
         actions: [
           GestureDetector(
-            onTap: widget.screenshot == null &&
-                    widget.post.postMedia.isEmpty &&
-                    _postController.text == ''
+            onTap: widget.screenshot == null && widget.post.postMedia.isEmpty && _postController.text == ''
                 ? null
                 : () => shareContent(),
             child: Padding(
@@ -76,9 +81,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: widget.screenshot == null &&
-                            widget.post.postMedia.isEmpty &&
-                            _postController.text == ''
+                    color: widget.screenshot == null && widget.post.postMedia.isEmpty && _postController.text == ''
                         ? ColorPalette.lightBlue
                         : ColorPalette.white,
                   ),
@@ -238,30 +241,55 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
   }
 
   void shareContent() async {
+    DynamicLinkService _dynamicLinkService = DynamicLinkService();
+    var uri = await _dynamicLinkService.createPostShareDynamicLink(widget.post.id);
     try {
       if (widget.screenshot != null) {
         await shareScreenshot(
           context,
           widget.screenshot as Uint8List,
-          _postController.text,
+          uri,
         );
       }
 
       if (widget.post.postMedia.isEmpty && widget.screenshot == null) {
-        await shareText(context, _postController.text);
+        await shareText(context, uri);
       }
 
       if (widget.post.postMedia.isNotEmpty && widget.screenshot == null) {
         await shareImage(
           context,
-          _postController.text,
+          uri,
           widget.post.postMedia[widget.displayedImageIndex],
         );
       }
-      Navigator.pop(context);
+      await sendNotification(widget.post);
     } catch (e) {
       final snackBar = SnackBar(content: Text('Error sharing your content. Try again later.'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  sendNotification(Post post) async {
+    User? author = await _userService.getCurrentUser(post.sharedPost.author.userID);
+    if (author!.userID != MyAppState.currentUser!.userID) {
+      await notificationService.saveNotification(
+        'posts_shared',
+        'shared your post.',
+        author,
+        MyAppState.currentUser!.username,
+        {'outBound': MyAppState.currentUser!.toJson(), 'postId': post.id},
+      );
+
+      if (author.settings.notifications && author.notifications['shared']) {
+        await notificationService.sendPushNotification(
+          author.fcmToken,
+          MyAppState.currentUser!.username,
+          'shared your post.',
+          {'type': 'shared', 'postId': post.id},
+        );
+      }
+      Navigator.pop(context);
     }
   }
 }

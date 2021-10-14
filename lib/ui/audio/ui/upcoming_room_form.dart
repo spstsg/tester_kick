@@ -429,7 +429,7 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
           title: title,
           tags: tags.split(','),
           creator: MyAppState.currentUser!,
-          createdDate: scheduledDate.toString(),
+          scheduledDate: scheduledDate.toString(),
           description: description,
         );
 

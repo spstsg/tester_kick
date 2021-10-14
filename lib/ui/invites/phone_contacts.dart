@@ -111,7 +111,7 @@ class _PhoneContactsState extends State<PhoneContacts> {
         onPressed: () async {
           try {
             DynamicLinkService _dynamicLinkService = DynamicLinkService();
-            var uri = await _dynamicLinkService.createDynamicLink();
+            var uri = await _dynamicLinkService.createInviteDynamicLink();
             await sendSMS(message: uri.toString(), recipients: ['${contact.info.phones![0].value}']);
             final snackBar = SnackBar(content: Text('Invitation sent'));
             ScaffoldMessenger.of(context).showSnackBar(snackBar);

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/models/notification_model.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/notifications/handle_notification_service.dart';
 import 'package:kick_chat/services/notifications/notification_service.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -11,8 +12,9 @@ class LocalNotification extends StatefulWidget {
 }
 
 class _LocalNotificationState extends State<LocalNotification> {
-  late Future<List<NotificationModel>> _notificationsFuture;
   NotificationService _notificationService = NotificationService();
+  HandleNotificationService _handleNotificationService = HandleNotificationService();
+  late Future<List<NotificationModel>> _notificationsFuture;
 
   @override
   void initState() {
@@ -99,6 +101,10 @@ class _LocalNotificationState extends State<LocalNotification> {
                       notificationBody = 'reacted to your post.';
                       notificationMetaData = snapshot.data![index].metadata['outBound'];
                       break;
+                    case 'posts_shared':
+                      notificationBody = 'shared your post.';
+                      notificationMetaData = snapshot.data![index].metadata['outBound'];
+                      break;
                     default:
                       break;
                   }
@@ -106,13 +112,12 @@ class _LocalNotificationState extends State<LocalNotification> {
                 return Container(
                   color: !snapshot.data![index].seen ? Colors.lightBlueAccent.shade100.withOpacity(0.2) : null,
                   child: ListTile(
-                    onTap: snapshot.data![index].seen
-                        ? () => null
-                        : () {
-                            snapshot.data![index].seen = true;
-                            _notificationService.updateNotification(snapshot.data![index]);
-                            setState(() {});
-                          },
+                    onTap: () {
+                      snapshot.data![index].seen = true;
+                      _notificationService.updateNotification(snapshot.data![index]);
+                      clickNotification(snapshot.data![index]);
+                      setState(() {});
+                    },
                     leading: notificationMetaData.keys.toList().isNotEmpty
                         ? snapshot.data![index].type != 'chat_message'
                             ? displayCircleImage(notificationMetaData['profilePictureURL'] ?? '', 40, true)
@@ -166,5 +171,43 @@ class _LocalNotificationState extends State<LocalNotification> {
         },
       ),
     );
+  }
+
+  void clickNotification(NotificationModel payload) async {
+    try {
+      if (payload.metadata['type'] == 'posts_comments') {
+        _handleNotificationService.navigateToComments(
+          payload.metadata['postId'],
+          payload.metadata['commentId'],
+        );
+      }
+
+      if (payload.metadata['type'] == 'posts_shared') {
+        _handleNotificationService.navigateToPost(payload.metadata['postId']);
+      }
+
+      if (payload.metadata['type'] == 'follow_user') {
+        _handleNotificationService.navigateToProfilePage(payload.metadata['userId']);
+      }
+
+      if (payload.metadata['type'] == 'social_reaction') {
+        _handleNotificationService.navigateToPostReaction(
+          payload.metadata['postId'],
+          payload.metadata['username'],
+          payload.metadata['imageUrl'],
+          payload.metadata['reaction'],
+        );
+      }
+    } catch (e) {
+      await showCupertinoAlert(
+        context,
+        'Notification error',
+        'Error occured. Please try again later.',
+        'OK',
+        '',
+        '',
+        false,
+      );
+    }
   }
 }
