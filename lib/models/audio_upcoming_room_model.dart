@@ -2,10 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kick_chat/models/user_model.dart';
 
 class UpcomingRoom {
+  User? creator;
+  String creatorId;
   String id;
   String title;
   List tags;
-  User creator;
   String createdDate;
   String scheduledDate;
   String description;
@@ -16,6 +17,7 @@ class UpcomingRoom {
 
   UpcomingRoom({
     creator,
+    this.creatorId = '',
     this.id = '',
     this.title = '',
     this.tags = const [],
@@ -26,17 +28,17 @@ class UpcomingRoom {
     status,
     notificationSent,
     creatorReminderSent,
-  })  : this.creator = creator ?? User(),
-        this.status = status ?? false,
+  })  : this.status = status ?? false,
         this.notificationSent = notificationSent ?? false,
         this.creatorReminderSent = creatorReminderSent ?? false,
-        this.createdDate = createdDate ?? Timestamp.now();
+        this.createdDate = createdDate ?? '${Timestamp.now()}';
 
   factory UpcomingRoom.fromJson(Map<String, dynamic> parsedJson) {
     List _tags = parsedJson['tags'] ?? [];
     List _fcmTokens = parsedJson['fcmTokens'] ?? [];
     return new UpcomingRoom(
       creator: parsedJson.containsKey('creator') ? User.fromJson(parsedJson['creator']) : User(),
+      creatorId: parsedJson['creatorId'] ?? '',
       id: parsedJson['id'] ?? '',
       title: parsedJson['title'] ?? '',
       description: parsedJson['description'] ?? '',
@@ -46,13 +48,14 @@ class UpcomingRoom {
       status: parsedJson['status'] ?? false,
       notificationSent: parsedJson['notificationSent'] ?? false,
       creatorReminderSent: parsedJson['creatorReminderSent'] ?? false,
-      createdDate: parsedJson['createdDate'] ?? Timestamp.now(),
+      createdDate: parsedJson['createdDate'] ?? '${Timestamp.now()}',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "creator": this.creator.toJson(),
+      "creator": this.creator != null ? this.creator!.toJson() : null,
+      "creatorId": this.creatorId,
       "id": this.id,
       'title': this.title,
       'tags': this.tags,

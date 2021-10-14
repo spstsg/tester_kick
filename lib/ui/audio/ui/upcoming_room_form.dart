@@ -426,6 +426,7 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
         await Future.delayed(Duration(seconds: 1));
         UpcomingRoom room = UpcomingRoom(
           id: getRandomString(20),
+          creatorId: MyAppState.currentUser!.userID,
           title: title,
           tags: tags.split(','),
           creator: MyAppState.currentUser!,

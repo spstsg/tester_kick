@@ -211,9 +211,9 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                   child: Row(
                                     children: [
                                       ProfileAvatar(
-                                        imageUrl: upcomingAudioRooms[index].creator.profilePictureURL,
-                                        username: upcomingAudioRooms[index].creator.username,
-                                        avatarColor: upcomingAudioRooms[index].creator.avatarColor,
+                                        imageUrl: upcomingAudioRooms[index].creator!.profilePictureURL,
+                                        username: upcomingAudioRooms[index].creator!.username,
+                                        avatarColor: upcomingAudioRooms[index].creator!.avatarColor,
                                         radius: 22,
                                         fontSize: 30,
                                       ),
@@ -221,7 +221,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                       Expanded(
                                         flex: 3,
                                         child: Text(
-                                          'Hosted by ${upcomingAudioRooms[index].creator.username}',
+                                          'Hosted by ${upcomingAudioRooms[index].creator!.username}',
                                           style: TextStyle(
                                             color: ColorPalette.black,
                                             fontSize: 16.0,
@@ -229,7 +229,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                                         ),
                                       ),
                                       upcomingAudioRooms[index].notificationSent &&
-                                              upcomingAudioRooms[index].creator.username ==
+                                              upcomingAudioRooms[index].creator!.username ==
                                                   MyAppState.currentUser!.username
                                           ? GestureDetector(
                                               onTap: () {
@@ -280,7 +280,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
                         GestureDetector(
                           onTap: !upcomingAudioRooms[index].notificationSent
                               ? () async {
-                                  if (upcomingAudioRooms[index].creator.userID == MyAppState.currentUser!.userID)
+                                  if (upcomingAudioRooms[index].creator!.userID == MyAppState.currentUser!.userID)
                                     return;
                                   if (result.isNotEmpty && result[0] == MyAppState.currentUser!.fcmToken) return;
 
@@ -382,7 +382,7 @@ class _UpcomingAudioCardState extends State<UpcomingAudioCard> {
   }
 
   sendCreatorNotification(UpcomingRoom room) async {
-    User? user = await _userService.getCurrentUser(room.creator.userID);
+    User? user = await _userService.getCurrentUser(room.creator!.userID);
     _upcomingAudioService.updateNotificationStatus(room.id, 'creatorReminderSent');
     if (user!.settings.notifications) {
       await _notificationService.sendPushNotification(

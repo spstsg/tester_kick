@@ -10,7 +10,6 @@ class HomeConversationModel {
     this.conversationModel,
   });
 
-  // This is just for console logging purposes
   Map<String, dynamic> toJson() {
     return {
       'members': [
@@ -37,7 +36,6 @@ class HomeConversationModel {
         'id': this.conversationModel!.id,
         'creatorID': this.conversationModel!.creatorId,
         'lastMessage': this.conversationModel!.lastMessage,
-        'name': this.conversationModel!.name,
         'senderId': this.conversationModel!.senderId,
         'receiverId': this.conversationModel!.receiverId,
         'isRead': this.conversationModel!.isRead,

@@ -13,49 +13,33 @@ class FollowService {
   NotificationService _notificationService = NotificationService();
   UserService _userService = UserService();
 
-  Future followUser(User currentUser, User visitedUser) async {
+  Future followUser(String currentUserId, String visitedUserId) async {
     try {
-      User otherUser = User(
-        userID: visitedUser.userID,
-        username: visitedUser.username,
-        profilePictureURL: visitedUser.profilePictureURL,
-        avatarColor: visitedUser.avatarColor,
-        fcmToken: visitedUser.fcmToken,
-      );
       await firestore
           .collection(FOLLOWING)
-          .doc(currentUser.userID)
+          .doc(currentUserId)
           .collection(FOLLOWING)
-          .doc(visitedUser.userID)
-          .set(otherUser.toJson());
+          .doc(visitedUserId)
+          .set({'user': visitedUserId});
       DocumentReference<Map<String, dynamic>> incrementFollowingCount =
           firestore.collection(USERS).doc(MyAppState.currentUser!.userID);
       incrementFollowingCount.update({'followingCount': FieldValue.increment(1)});
 
-      User current = User(
-        userID: currentUser.userID,
-        username: currentUser.username,
-        profilePictureURL: currentUser.profilePictureURL,
-        avatarColor: currentUser.avatarColor,
-        fcmToken: currentUser.fcmToken,
-      );
-
       await firestore
           .collection(FOLLOWERS)
-          .doc(visitedUser.userID)
+          .doc(visitedUserId)
           .collection(FOLLOWERS)
-          .doc(currentUser.userID)
-          .set(current.toJson());
+          .doc(currentUserId)
+          .set({'user': currentUserId});
 
-      DocumentReference<Map<String, dynamic>> incrementFollowersCount =
-          firestore.collection(USERS).doc(visitedUser.userID);
+      DocumentReference<Map<String, dynamic>> incrementFollowersCount = firestore.collection(USERS).doc(visitedUserId);
       incrementFollowersCount.update({'followersCount': FieldValue.increment(1)});
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
       MyAppState.currentUser = user;
 
-      User? visitedUserData = await _userService.getCurrentUser(visitedUser.userID);
+      User? visitedUserData = await _userService.getCurrentUser(visitedUserId);
 
       if (visitedUserData!.userID != MyAppState.currentUser!.userID) {
         await _notificationService.saveNotification(
@@ -135,8 +119,10 @@ class FollowService {
 
     QuerySnapshot userFollowing = await firestore.collection(FOLLOWING).doc(userId).collection(FOLLOWING).get();
 
-    await Future.forEach(userFollowing.docs, (DocumentSnapshot actualFollowings) {
-      followings.add(User.fromJson(actualFollowings.data() as Map<String, dynamic>));
+    await Future.forEach(userFollowing.docs, (DocumentSnapshot actualFollowings) async {
+      Map<String, dynamic> userFollowings = actualFollowings.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(userFollowings['user']);
+      followings.add(user!);
     });
     return followings.toSet().toList();
   }
@@ -146,8 +132,10 @@ class FollowService {
 
     QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
 
-    await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
-      followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));
+    await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) async {
+      Map<String, dynamic> userFollowers = actualFollowers.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(userFollowers['user']);
+      followers.add(user!);
     });
     return followers.toSet().toList();
   }
@@ -156,8 +144,10 @@ class FollowService {
     List<User> followers = [];
     QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
 
-    await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) {
-      followers.add(User.fromJson(actualFollowers.data() as Map<String, dynamic>));
+    await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) async {
+      Map<String, dynamic> userFollowers = actualFollowers.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(userFollowers['user']);
+      followers.add(user!);
     });
     List<User> items = getRandomUsersList(10, followers);
     return items;

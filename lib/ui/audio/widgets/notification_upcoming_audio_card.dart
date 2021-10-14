@@ -152,9 +152,9 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
                         child: Row(
                           children: [
                             ProfileAvatar(
-                              imageUrl: widget.upcomingRoom.creator.profilePictureURL,
-                              username: widget.upcomingRoom.creator.username,
-                              avatarColor: widget.upcomingRoom.creator.avatarColor,
+                              imageUrl: widget.upcomingRoom.creator!.profilePictureURL,
+                              username: widget.upcomingRoom.creator!.username,
+                              avatarColor: widget.upcomingRoom.creator!.avatarColor,
                               radius: 22,
                               fontSize: 30,
                             ),
@@ -162,7 +162,7 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
                             Expanded(
                               flex: 3,
                               child: Text(
-                                'Hosted by ${widget.upcomingRoom.creator.username}',
+                                'Hosted by ${widget.upcomingRoom.creator!.username}',
                                 style: TextStyle(
                                   color: ColorPalette.black,
                                   fontSize: 16.0,
@@ -171,7 +171,7 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                if (widget.upcomingRoom.creator.userID == MyAppState.currentUser!.userID) {
+                                if (widget.upcomingRoom.creator!.userID == MyAppState.currentUser!.userID) {
                                   startLiveRoom(widget.upcomingRoom);
                                 } else {
                                   addParticipantToRoom(widget.upcomingRoom);
@@ -185,7 +185,7 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
                                   borderRadius: BorderRadius.circular(40),
                                 ),
                                 child: Text(
-                                  widget.upcomingRoom.creator.userID == MyAppState.currentUser!.userID
+                                  widget.upcomingRoom.creator!.userID == MyAppState.currentUser!.userID
                                       ? 'START ROOM'
                                       : 'JOIN ROOM',
                                   style: TextStyle(

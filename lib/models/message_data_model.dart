@@ -4,11 +4,7 @@ class MessageData {
   String messageID;
   String content;
   Timestamp created;
-  String recipientUsername;
-  String recipientProfilePictureURL;
   String recipientID;
-  String senderUsername;
-  String senderProfilePictureURL;
   String senderID;
   String gifUrl;
   List chatImages;
@@ -25,11 +21,7 @@ class MessageData {
     messageDeleted,
     gifDeleted,
     imageDeleted,
-    this.recipientUsername = '',
-    this.recipientProfilePictureURL = '',
     this.recipientID = '',
-    this.senderUsername = '',
-    this.senderProfilePictureURL = '',
     this.senderID = '',
     this.gifUrl = '',
     this.chatImages = const [],
@@ -45,11 +37,7 @@ class MessageData {
       messageID: parsedJson['id'] ?? parsedJson['messageID'] ?? '',
       content: parsedJson['content'] ?? '',
       created: parsedJson['createdAt'] ?? parsedJson['created'],
-      recipientUsername: parsedJson['recipientUsername'] ?? '',
-      recipientProfilePictureURL: parsedJson['recipientProfilePictureURL'] ?? '',
       recipientID: parsedJson['recipientID'] ?? '',
-      senderUsername: parsedJson['senderUsername'] ?? '',
-      senderProfilePictureURL: parsedJson['senderProfilePictureURL'] ?? '',
       senderID: parsedJson['senderID'] ?? '',
       gifUrl: parsedJson['gifUrl'] ?? '',
       isRead: parsedJson['isRead'] ?? false,
@@ -65,11 +53,7 @@ class MessageData {
       'id': this.messageID,
       'content': this.content,
       'createdAt': this.created,
-      'recipientUsername': this.recipientUsername,
-      'recipientProfilePictureURL': this.recipientProfilePictureURL,
       'recipientID': this.recipientID,
-      'senderUsername': this.senderUsername,
-      'senderProfilePictureURL': this.senderProfilePictureURL,
       'senderID': this.senderID,
       'gifUrl': this.gifUrl,
       "chatImages": this.chatImages,

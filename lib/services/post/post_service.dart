@@ -178,15 +178,16 @@ class PostService {
   }
 
   updatePost(Post post) async {
+    post.author = null;
+    post.sharedPost.author = null;
+    Map<String, dynamic> data = post.toJson();
+    data.removeWhere((key, value) => value == null);
+    data['sharedPost'].removeWhere((key, value) => value == null);
     var sharedPostId = post.sharedPost.id;
     if (post.sharedPost.authorId == '') {
       post.sharedPost = SharedPost();
     }
-    await firestore
-        .collection(SOCIAL_POSTS)
-        .doc(post.id)
-        .update(post.toJson())
-        .then((value) => null, onError: (e) => e);
+    await firestore.collection(SOCIAL_POSTS).doc(post.id).update(data).then((value) => null, onError: (e) => e);
 
     if (post.sharedPost.authorId == '' && sharedPostId != '') {
       DocumentReference<Map<String, dynamic>> decrementShareCount =

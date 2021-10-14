@@ -12,19 +12,16 @@ class AudioRoomChatService {
   Future<bool> addAudioRoomMessage(AudioChatRoomModel conversation) async {
     try {
       String uid = getRandomString(20);
-      await firestore
-          .collection(AUDIO_ROOM_CHAT)
-          .doc(conversation.id)
-          .collection(AUDIO_ROOM_CHAT)
-          .doc(uid)
-          .set(conversation.toJson());
+      Map<String, dynamic> data = conversation.toJson();
+      data.removeWhere((key, value) => value == null);
+      await firestore.collection(AUDIO_ROOM_CHAT).doc(conversation.id).collection(AUDIO_ROOM_CHAT).doc(uid).set(data);
       return true;
     } on Exception catch (e) {
       throw e;
     }
   }
 
-  Stream<List<AudioChatRoomModel>> getAudioRoomMessages(String roomId) async* {
+  Stream<List<AudioChatRoomModel>> getAudioRoomMessagesStream(String roomId) async* {
     conversationsStream = StreamController<List<AudioChatRoomModel>>();
     List<AudioChatRoomModel> messages = [];
     firestore
@@ -55,6 +52,22 @@ class AudioRoomChatService {
       },
     );
     yield* conversationsStream.stream;
+  }
+
+  Future<List<AudioChatRoomModel>> getAudioRoomMessages(String roomId) async {
+    List<AudioChatRoomModel> _chatList = [];
+    QuerySnapshot result = await firestore
+        .collection(AUDIO_ROOM_CHAT)
+        .doc(roomId)
+        .collection(AUDIO_ROOM_CHAT)
+        .orderBy('lastMessageDate')
+        .get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot chat) async {
+      AudioChatRoomModel chatModel = AudioChatRoomModel.fromJson(chat.data() as Map<String, dynamic>);
+      _chatList.add(chatModel);
+    });
+    return _chatList;
   }
 
   void disposeAudioRoomMessageStream() {

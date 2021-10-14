@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +13,7 @@ import 'package:kick_chat/models/audio_room_chat_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/chat/audio_room_chat.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/widgets/audio_room_single_skeleton.dart';
 
 class RoomDiscussion extends StatefulWidget {
@@ -23,14 +26,19 @@ class RoomDiscussion extends StatefulWidget {
 
 class _RoomDiscussionState extends State<RoomDiscussion> {
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
+  UserService _userService = UserService();
   TextEditingController _messageController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
-  late Stream<List<AudioChatRoomModel>> _audioChatMessageStream;
+  List<AudioChatRoomModel> audioChatList = [];
+  StreamController<List<AudioChatRoomModel>> audioChatListStream = StreamController.broadcast();
 
   @override
   void initState() {
     _scrollController = ScrollController(initialScrollOffset: 0);
-    _audioChatMessageStream = _audioChatRoomService.getAudioRoomMessages(widget.room.id);
+    getRoomMessage();
+    _audioChatRoomService.getAudioRoomMessagesStream(widget.room.id).listen((event) {
+      addSenderToMessage(event);
+    });
     SchedulerBinding.instance!.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -190,7 +198,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: StreamBuilder<List>(
-        stream: _audioChatMessageStream,
+        stream: audioChatListStream.stream,
         initialData: [],
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -224,7 +232,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
                               child: Image(
                                 height: 40.0,
                                 width: 40.0,
-                                image: NetworkImage(snapshot.data![index].profilePicture),
+                                image: NetworkImage(snapshot.data![index].sender!.profilePictureURL),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -239,7 +247,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
                             margin: EdgeInsets.symmetric(vertical: 10),
                             padding: EdgeInsets.only(top: 5),
                             child: Text(
-                              snapshot.data![index].username,
+                              snapshot.data![index].sender!.username,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -289,6 +297,25 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
     );
   }
 
+  Future<void> getRoomMessage() async {
+    List<AudioChatRoomModel> postList = await _audioChatRoomService.getAudioRoomMessages(widget.room.id);
+    addSenderToMessage(postList);
+  }
+
+  Future<void> addSenderToMessage(List<AudioChatRoomModel> chatList) async {
+    audioChatList.clear();
+    for (var item in chatList) {
+      if (item.senderId == MyAppState.currentUser!.userID) {
+        item.sender = MyAppState.currentUser!;
+      } else {
+        User? author = await _userService.getCurrentUser(item.senderId);
+        item.sender = author;
+      }
+      audioChatList.add(item);
+    }
+    audioChatListStream.sink.add(audioChatList);
+  }
+
   _sendMessage(String roomId, String message) async {
     User user = MyAppState.currentUser!;
     AudioChatRoomModel conversation = AudioChatRoomModel(
@@ -296,8 +323,6 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
       lastMessageDate: Timestamp.now(),
       lastMessage: _messageController.text,
       senderId: user.userID,
-      username: user.username,
-      profilePicture: user.profilePictureURL,
     );
     bool isSuccessful = await _audioChatRoomService.addAudioRoomMessage(conversation);
     if (isSuccessful) {
@@ -322,7 +347,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
 
   _listenForMessageChanges(String uid) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    _audioChatRoomService.getAudioRoomMessages(widget.room.id).listen((event) {
+    _audioChatRoomService.getAudioRoomMessagesStream(widget.room.id).listen((event) {
       _scrollToBottom();
     });
   }

@@ -492,7 +492,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         if (!_isBlocked) {
                           try {
-                            _followService.followUser(MyAppState.currentUser!, widget.user);
+                            _followService.followUser(MyAppState.currentUser!.userID, widget.user.userID);
                             MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                             setState(() {
                               _followersCount++;

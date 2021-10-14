@@ -133,7 +133,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
               onPressed: () async {
                 if (checkUserFollowing) return;
                 try {
-                  await _followService.followUser(MyAppState.currentUser!, snapshot[index]);
+                  await _followService.followUser(MyAppState.currentUser!.userID, snapshot[index].userID);
                   setState(() {
                     userFollowers.add(snapshot[index]);
                   });
