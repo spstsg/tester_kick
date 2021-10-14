@@ -278,7 +278,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
         'shared your post.',
         author,
         MyAppState.currentUser!.username,
-        {'outBound': MyAppState.currentUser!.toJson()},
+        {'outBound': MyAppState.currentUser!.toJson(), 'postId': post.id},
       );
 
       if (author.settings.notifications && author.notifications['shared']) {

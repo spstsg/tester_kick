@@ -73,7 +73,13 @@ class ReactionService {
         'reacted to your post.',
         user,
         MyAppState.currentUser!.username,
-        {'outBound': MyAppState.currentUser!.toJson()},
+        {
+          'outBound': MyAppState.currentUser!.toJson(),
+          'postId': post.id,
+          'username': MyAppState.currentUser!.username,
+          'imageUrl': MyAppState.currentUser!.profilePictureURL,
+          'reaction': newReaction,
+        },
       );
 
       if (user.settings.notifications && user.notifications['reactions']) {

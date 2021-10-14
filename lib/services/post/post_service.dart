@@ -121,7 +121,7 @@ class PostService {
             'shared your post.',
             author,
             MyAppState.currentUser!.username,
-            {'outBound': MyAppState.currentUser!.toJson()},
+            {'outBound': MyAppState.currentUser!.toJson(), 'postId': post.id},
           );
 
           if (author.settings.notifications && author.notifications['shared']) {
@@ -201,7 +201,11 @@ class PostService {
         'commented on your post.',
         user,
         MyAppState.currentUser!.username,
-        {'outBound': MyAppState.currentUser!.toJson()},
+        {
+          'outBound': MyAppState.currentUser!.toJson(),
+          'postId': post.id,
+          'commentId': newComment.commentId,
+        },
       );
 
       if (user.settings.notifications && user.notifications['comments']) {

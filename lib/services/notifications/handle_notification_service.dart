@@ -19,6 +19,7 @@ import 'package:kick_chat/ui/audio/widgets/notification_upcoming_audio_card.dart
 import 'package:kick_chat/ui/chat/chat_screen.dart';
 import 'package:kick_chat/ui/posts/post_comments_screen.dart';
 import 'package:kick_chat/ui/posts/widgets/notification_post_screen.dart';
+import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
 
 class HandleNotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -104,6 +105,10 @@ class HandleNotificationService {
         );
       }
 
+      if (data['type'] == 'follow') {
+        navigateToProfilePage(data['userId']);
+      }
+
       if (data['type'] == 'chat') {
         navigateToChat(data['senderId'], data['receiverId']);
       }
@@ -112,11 +117,19 @@ class HandleNotificationService {
         navigateToUpcomingRoom(data['roomId']);
       }
     } catch (e) {
-      print(e);
+      await showCupertinoAlert(
+        MyAppState.navigatorKey.currentContext!,
+        'Notification error',
+        'Error occured. Please try again later.',
+        'OK',
+        '',
+        '',
+        false,
+      );
     }
   }
 
-  navigateToComments(String postId, String commentId) async {
+  Future<void> navigateToComments(String postId, String commentId) async {
     Post post = await _postService.getSinglePost(postId);
     Navigator.of(MyAppState.navigatorKey.currentContext!).push(
       new MaterialPageRoute<Null>(
@@ -128,7 +141,7 @@ class HandleNotificationService {
     );
   }
 
-  navigateToPost(String postId) async {
+  Future<void> navigateToPost(String postId) async {
     Post post = await _postService.getSinglePost(postId);
     Navigator.of(MyAppState.navigatorKey.currentContext!).push(
       new MaterialPageRoute<Null>(
@@ -140,7 +153,7 @@ class HandleNotificationService {
     );
   }
 
-  navigateToPostReaction(String postId, String username, String imageUrl, String reaction) async {
+  Future<void> navigateToPostReaction(String postId, String username, String imageUrl, String reaction) async {
     Post post = await _postService.getSinglePost(postId);
     Navigator.of(MyAppState.navigatorKey.currentContext!).push(
       new MaterialPageRoute<Null>(
@@ -157,7 +170,19 @@ class HandleNotificationService {
     );
   }
 
-  navigateToChat(String senderId, String receiverId) async {
+  Future<void> navigateToProfilePage(String userId) async {
+    User? authUser = await _userService.getCurrentUser(userId);
+    Navigator.of(MyAppState.navigatorKey.currentContext!).push(
+      new MaterialPageRoute<Null>(
+        builder: (BuildContext context) {
+          return ProfileScreen(user: authUser!);
+        },
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  Future<void> navigateToChat(String senderId, String receiverId) async {
     User? sender = await _userService.getCurrentUser(senderId);
     User? receiver = await _userService.getCurrentUser(receiverId);
     _chatService.updateUserOneUserTwoChat(
@@ -180,7 +205,7 @@ class HandleNotificationService {
     );
   }
 
-  navigateToUpcomingRoom(String roomId) async {
+  Future<void> navigateToUpcomingRoom(String roomId) async {
     UpcomingRoom upcomingRoom = await _upcomingAudioService.getSingleUpcomingRoom(roomId);
     Navigator.of(MyAppState.navigatorKey.currentContext!).push(
       new MaterialPageRoute<Null>(

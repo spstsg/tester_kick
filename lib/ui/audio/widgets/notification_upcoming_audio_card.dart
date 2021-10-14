@@ -312,6 +312,19 @@ class _NotificationUpcomingRoomState extends State<NotificationUpcomingRoom> {
       return;
     }
 
+    if (activeRoom.id.isNotEmpty && activeRoom.status == 'ended') {
+      await showCupertinoAlert(
+        context,
+        'Alert',
+        'Sorry, the audio chat has ended.',
+        'OK',
+        '',
+        '',
+        false,
+      );
+      return;
+    }
+
     var participants = activeRoom.participants;
     var result =
         participants.where((participant) => participant['username'] == MyAppState.currentUser!.username).toList();

@@ -44,7 +44,6 @@ WHERE TO ADD NOTIFICATION
 
 <!-- - When a user creates a post, notify all his followers
 - Send chat
-  - Only send push notification if the receiver is not online
   - If the receiver is still on the app but on a different page, use local notification
 - Any post related to the teams you are following
 - Any audio room related to the team you are following
