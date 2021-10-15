@@ -54,7 +54,7 @@ WHERE TO ADD NOTIFICATION
 THINGS TO ADD
 
 - localization
-- add clubs data
+- add clubs data using admin dashboard
 - ability for users to delete their account
 - try to figure out why the dynamic links does not display social tags
 

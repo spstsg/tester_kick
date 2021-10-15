@@ -86,6 +86,14 @@ class UserService {
     });
   }
 
+  Future<User?> updateCurrentUsername(String username) async {
+    try {
+      await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({'username': username});
+    } catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> updateDefaultImageProp(bool defaultImage) async {
     await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({'defaultImage': defaultImage});
     User? user = await getCurrentUser(MyAppState.currentUser!.userID);

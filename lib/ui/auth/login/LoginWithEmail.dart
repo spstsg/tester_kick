@@ -245,7 +245,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 16, right: 24),
+              padding: const EdgeInsets.only(right: 24),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
