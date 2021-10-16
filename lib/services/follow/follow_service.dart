@@ -116,28 +116,72 @@ class FollowService {
 
   Future<List<User>> getUserFollowings(String userId) async {
     List<User> followings = [];
-
     QuerySnapshot userFollowing = await firestore.collection(FOLLOWING).doc(userId).collection(FOLLOWING).get();
 
     await Future.forEach(userFollowing.docs, (DocumentSnapshot actualFollowings) async {
       Map<String, dynamic> userFollowings = actualFollowings.data() as Map<String, dynamic>;
       User? user = await _userService.getCurrentUser(userFollowings['user']);
-      followings.add(user!);
+      if (user != null) {
+        followings.add(user);
+      }
     });
     return followings.toSet().toList();
   }
 
   Future<List<User>> getUserFollowers(String userId) async {
     List<User> followers = [];
-
     QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
 
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) async {
       Map<String, dynamic> userFollowers = actualFollowers.data() as Map<String, dynamic>;
       User? user = await _userService.getCurrentUser(userFollowers['user']);
-      followers.add(user!);
+      if (user != null) {
+        followers.add(user);
+      }
     });
     return followers.toSet().toList();
+  }
+
+  Future<int> getUserFollowersCount(String userId) async {
+    List<User> followers = [];
+    QuerySnapshot userFollowers = await firestore.collection(FOLLOWERS).doc(userId).collection(FOLLOWERS).get();
+
+    await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) async {
+      Map<String, dynamic> userFollowers = actualFollowers.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(userFollowers['user']);
+      if (user != null) {
+        followers.add(user);
+      }
+    });
+    User? user = await _userService.getCurrentUser(userId);
+    user!.followersCount = followers.length;
+    await _userService.updateCurrentUser(user);
+    if (MyAppState.currentUser!.userID == userId) {
+      MyAppState.reduxStore!.dispatch(user);
+      MyAppState.currentUser = user;
+    }
+    return followers.length;
+  }
+
+  Future<int> getUserFollowingsCount(String userId) async {
+    List<User> followings = [];
+    QuerySnapshot userFollowing = await firestore.collection(FOLLOWING).doc(userId).collection(FOLLOWING).get();
+
+    await Future.forEach(userFollowing.docs, (DocumentSnapshot actualFollowings) async {
+      Map<String, dynamic> userFollowings = actualFollowings.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(userFollowings['user']);
+      if (user != null) {
+        followings.add(user);
+      }
+    });
+    User? user = await _userService.getCurrentUser(userId);
+    user!.followingCount = followings.length;
+    await _userService.updateCurrentUser(user);
+    if (MyAppState.currentUser!.userID == userId) {
+      MyAppState.reduxStore!.dispatch(user);
+      MyAppState.currentUser = user;
+    }
+    return followings.length;
   }
 
   Future<List<User>> getUserFollowersWithRange(String userId) async {
@@ -147,7 +191,9 @@ class FollowService {
     await Future.forEach(userFollowers.docs, (DocumentSnapshot actualFollowers) async {
       Map<String, dynamic> userFollowers = actualFollowers.data() as Map<String, dynamic>;
       User? user = await _userService.getCurrentUser(userFollowers['user']);
-      followers.add(user!);
+      if (user != null) {
+        followers.add(user);
+      }
     });
     List<User> items = getRandomUsersList(10, followers);
     return items;

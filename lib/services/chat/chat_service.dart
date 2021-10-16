@@ -201,12 +201,14 @@ class ChatService {
                   ? participation.receiverId
                   : participation.senderId;
               User? user = await _userService.getCurrentUser(userId);
-              newHomeConversation = homeConversation(participation, user!);
-              homeConversations.add(newHomeConversation);
-              homeConversations.sort(
-                (a, b) => b.conversationModel!.lastMessageDate.compareTo(a.conversationModel!.lastMessageDate),
-              );
-              conversationsStream.sink.add(homeConversations.toList());
+              if (user != null) {
+                newHomeConversation = homeConversation(participation, user);
+                homeConversations.add(newHomeConversation);
+                homeConversations.sort(
+                  (a, b) => b.conversationModel!.lastMessageDate.compareTo(a.conversationModel!.lastMessageDate),
+                );
+                conversationsStream.sink.add(homeConversations.toList());
+              }
             }
           });
         }

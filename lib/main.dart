@@ -59,6 +59,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: "Main Navigator");
   static User? currentUser;
   static DevToolsStore<AppState>? reduxStore;
+  static final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
   /// a stream to listen for firebase messaging token changes
   late StreamSubscription tokenStream;
@@ -169,6 +170,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       store: store,
       child: MaterialApp(
         navigatorKey: navigatorKey,
+        navigatorObservers: [routeObserver],
         debugShowCheckedModeBanner: false,
         title: 'KickChat',
         theme: ThemeData(

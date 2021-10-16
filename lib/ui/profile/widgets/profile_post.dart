@@ -25,7 +25,7 @@ class ProfilePost extends StatefulWidget {
   _ProfilePostState createState() => _ProfilePostState();
 }
 
-class _ProfilePostState extends State<ProfilePost> {
+class _ProfilePostState extends State<ProfilePost> with RouteAware {
   bool noPosts = false;
   int displayedImageIndex = 0;
   late Stream<List<Post>> userPosts;
@@ -49,7 +49,19 @@ class _ProfilePostState extends State<ProfilePost> {
   void dispose() {
     _postService.disposeProfilePostsStream();
     userPostStream.close();
+    MyAppState.routeObserver.unsubscribe(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MyAppState.routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void didPopNext() {
+    getProfilePosts();
   }
 
   @override
@@ -269,8 +281,12 @@ class _ProfilePostState extends State<ProfilePost> {
           item.sharedPost.author = sharedPostAuthor!;
         }
       }
-      updatedPostList.add(item);
+      if (item.author != null && !item.author!.deleted) {
+        updatedPostList.add(item);
+      }
     }
-    userPostStream.sink.add(updatedPostList);
+    if (!userPostStream.isClosed) {
+      userPostStream.sink.add(updatedPostList);
+    }
   }
 }

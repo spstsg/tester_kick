@@ -345,9 +345,17 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
       );
       User user = await _authService.loginWithEmailAndPassword(result.user?.uid ?? '');
       if (user is User) {
-        MyAppState.currentUser = user;
-        setFinishedOnBoarding();
-        push(context, NavScreen());
+        if (!user.deleted) {
+          MyAppState.currentUser = user;
+          setFinishedOnBoarding();
+          push(context, NavScreen());
+        } else {
+          setState(() {
+            userEmailDoesNotExist = true;
+            loginButtonText = 'Log in';
+            isLoading = false;
+          });
+        }
       } else if (user is String) {
         setState(() {
           loginButtonText = 'Log in';

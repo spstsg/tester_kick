@@ -11,36 +11,21 @@ class BlockedUserService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   UserService _userService = UserService();
 
-  Future<bool> blockUser(User currentUser, User blockedUser) async {
+  Future<bool> blockUser(String currentUserId, String blockedUserId) async {
     try {
-      User otherUser = User(
-        userID: blockedUser.userID,
-        username: blockedUser.username,
-        profilePictureURL: blockedUser.profilePictureURL,
-        avatarColor: blockedUser.avatarColor,
-        fcmToken: blockedUser.fcmToken,
-      );
       await firestore
           .collection(BLOCKED)
-          .doc(currentUser.userID)
+          .doc(currentUserId)
           .collection(BLOCKED)
-          .doc(blockedUser.userID)
-          .set(otherUser.toJson());
-
-      User current = User(
-        userID: currentUser.userID,
-        username: currentUser.username,
-        profilePictureURL: currentUser.profilePictureURL,
-        avatarColor: currentUser.avatarColor,
-        fcmToken: currentUser.fcmToken,
-      );
+          .doc(blockedUserId)
+          .set({'user': blockedUserId});
 
       await firestore
           .collection(BLOCKEDBY)
-          .doc(blockedUser.userID)
+          .doc(blockedUserId)
           .collection(BLOCKEDBY)
-          .doc(currentUser.userID)
-          .set(current.toJson());
+          .doc(currentUserId)
+          .set({'user': currentUserId});
 
       User? user = await _userService.getCurrentUser(MyAppState.currentUser!.userID);
       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
@@ -104,8 +89,12 @@ class BlockedUserService {
 
     QuerySnapshot blocked = await firestore.collection(BLOCKED).doc(userId).collection(BLOCKED).get();
 
-    await Future.forEach(blocked.docs, (DocumentSnapshot actualBlockedUser) {
-      blockedUsers.add(User.fromJson(actualBlockedUser.data() as Map<String, dynamic>));
+    await Future.forEach(blocked.docs, (DocumentSnapshot actualBlockedUser) async {
+      Map<String, dynamic> usersBlocked = actualBlockedUser.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(usersBlocked['user']);
+      if (user != null) {
+        blockedUsers.add(user);
+      }
     });
     return blockedUsers.toSet().toList();
   }
@@ -115,8 +104,12 @@ class BlockedUserService {
 
     QuerySnapshot blockedBy = await firestore.collection(BLOCKEDBY).doc(userId).collection(BLOCKEDBY).get();
 
-    await Future.forEach(blockedBy.docs, (DocumentSnapshot actualBlockedByUser) {
-      blockedByUsers.add(User.fromJson(actualBlockedByUser.data() as Map<String, dynamic>));
+    await Future.forEach(blockedBy.docs, (DocumentSnapshot actualBlockedByUser) async {
+      Map<String, dynamic> usersBlockedBy = actualBlockedByUser.data() as Map<String, dynamic>;
+      User? user = await _userService.getCurrentUser(usersBlockedBy['user']);
+      if (user != null) {
+        blockedByUsers.add(user);
+      }
     });
     return blockedByUsers.toSet().toList();
   }

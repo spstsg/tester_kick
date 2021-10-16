@@ -22,8 +22,10 @@ class UpcomingAudioService {
       try {
         UpcomingRoom roomModel = UpcomingRoom.fromJson(room.data() as Map<String, dynamic>);
         User? creator = await _userService.getCurrentUser(roomModel.creatorId);
-        roomModel.creator = creator!;
-        upcomingRoom.add(roomModel);
+        if (creator != null && !creator.deleted) {
+          roomModel.creator = creator;
+          upcomingRoom.add(roomModel);
+        }
       } catch (e) {
         throw e;
       }
@@ -41,8 +43,10 @@ class UpcomingAudioService {
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot room) async {
         UpcomingRoom roomModel = UpcomingRoom.fromJson(room.data() as Map<String, dynamic>);
         User? creator = await _userService.getCurrentUser(roomModel.creatorId);
-        roomModel.creator = creator!;
-        upcomingRooms.add(roomModel);
+        if (creator != null && !creator.deleted) {
+          roomModel.creator = creator;
+          upcomingRooms.add(roomModel);
+        }
       });
       upcomingRoomsStream.sink.add(upcomingRooms);
     });

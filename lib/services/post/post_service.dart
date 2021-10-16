@@ -102,12 +102,14 @@ class PostService {
     await Future.forEach(result.docs, (DocumentSnapshot post) async {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
       User? author = await _userService.getCurrentUser(postModel.authorId);
-      postModel.author = author!;
-      if (postModel.sharedPost.authorId.isNotEmpty) {
-        User? sharedPostAuthor = await _userService.getCurrentUser(postModel.sharedPost.authorId);
-        postModel.sharedPost.author = sharedPostAuthor;
+      if (author != null) {
+        postModel.author = author;
+        if (postModel.sharedPost.authorId.isNotEmpty) {
+          User? sharedPostAuthor = await _userService.getCurrentUser(postModel.sharedPost.authorId);
+          postModel.sharedPost.author = sharedPostAuthor;
+        }
+        _postsList.add(postModel);
       }
-      _postsList.add(postModel);
     });
     return _postsList[0];
   }

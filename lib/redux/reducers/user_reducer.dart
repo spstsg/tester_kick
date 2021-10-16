@@ -34,6 +34,5 @@ User _addUserSuccess(User state, CreateUserAction action) {
     chat: action.user.chat,
     polls: action.user.polls,
     deleted: action.user.deleted,
-    deletionDate: action.user.deletionDate,
   );
 }

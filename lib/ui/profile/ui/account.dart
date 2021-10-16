@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
+import 'package:kick_chat/main.dart';
 import 'package:kick_chat/ui/profile/ui/change_password.dart';
 import 'package:kick_chat/ui/profile/ui/update_username.dart';
+import 'package:kick_chat/ui/profile/widgets/delete_account_dialog.dart';
 
 class AccountScreen extends StatelessWidget {
   @override
@@ -44,14 +47,12 @@ class AccountScreen extends StatelessWidget {
         'icon': Icons.delete,
         'showTrailing': false,
         'showColor': true,
-        'click': () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) {
-                return const ChangePassword();
-              },
-              fullscreenDialog: true,
-            ),
+        'click': () async {
+          await showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return DeleteAccount(username: MyAppState.currentUser!.username);
+            },
           );
         }
       },

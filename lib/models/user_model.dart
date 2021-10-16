@@ -32,7 +32,6 @@ class User with ChangeNotifier {
   Map chat;
   List polls;
   bool deleted;
-  String deletionDate;
 
   User({
     this.username = '',
@@ -50,7 +49,6 @@ class User with ChangeNotifier {
     this.dob = '',
     this.bio = '',
     this.team = '',
-    this.deletionDate = '',
     this.lowercaseTeam = '',
     this.avatarColor = '#ffffff',
     this.postCount = 0,
@@ -104,7 +102,6 @@ class User with ChangeNotifier {
     Map? chat,
     List? polls,
     bool? deleted,
-    String? deletionDate,
   }) {
     return new User(
       username: username ?? this.username,
@@ -133,7 +130,6 @@ class User with ChangeNotifier {
       chat: chat ?? this.chat,
       polls: polls ?? this.polls,
       deleted: deleted ?? this.deleted,
-      deletionDate: deletionDate ?? this.deletionDate,
     );
   }
 
@@ -158,7 +154,6 @@ class User with ChangeNotifier {
       bio: parsedJson['bio'] ?? '',
       team: parsedJson['team'] ?? '',
       lowercaseTeam: parsedJson['lowercaseTeam'] ?? '',
-      deletionDate: parsedJson['deletionDate'] ?? '',
       postCount: parsedJson['postCount'] ?? 0,
       followersCount: parsedJson['followersCount'] ?? 0,
       followingCount: parsedJson['followingCount'] ?? 0,
@@ -193,7 +188,6 @@ class User with ChangeNotifier {
       profilePictureURL: parsedJson['profilePictureURL'] ?? '',
       fcmToken: parsedJson['fcmToken'] ?? '',
       dob: parsedJson['dob'] ?? '',
-      deletionDate: parsedJson['deletionDate'] ?? '',
       bio: parsedJson['bio'] ?? '',
       team: parsedJson['team'] ?? '',
       deleted: parsedJson['deleted'] ?? false,
@@ -225,7 +219,6 @@ class User with ChangeNotifier {
       'id': this.userID,
       'uniqueId': this.uniqueId,
       'active': this.active,
-      'deletionDate': this.deletionDate,
       'emailPasswordLogin': this.emailPasswordLogin,
       'defaultImage': this.defaultImage,
       'lastOnlineTimestamp': this.lastOnlineTimestamp,
@@ -256,7 +249,6 @@ class User with ChangeNotifier {
       'phoneNumber': this.phoneNumber,
       'id': this.userID,
       'active': this.active,
-      'deletionDate': this.deletionDate,
       'emailPasswordLogin': this.emailPasswordLogin,
       'lastOnlineTimestamp': this.lastOnlineTimestamp.millisecondsSinceEpoch,
       'profilePictureURL': this.profilePictureURL,
@@ -287,7 +279,6 @@ class User with ChangeNotifier {
         other.password == password &&
         other.phoneNumber == phoneNumber &&
         other.active == active &&
-        other.deletionDate == deletionDate &&
         other.emailPasswordLogin == emailPasswordLogin &&
         other.lastOnlineTimestamp == lastOnlineTimestamp &&
         other.userID == userID &&
@@ -320,7 +311,6 @@ class User with ChangeNotifier {
         emailPasswordLogin.hashCode ^
         lastOnlineTimestamp.hashCode ^
         userID.hashCode ^
-        deletionDate.hashCode ^
         uniqueId.hashCode ^
         profilePictureURL.hashCode ^
         fcmToken.hashCode ^

@@ -39,8 +39,8 @@ class PostContainerState extends State<PostContainer> {
 
   @override
   void initState() {
+    if (!mounted) return;
     getProfilePosts();
-
     _postService.getPostsStream().listen((event) {
       addAuthorToPost(event);
     });
@@ -49,9 +49,9 @@ class PostContainerState extends State<PostContainer> {
         noPosts = value.isEmpty;
       });
 
-    _followService.getUserFollowings(MyAppState.currentUser!.userID).then((value) => {userFollowers = value});
-
-    _blockedUserService.getBlockedByUsers(MyAppState.currentUser!.userID).then((value) => {blockedUsers = value});
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      getBlockedUsersAndFollowers();
+    });
 
     super.initState();
   }
@@ -263,6 +263,15 @@ class PostContainerState extends State<PostContainer> {
     );
   }
 
+  Future<void> getBlockedUsersAndFollowers() async {
+    List<User> followings = await _followService.getUserFollowings(MyAppState.currentUser!.userID);
+    List<User> blockedByUsers = await _blockedUserService.getBlockedByUsers(MyAppState.currentUser!.userID);
+    setState(() {
+      blockedUsers = blockedByUsers;
+      userFollowers = followings;
+    });
+  }
+
   Future<void> getProfilePosts() async {
     List<Post> postList = await _postService.getPosts();
     addAuthorToPost(postList);
@@ -284,9 +293,13 @@ class PostContainerState extends State<PostContainer> {
           item.sharedPost.author = sharedPostAuthor!;
         }
       }
-      updatedPostList.add(item);
+      if (item.author != null && !item.author!.deleted) {
+        updatedPostList.add(item);
+      }
     }
-    usersPostStream.sink.add(updatedPostList);
+    if (!usersPostStream.isClosed) {
+      usersPostStream.sink.add(updatedPostList);
+    }
   }
 
   bool checkFollowing(String username) {
