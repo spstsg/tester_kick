@@ -287,6 +287,7 @@ class _UpcomingRoomFormDialogState extends State<UpcomingRoomFormDialog> {
                     TextField(
                       keyboardType: TextInputType.multiline,
                       controller: _descriptionController,
+                      textInputAction: TextInputAction.next,
                       maxLength: 100,
                       minLines: 1,
                       maxLines: 10,

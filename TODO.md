@@ -5,7 +5,6 @@
 - make sure only admin sees the create poll page. Right now it is on the home page appbar.
 <!-- - Take a look at agora setAudioProfile method if you can use it -->
 - Invite to audio chat
-- Find a way to know which of your contacts have kickchat installed
 
 - Dynamic links
 
@@ -55,8 +54,9 @@ THINGS TO ADD
 
 - localization
 - add clubs data using admin dashboard
-- ability for users to delete their account
+- ability for users to delete their account - done
 - try to figure out why the dynamic links does not display social tags
+- share post feature has errors - done
 
 ...........
 

@@ -127,7 +127,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     currentPasswordNotValid = false;
                   });
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(
@@ -220,7 +220,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     newPasswordNotValid = true;
                   });
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(
@@ -348,7 +348,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   });
                 }
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(

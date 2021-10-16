@@ -133,6 +133,7 @@ class _RoomDiscussionState extends State<RoomDiscussion> {
                 child: TextField(
                   textAlignVertical: TextAlignVertical.center,
                   controller: _messageController,
+                  textInputAction: TextInputAction.next,
                   style: TextStyle(
                     color: ColorPalette.black,
                     fontSize: 16,

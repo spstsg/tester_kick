@@ -107,6 +107,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
                       child: Container(
                         child: TextField(
                           keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.next,
                           minLines: 1,
                           maxLines: 5,
                           controller: _postController,

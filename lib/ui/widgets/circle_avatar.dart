@@ -32,7 +32,7 @@ class CircleProfileAvatar extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    username.substring(0, 1).toUpperCase(),
+                    username.isNotEmpty ? username.substring(0, 1).toUpperCase() : '',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,

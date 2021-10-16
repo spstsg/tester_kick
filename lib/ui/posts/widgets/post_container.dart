@@ -282,16 +282,22 @@ class PostContainerState extends State<PostContainer> {
     for (var item in postList) {
       if (item.authorId == MyAppState.currentUser!.userID) {
         item.author = MyAppState.currentUser!;
-        if (item.sharedPost.authorId.isNotEmpty && item.sharedPost.authorId == MyAppState.currentUser!.userID) {
-          item.sharedPost.author = MyAppState.currentUser!;
-        }
+        // if (item.sharedPost.authorId.isNotEmpty && item.sharedPost.authorId == MyAppState.currentUser!.userID) {
+        //   User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+        //   item.sharedPost.author = sharedPostAuthor!;
+        // }
       } else {
         User? author = await _userService.getCurrentUser(item.authorId);
         item.author = author;
-        if (item.sharedPost.authorId.isNotEmpty) {
-          User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
-          item.sharedPost.author = sharedPostAuthor!;
-        }
+        // if (item.sharedPost.authorId.isNotEmpty) {
+        //   User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+        //   item.sharedPost.author = sharedPostAuthor!;
+        //   print(item.sharedPost.toJson());
+        // }
+      }
+      if (item.sharedPost.authorId.isNotEmpty) {
+        User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+        item.sharedPost.author = sharedPostAuthor!;
       }
       if (item.author != null && !item.author!.deleted) {
         updatedPostList.add(item);

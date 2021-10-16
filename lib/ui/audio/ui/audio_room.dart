@@ -277,6 +277,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                 margin: const EdgeInsets.only(left: 15.0, right: 15.0),
                 child: TextField(
                   controller: _messageController,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     enabledBorder: OutlineInputBorder(

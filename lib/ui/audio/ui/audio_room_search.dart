@@ -60,6 +60,7 @@ class _AudioRoomSearchState extends State<AudioRoomSearch> {
           child: Center(
             child: TextField(
               controller: _searchController,
+              textInputAction: TextInputAction.next,
               onChanged: (input) async {
                 if (input.isNotEmpty) {
                   var roomList = await _searchService.searchLiveAudioRooms(input);

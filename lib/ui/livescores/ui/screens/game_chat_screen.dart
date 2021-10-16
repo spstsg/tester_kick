@@ -149,6 +149,7 @@ class _GameChatScreenState extends State<GameChatScreen> {
                                 Expanded(
                                   child: TextField(
                                     textAlignVertical: TextAlignVertical.center,
+                                    textInputAction: TextInputAction.next,
                                     controller: _messageController,
                                     style: TextStyle(fontSize: 16),
                                     decoration: InputDecoration(

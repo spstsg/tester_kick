@@ -150,6 +150,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                               child: TextField(
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _editPostController,
@@ -189,6 +190,7 @@ class EditPostScreenState extends State<EditPostScreen> {
                             child: Container(
                               child: TextField(
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _editPostController,

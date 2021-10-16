@@ -152,6 +152,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                               child: TextField(
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _postController,
@@ -190,6 +191,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                             child: Container(
                               child: TextField(
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _postController,

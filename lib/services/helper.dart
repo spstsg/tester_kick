@@ -284,6 +284,9 @@ Widget _getFlatPlaceholderOrErrorImage(double size, bool placeholder) => Contain
     );
 
 Color hexStringToColor(String hexColor) {
+  if (hexColor.isEmpty) {
+    hexColor = '#ffffff';
+  }
   hexColor = hexColor.toUpperCase().replaceAll("#", "");
   if (hexColor.length == 6) {
     hexColor = "FF" + hexColor;

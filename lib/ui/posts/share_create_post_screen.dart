@@ -76,6 +76,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
                       child: Container(
                         child: TextField(
                           keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.next,
                           minLines: 1,
                           maxLines: 10,
                           controller: _postController,
@@ -108,7 +109,7 @@ class SharePostWithinAppScreenState extends State<SharePostWithinAppScreen> {
               ),
             ),
           ),
-          SharedPostContainer(post: widget.post)
+          SharedPostContainer(post: widget.post.sharedPost)
         ],
       ),
     );

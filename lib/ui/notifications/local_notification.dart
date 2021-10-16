@@ -175,22 +175,22 @@ class _LocalNotificationState extends State<LocalNotification> {
 
   void clickNotification(NotificationModel payload) async {
     try {
-      if (payload.metadata['type'] == 'posts_comments') {
+      if (payload.type == 'posts_comments') {
         _handleNotificationService.navigateToComments(
           payload.metadata['postId'],
           payload.metadata['commentId'],
         );
       }
 
-      if (payload.metadata['type'] == 'posts_shared') {
+      if (payload.type == 'posts_shared') {
         _handleNotificationService.navigateToPost(payload.metadata['postId']);
       }
 
-      if (payload.metadata['type'] == 'follow_user') {
+      if (payload.type == 'follow_user') {
         _handleNotificationService.navigateToProfilePage(payload.metadata['userId']);
       }
 
-      if (payload.metadata['type'] == 'social_reaction') {
+      if (payload.type == 'social_reaction') {
         _handleNotificationService.navigateToPostReaction(
           payload.metadata['postId'],
           payload.metadata['username'],

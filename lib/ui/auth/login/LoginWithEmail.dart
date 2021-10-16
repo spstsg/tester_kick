@@ -181,7 +181,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                       });
                   },
                   onFieldSubmitted: (password) {},
-                  textInputAction: TextInputAction.done,
+                  textInputAction: TextInputAction.next,
                   style: TextStyle(fontSize: 17),
                   cursorColor: ColorPalette.primary,
                   decoration: InputDecoration(

@@ -91,6 +91,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                 },
                 controller: _commentController,
                 textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.next,
                 maxLines: 5,
                 minLines: 1,
                 keyboardType: TextInputType.multiline,
