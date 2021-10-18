@@ -12,7 +12,7 @@ import 'package:kick_chat/services/poll/poll_service.dart';
 import 'package:kick_chat/ui/chat/conversation_screen.dart';
 import 'package:kick_chat/ui/home/user_search.dart';
 import 'package:kick_chat/ui/notifications/local_notification.dart';
-import 'package:kick_chat/ui/polls/create_poll.dart';
+// import 'package:kick_chat/ui/polls/create_poll.dart';
 import 'package:kick_chat/ui/polls/widgets/live_poll_widget.dart';
 // import 'package:kick_chat/ui/toberemoved/add_clubs.dart';
 import 'package:kick_chat/ui/widgets/circle_button.dart';
@@ -94,20 +94,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              CircleButton(
-                icon: MdiIcons.poll,
-                iconSize: 30.0,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    new MaterialPageRoute<Null>(
-                      builder: (BuildContext context) {
-                        return new CreatePoll();
-                      },
-                      fullscreenDialog: true,
-                    ),
-                  );
-                },
-              ),
+              // CircleButton(
+              //   icon: MdiIcons.poll,
+              //   iconSize: 30.0,
+              //   onPressed: () {
+              //     Navigator.of(context).push(
+              //       new MaterialPageRoute<Null>(
+              //         builder: (BuildContext context) {
+              //           return new CreatePoll();
+              //         },
+              //         fullscreenDialog: true,
+              //       ),
+              //     );
+              //   },
+              // ),
               CircleButton(
                 icon: Icons.search,
                 iconSize: 30.0,

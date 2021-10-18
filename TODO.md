@@ -57,6 +57,7 @@ THINGS TO ADD
 - ability for users to delete their account - done
 - try to figure out why the dynamic links does not display social tags
 - share post feature has errors - done
+- find out why posts are being duplicated on the post container page - done
 
 ...........
 

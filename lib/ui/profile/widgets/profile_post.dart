@@ -37,7 +37,7 @@ class _ProfilePostState extends State<ProfilePost> with RouteAware {
 
   @override
   void initState() {
-    getProfilePosts();
+    // getProfilePosts();
     _postService.getProfilePostsStream(widget.user.userID).listen((event) {
       addAuthorToPost(event);
     });
@@ -110,7 +110,7 @@ class _ProfilePostState extends State<ProfilePost> with RouteAware {
     );
   }
 
-  _buildPostWidget(Post post) {
+  Widget _buildPostWidget(Post post) {
     ScreenshotController screenshotController = ScreenshotController();
     PageController _controller = PageController(
       initialPage: 0,
@@ -270,16 +270,13 @@ class _ProfilePostState extends State<ProfilePost> with RouteAware {
     for (var item in postList) {
       if (item.authorId == MyAppState.currentUser!.userID) {
         item.author = MyAppState.currentUser!;
-        if (item.sharedPost.authorId.isNotEmpty && item.sharedPost.authorId == MyAppState.currentUser!.userID) {
-          item.sharedPost.author = MyAppState.currentUser!;
-        }
       } else {
         User? author = await _userService.getCurrentUser(item.authorId);
         item.author = author;
-        if (item.sharedPost.authorId.isNotEmpty) {
-          User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
-          item.sharedPost.author = sharedPostAuthor!;
-        }
+      }
+      if (item.sharedPost.authorId.isNotEmpty) {
+        User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+        item.sharedPost.author = sharedPostAuthor!;
       }
       if (item.author != null && !item.author!.deleted) {
         updatedPostList.add(item);

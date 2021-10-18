@@ -58,12 +58,16 @@ class PostService {
 
     _postsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _postsList.clear();
-      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
-        Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
-        _postsList.add(postModel);
-      });
-      if (!_postsStream.isClosed) {
-        _postsStream.sink.add(_postsList);
+      if (querySnapshot.docs.isEmpty) {
+        _postsStream.sink.add([]);
+      } else {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
+          Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
+          _postsList.add(postModel);
+        });
+        if (!_postsStream.isClosed) {
+          _postsStream.sink.add(_postsList);
+        }
       }
     });
     yield* _postsStream.stream;

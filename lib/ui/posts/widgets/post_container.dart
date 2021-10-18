@@ -30,29 +30,21 @@ class PostContainerState extends State<PostContainer> {
   UserService _userService = UserService();
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
+  StreamController<List<Post>> usersPostStream = StreamController.broadcast();
   List<User> userFollowers = [];
   List<User> blockedUsers = [];
   int displayedImageIndex = 0;
-  bool noPosts = false;
   List<Post> updatedPostList = [];
-  StreamController<List<Post>> usersPostStream = StreamController.broadcast();
 
   @override
   void initState() {
     if (!mounted) return;
-    getProfilePosts();
     _postService.getPostsStream().listen((event) {
       addAuthorToPost(event);
     });
-    _postService.getPosts()
-      ..then((value) {
-        noPosts = value.isEmpty;
-      });
-
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       getBlockedUsersAndFollowers();
     });
-
     super.initState();
   }
 
@@ -73,8 +65,7 @@ class PostContainerState extends State<PostContainer> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return PostSkeleton();
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            noPosts = true;
+          } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
             return Center(
               child: Container(
                 height: MediaQuery.of(context).size.height - 170,
@@ -86,7 +77,6 @@ class PostContainerState extends State<PostContainer> {
               ),
             );
           } else {
-            noPosts = false;
             return ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 4),
               physics: ScrollPhysics(),
@@ -272,28 +262,14 @@ class PostContainerState extends State<PostContainer> {
     });
   }
 
-  Future<void> getProfilePosts() async {
-    List<Post> postList = await _postService.getPosts();
-    addAuthorToPost(postList);
-  }
-
   Future<void> addAuthorToPost(List<Post> postList) async {
     updatedPostList.clear();
     for (var item in postList) {
       if (item.authorId == MyAppState.currentUser!.userID) {
         item.author = MyAppState.currentUser!;
-        // if (item.sharedPost.authorId.isNotEmpty && item.sharedPost.authorId == MyAppState.currentUser!.userID) {
-        //   User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
-        //   item.sharedPost.author = sharedPostAuthor!;
-        // }
       } else {
         User? author = await _userService.getCurrentUser(item.authorId);
         item.author = author;
-        // if (item.sharedPost.authorId.isNotEmpty) {
-        //   User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
-        //   item.sharedPost.author = sharedPostAuthor!;
-        //   print(item.sharedPost.toJson());
-        // }
       }
       if (item.sharedPost.authorId.isNotEmpty) {
         User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
