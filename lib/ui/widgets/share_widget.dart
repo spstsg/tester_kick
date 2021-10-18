@@ -265,7 +265,9 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
         );
       }
       await sendNotification(widget.post);
+      Navigator.pop(context);
     } catch (e) {
+      print(e);
       final snackBar = SnackBar(content: Text('Error sharing your content. Try again later.'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }

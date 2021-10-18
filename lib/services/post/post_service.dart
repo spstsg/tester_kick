@@ -20,11 +20,6 @@ class PostService {
   StreamController<List<Post>> postStream = StreamController.broadcast();
   late StreamSubscription<QuerySnapshot> _profilePostsStreamSubscription;
   StreamController<List<Post>> _postsStream = StreamController.broadcast();
-  int postsCount = 0;
-  // ignore: avoid_init_to_null
-  late dynamic lastDocument = null;
-  // ignore: avoid_init_to_null
-  late dynamic lastStreamDocument = null;
 
   Stream<List<Post>> getProfilePostsStream(String userID) async* {
     List<Post> _profilePosts = [];
@@ -83,25 +78,7 @@ class PostService {
 
   Future<List<Post>> getPosts(int limit) async {
     List<Post> _postsList = [];
-    QuerySnapshot result;
-    // QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
-
-    if (lastDocument == null) {
-      result = await firestore.collection(SOCIAL_POSTS).limit(limit).orderBy('createdAt', descending: true).get();
-    } else {
-      result = await firestore
-          .collection(SOCIAL_POSTS)
-          .orderBy('createdAt', descending: true)
-          .startAfterDocument(lastDocument)
-          .limit(limit)
-          .get();
-    }
-
-    lastDocument = null;
-
-    if (result.docs.isNotEmpty) {
-      lastDocument = result.docs[result.docs.length - 1];
-    }
+    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
 
     await Future.forEach(result.docs, (DocumentSnapshot post) async {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);

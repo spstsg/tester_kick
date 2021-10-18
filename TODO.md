@@ -26,7 +26,7 @@
 
 - \*Delete livescores chat from database after some days (This will be deleted from the admin dashboard)
 - \*Add stickers
-- \*Add dynamic links thats take a user directly to a specific page when the user clicks on a notification
+- \*Add dynamic links thats take a user directly to a specific page when the user clicks on a notification - done
 - \*Add pagination to posts page
 - \*Add video controls to player
 - \*Consider using topics that users subscribe to send notifications
@@ -58,6 +58,7 @@ THINGS TO ADD
 - try to figure out why the dynamic links does not display social tags
 - share post feature has errors - done
 - find out why posts are being duplicated on the post container page - done
+- Later, when people start using the app, add post pagination
 
 ...........
 

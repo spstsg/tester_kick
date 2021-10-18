@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/post_model.dart';
@@ -22,10 +21,6 @@ import 'package:screenshot/screenshot.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class PostContainer extends StatefulWidget {
-  final ScrollController scrollController;
-
-  PostContainer({Key? key, required this.scrollController}) : super(key: key);
-
   @override
   PostContainerState createState() => PostContainerState();
 }
@@ -36,7 +31,6 @@ class PostContainerState extends State<PostContainer> {
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
   StreamController<List<Post>> usersPostStream = StreamController.broadcast();
-  // ScrollController _scrollController = ScrollController();
   List<User> userFollowers = [];
   List<User> blockedUsers = [];
   int displayedImageIndex = 0;
@@ -53,32 +47,12 @@ class PostContainerState extends State<PostContainer> {
     getAllPosts();
     _postsStream = usersPostStream.stream;
 
-    SchedulerBinding.instance!.addPostFrameCallback((_) {
-      setState(() {
-        loading = false;
-      });
-
-      widget.scrollController.addListener(() async {
-        if (widget.scrollController.position.pixels == widget.scrollController.position.maxScrollExtent && !loading) {
-          getAllPosts();
-          _postsStream = usersPostStream.stream;
-        }
-      });
-
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       _postService.getPostsStream().listen((event) async {
         if (isLoaded) {
-          // int postsCount = await _postService.getTotalPostCount();
-          event.removeRange(event.length - fetchedPosts.length, fetchedPosts.length);
-          // List<Post> postData = await addAuthorToPost(event);
-          // print(postData);
-          // usersPostStream.sink.add(postData);
-          // _postsStream = usersPostStream.stream;
-          mapPost(event);
-          _postsStream = usersPostStream.stream;
+          addAuthorToPost(event);
         }
       });
-    });
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       getBlockedUsersAndFollowers();
     });
     super.initState();
@@ -88,38 +62,12 @@ class PostContainerState extends State<PostContainer> {
   void dispose() {
     _postService.disposePostsStream();
     usersPostStream.close();
-    widget.scrollController.dispose();
     super.dispose();
   }
 
   Future<void> getAllPosts() async {
     List<Post> allPosts = await _postService.getPosts(4);
-    mapPost(allPosts);
-  }
-
-  Future<void> mapPost(List<Post> postList) async {
-    int postsCount = await _postService.getTotalPostCount();
-    fetchedPosts.addAll(postList);
-
-    int count = postsCount - fetchedPosts.length;
-    if (count > 0 && count <= 4 || count == 0) {
-      WidgetsBinding.instance!.addPostFrameCallback((_) async {
-        setState(() {
-          loading = true;
-        });
-        List<Post> postData = await addAuthorToPost(fetchedPosts);
-        if (fetchedPosts.isNotEmpty) {
-          usersPostStream.sink.add(postData);
-        }
-
-        setState(() {
-          loading = false;
-        });
-      });
-    } else {
-      fetchedPosts.removeRange(fetchedPosts.length - postList.length, fetchedPosts.length);
-      // fetchedPosts.removeRange(0, fetchedPosts.length - allPosts.length);
-    }
+    addAuthorToPost(allPosts);
   }
 
   @override
@@ -334,7 +282,7 @@ class PostContainerState extends State<PostContainer> {
     });
   }
 
-  Future<List<Post>> addAuthorToPost(List<Post> postList) async {
+  Future<void> addAuthorToPost(List<Post> postList) async {
     updatedPostList.clear();
     for (var item in postList) {
       if (item.authorId == MyAppState.currentUser!.userID) {
@@ -351,11 +299,9 @@ class PostContainerState extends State<PostContainer> {
         updatedPostList.add(item);
       }
     }
-    return updatedPostList;
-    // print('${updatedPostList.length} - ${postList.length}');
-    // if (!usersPostStream.isClosed) {
-    //   usersPostStream.sink.add(updatedPostList);
-    // }
+    if (!usersPostStream.isClosed) {
+      usersPostStream.sink.add(updatedPostList);
+    }
   }
 
   bool checkFollowing(String username) {

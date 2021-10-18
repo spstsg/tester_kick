@@ -17,6 +17,7 @@ import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:kick_chat/ui/widgets/share_widget.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 class ReactionDisplay {
   final String name;
@@ -28,13 +29,13 @@ class ReactionDisplay {
 class PostHeader extends StatelessWidget {
   final Post post;
   final displayedImageIndex;
-  final screenshotController;
+  final ScreenshotController screenshotController;
   final bool showElements;
 
   PostHeader({
     required this.post,
     this.displayedImageIndex,
-    this.screenshotController,
+    required this.screenshotController,
     this.showElements = false,
   });
 
@@ -332,9 +333,9 @@ class PostStatsState extends State<PostStats> {
 class PostSharePopMenu extends StatefulWidget {
   final Post post;
   final displayedImageIndex;
-  final screenshotController;
+  final ScreenshotController screenshotController;
 
-  PostSharePopMenu({required this.post, this.displayedImageIndex, this.screenshotController});
+  PostSharePopMenu({required this.post, this.displayedImageIndex, required this.screenshotController});
 
   @override
   PostSharePopMenuState createState() => PostSharePopMenuState();
@@ -352,7 +353,7 @@ class PostSharePopMenuState extends State<PostSharePopMenu> {
         onSelected: (result) async {
           if (result == 2) {
             if (widget.post.bgColor != '#ffffff') {
-              final image = await widget.screenshotController.capture();
+              final image = await widget.screenshotController.capture(delay: Duration(milliseconds: 10));
               if (image == null) return;
               final isSaved = await saveImageToGallery(image);
               if (isSaved) {
