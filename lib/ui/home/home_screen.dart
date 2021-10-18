@@ -31,9 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
   PollService _pollService = PollService();
   NotificationService _notificationService = NotificationService();
   ChatNotificationService _chatNotificationService = ChatNotificationService();
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
+    _scrollController = ScrollController(initialScrollOffset: 0);
     super.initState();
   }
 
@@ -49,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       decoration: BoxDecoration(color: ColorPalette.greyWhite),
       child: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverAppBar(
             systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -162,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return PostContainer();
+                return PostContainer(scrollController: _scrollController);
               },
               childCount: 1,
             ),

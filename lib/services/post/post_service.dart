@@ -17,8 +17,14 @@ class PostService {
   UserService _userService = UserService();
   late StreamSubscription<QuerySnapshot> _postsStreamSubscription;
   StreamController<List<Post>> _profilePostsStream = StreamController.broadcast();
+  StreamController<List<Post>> postStream = StreamController.broadcast();
   late StreamSubscription<QuerySnapshot> _profilePostsStreamSubscription;
   StreamController<List<Post>> _postsStream = StreamController.broadcast();
+  int postsCount = 0;
+  // ignore: avoid_init_to_null
+  late dynamic lastDocument = null;
+  // ignore: avoid_init_to_null
+  late dynamic lastStreamDocument = null;
 
   Stream<List<Post>> getProfilePostsStream(String userID) async* {
     List<Post> _profilePosts = [];
@@ -58,24 +64,44 @@ class PostService {
 
     _postsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _postsList.clear();
-      if (querySnapshot.docs.isEmpty) {
-        _postsStream.sink.add([]);
-      } else {
-        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
-          Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
-          _postsList.add(postModel);
-        });
-        if (!_postsStream.isClosed) {
-          _postsStream.sink.add(_postsList);
-        }
+      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
+        Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
+        _postsList.add(postModel);
+      });
+      if (!_postsStream.isClosed) {
+        _postsStream.sink.add(_postsList);
       }
     });
+
     yield* _postsStream.stream;
   }
 
-  Future<List<Post>> getPosts() async {
+  getTotalPostCount() async {
+    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).get();
+    return result.size;
+  }
+
+  Future<List<Post>> getPosts(int limit) async {
     List<Post> _postsList = [];
-    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
+    QuerySnapshot result;
+    // QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
+
+    if (lastDocument == null) {
+      result = await firestore.collection(SOCIAL_POSTS).limit(limit).orderBy('createdAt', descending: true).get();
+    } else {
+      result = await firestore
+          .collection(SOCIAL_POSTS)
+          .orderBy('createdAt', descending: true)
+          .startAfterDocument(lastDocument)
+          .limit(limit)
+          .get();
+    }
+
+    lastDocument = null;
+
+    if (result.docs.isNotEmpty) {
+      lastDocument = result.docs[result.docs.length - 1];
+    }
 
     await Future.forEach(result.docs, (DocumentSnapshot post) async {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
@@ -134,7 +160,7 @@ class PostService {
     return _commentsList;
   }
 
-  publishPost(Post post) async {
+  Future publishPost(Post post) async {
     try {
       String uid = getRandomString(28);
       post.id = uid;
@@ -183,7 +209,7 @@ class PostService {
     }
   }
 
-  updatePost(Post post) async {
+  Future updatePost(Post post) async {
     post.author = null;
     post.sharedPost.author = null;
     Map<String, dynamic> data = post.toJson();
@@ -217,7 +243,7 @@ class PostService {
     });
   }
 
-  deletePost(Post post) async {
+  Future<void> deletePost(Post post) async {
     await firestore.collection(SOCIAL_POSTS).doc(post.id).delete();
     DocumentReference<Map<String, dynamic>> decrementPostCount = firestore.collection(USERS).doc(post.authorId);
     decrementPostCount.update({'postCount': FieldValue.increment(-1)});
@@ -226,7 +252,7 @@ class PostService {
     MyAppState.currentUser = user;
   }
 
-  postComment(String uid, Comment newComment, Post post) async {
+  Future<void> postComment(String uid, Comment newComment, Post post) async {
     DocumentReference commentDocument = firestore.collection(POSTS_COMMENTS).doc(uid);
     Map<String, dynamic> data = newComment.toJson();
     data.removeWhere((key, value) => value == null);
