@@ -20,9 +20,12 @@ class UserService {
     _userStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot user) {
         try {
-          _userStream.sink.add(User.fromJson(user.data() as Map<String, dynamic>));
+          User userModel = User.fromJson(user.data() as Map<String, dynamic>);
+          if (!userModel.deleted) {
+            _userStream.sink.add(userModel);
+          }
         } catch (e) {
-          print(e);
+          throw e;
         }
       });
     }, cancelOnError: true);
@@ -45,7 +48,10 @@ class UserService {
         lastDocument = querySnapshot.docs[querySnapshot.docs.length - 1];
       }
       await Future.forEach(querySnapshot.docs, (DocumentSnapshot user) {
-        _usersList.add(User.fromJson(user.data() as Map<String, dynamic>));
+        User userModel = User.fromJson(user.data() as Map<String, dynamic>);
+        if (!userModel.deleted) {
+          _usersList.add(userModel);
+        }
       });
       _usersStream.sink.add(_usersList);
     }, cancelOnError: true);
@@ -66,7 +72,9 @@ class UserService {
     }
     await Future.forEach(result.docs, (DocumentSnapshot user) {
       User userModel = User.fromJson(user.data() as Map<String, dynamic>);
-      _usersList.add(userModel);
+      if (!userModel.deleted) {
+        _usersList.add(userModel);
+      }
     });
     return _usersList;
   }
@@ -74,7 +82,12 @@ class UserService {
   Future<User?> getCurrentUser(String uid) async {
     DocumentSnapshot userDocument = await firestore.collection(USERS).doc(uid).get();
     if (userDocument.data() != null && userDocument.exists) {
-      return User.fromJson(userDocument.data() as Map<String, dynamic>);
+      User user = User.fromJson(userDocument.data() as Map<String, dynamic>);
+      if (!user.deleted) {
+        return user;
+      } else {
+        return null;
+      }
     } else {
       return null;
     }
@@ -84,6 +97,22 @@ class UserService {
     return await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((document) {
       return user;
     });
+  }
+
+  Future<User?> updateCurrentUsername(String username) async {
+    try {
+      await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({'username': username});
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<User?> updateDeleteProp(bool deleted) async {
+    try {
+      await firestore.collection(USERS).doc(MyAppState.currentUser!.userID).update({'deleted': deleted});
+    } catch (e) {
+      throw e;
+    }
   }
 
   Future<void> updateDefaultImageProp(bool defaultImage) async {
@@ -106,15 +135,6 @@ class UserService {
     });
     User? user = await getCurrentUser(MyAppState.currentUser!.userID);
     MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
-  }
-
-  Future<dynamic> getUserByUsername(String username) async {
-    var userDocument = await FirebaseFirestore.instance.collection(USERS).where('username', isEqualTo: username).get();
-    if (userDocument.docs.length >= 1) {
-      return userDocument.docs.first;
-    } else {
-      return null;
-    }
   }
 
   void disposeCurrentUserStream() {

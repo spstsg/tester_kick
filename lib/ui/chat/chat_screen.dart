@@ -544,12 +544,8 @@ class _ChatScreenState extends State<ChatScreen> {
       messageID: uid,
       content: content,
       created: Timestamp.now(),
-      recipientUsername: homeConversationModel.members.first.username,
       recipientID: homeConversationModel.members.first.userID,
-      recipientProfilePictureURL: homeConversationModel.members.first.profilePictureURL,
-      senderUsername: MyAppState.currentUser!.username,
       senderID: MyAppState.currentUser!.userID,
-      senderProfilePictureURL: MyAppState.currentUser!.profilePictureURL,
       gifUrl: currentGif != null ? currentGif!.images!.original!.url : '',
       chatImages: images,
     );

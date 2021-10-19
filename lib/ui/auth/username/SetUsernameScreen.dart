@@ -113,7 +113,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                               textAlignVertical: TextAlignVertical.center,
                               textInputAction: TextInputAction.next,
                               style: TextStyle(fontSize: 17),
-                              keyboardType: TextInputType.emailAddress,
+                              keyboardType: TextInputType.text,
                               cursorColor: ColorPalette.primary,
                               onChanged: (text) {
                                 setState(() {
@@ -158,26 +158,18 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                     )
                   ],
                 ),
-                usernameExist
-                    ? Align(
-                        alignment: Alignment.topLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 25),
-                          child: Text(
-                            'Username already exists',
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Align(
-                        alignment: Alignment.topLeft,
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 25),
-                          child: Text(''),
-                        ),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 25),
+                    child: Text(
+                      usernameExist ? 'Username already exists' : '',
+                      style: TextStyle(
+                        color: Colors.red,
                       ),
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: ConstrainedBox(

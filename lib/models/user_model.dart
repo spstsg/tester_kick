@@ -31,6 +31,7 @@ class User with ChangeNotifier {
   Map notifications;
   Map chat;
   List polls;
+  bool deleted;
 
   User({
     this.username = '',
@@ -58,9 +59,11 @@ class User with ChangeNotifier {
     defaultImage,
     notifications,
     chat,
+    deleted,
   })  : this.lastOnlineTimestamp = lastOnlineTimestamp ?? Timestamp.now(),
         this.settings = settings ?? UserSettings(),
         this.emailPasswordLogin = emailPasswordLogin ?? false,
+        this.deleted = deleted ?? false,
         this.defaultImage = defaultImage ?? true,
         this.chat = chat ?? {'userOne': '', 'userTwo': ''},
         this.notifications = notifications ??
@@ -98,6 +101,7 @@ class User with ChangeNotifier {
     Map? notifications,
     Map? chat,
     List? polls,
+    bool? deleted,
   }) {
     return new User(
       username: username ?? this.username,
@@ -125,6 +129,7 @@ class User with ChangeNotifier {
       notifications: notifications ?? this.notifications,
       chat: chat ?? this.chat,
       polls: polls ?? this.polls,
+      deleted: deleted ?? this.deleted,
     );
   }
 
@@ -137,6 +142,7 @@ class User with ChangeNotifier {
       active: parsedJson['active'] ?? false,
       emailPasswordLogin: parsedJson['emailPasswordLogin'] ?? false,
       defaultImage: parsedJson['defaultImage'] ?? true,
+      deleted: parsedJson['deleted'] ?? false,
       lastOnlineTimestamp: parsedJson['lastOnlineTimestamp'],
       settings: parsedJson.containsKey('settings') ? UserSettings.fromJson(parsedJson['settings']) : UserSettings(),
       phoneNumber: parsedJson['phoneNumber'] ?? '',
@@ -184,6 +190,7 @@ class User with ChangeNotifier {
       dob: parsedJson['dob'] ?? '',
       bio: parsedJson['bio'] ?? '',
       team: parsedJson['team'] ?? '',
+      deleted: parsedJson['deleted'] ?? false,
       lowercaseTeam: parsedJson['lowercaseTeam'] ?? '',
       postCount: parsedJson['postCount'] ?? 0,
       followersCount: parsedJson['followersCount'] ?? 0,
@@ -229,6 +236,7 @@ class User with ChangeNotifier {
       'notifications': this.notifications,
       'chat': this.chat,
       'polls': this.polls,
+      'deleted': this.deleted,
     };
   }
 
@@ -258,6 +266,7 @@ class User with ChangeNotifier {
       'notifications': this.notifications,
       'chat': this.chat,
       'polls': this.polls,
+      'deleted': this.deleted,
     };
   }
 
@@ -287,6 +296,7 @@ class User with ChangeNotifier {
         other.team == team &&
         other.lowercaseTeam == lowercaseTeam &&
         other.defaultImage == defaultImage &&
+        other.deleted == deleted &&
         listEquals(other.polls, polls) &&
         DeepCollectionEquality().equals(other.notifications, notifications) &&
         DeepCollectionEquality().equals(other.chat, chat);
@@ -317,6 +327,7 @@ class User with ChangeNotifier {
         defaultImage.hashCode ^
         chat.hashCode ^
         polls.hashCode ^
+        deleted.hashCode ^
         notifications.hashCode;
   }
 }

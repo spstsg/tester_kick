@@ -181,7 +181,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                       });
                   },
                   onFieldSubmitted: (password) {},
-                  textInputAction: TextInputAction.done,
+                  textInputAction: TextInputAction.next,
                   style: TextStyle(fontSize: 17),
                   cursorColor: ColorPalette.primary,
                   decoration: InputDecoration(
@@ -245,7 +245,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 16, right: 24),
+              padding: const EdgeInsets.only(right: 24),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -345,9 +345,17 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
       );
       User user = await _authService.loginWithEmailAndPassword(result.user?.uid ?? '');
       if (user is User) {
-        MyAppState.currentUser = user;
-        setFinishedOnBoarding();
-        push(context, NavScreen());
+        if (!user.deleted) {
+          MyAppState.currentUser = user;
+          setFinishedOnBoarding();
+          push(context, NavScreen());
+        } else {
+          setState(() {
+            userEmailDoesNotExist = true;
+            loginButtonText = 'Log in';
+            isLoading = false;
+          });
+        }
       } else if (user is String) {
         setState(() {
           loginButtonText = 'Log in';

@@ -96,12 +96,7 @@ class _CreatePostContainerState extends State<CreatePostContainer> {
       mediaFilesURLs.add(videoUrl);
       if (mediaFilesURLs.isEmpty) return;
       Post post = Post(
-        author: MyAppState.currentUser,
         authorId: MyAppState.currentUser!.userID,
-        username: MyAppState.currentUser!.username,
-        email: MyAppState.currentUser!.email,
-        avatarColor: MyAppState.currentUser!.avatarColor,
-        profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: '#ffffff',
         post: postWithVideo.post,
         gifUrl: '',

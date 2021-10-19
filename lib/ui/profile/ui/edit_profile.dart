@@ -72,6 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     TextFormField(
                       controller: _bioContrl,
                       keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.next,
                       minLines: 1,
                       maxLines: 10,
                       maxLength: 80,

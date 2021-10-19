@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
@@ -19,7 +20,9 @@ class _BlockedUsersState extends State<BlockedUsers> {
   @override
   void initState() {
     super.initState();
-    _blockedUserService.getBlockedUsers(MyAppState.currentUser!.userID).then((value) => {blockedUsers = value});
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      getBlockedUsers();
+    });
   }
 
   @override
@@ -114,5 +117,12 @@ class _BlockedUsersState extends State<BlockedUsers> {
         ),
       ),
     );
+  }
+
+  Future<void> getBlockedUsers() async {
+    List<User> blocked = await _blockedUserService.getBlockedUsers(MyAppState.currentUser!.userID);
+    setState(() {
+      blockedUsers = blocked;
+    });
   }
 }

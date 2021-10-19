@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
@@ -8,6 +10,7 @@ import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/post/post_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/posts/widgets/post_helper_widgets.dart';
 import 'package:kick_chat/ui/posts/widgets/post_skeleton.dart';
 import 'package:kick_chat/ui/posts/widgets/shared_post_container.dart';
@@ -24,37 +27,47 @@ class PostContainer extends StatefulWidget {
 
 class PostContainerState extends State<PostContainer> {
   PostService _postService = PostService();
+  UserService _userService = UserService();
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
-  late Stream<List<Post>> _postsStream;
+  StreamController<List<Post>> usersPostStream = StreamController.broadcast();
   List<User> userFollowers = [];
   List<User> blockedUsers = [];
   int displayedImageIndex = 0;
-  bool noPosts = false;
+  List<Post> updatedPostList = [];
+  bool loading = false;
+  bool isLoaded = false;
+  List<Post> fetchedPosts = [];
+  late Stream<List<Post>> _postsStream;
 
   @override
   void initState() {
-    super.initState();
-    _postsStream = _postService.getPostsStream();
-    _postService.getPosts()
-      ..then((value) {
-        noPosts = value.isEmpty;
+    if (!mounted) return;
+
+    getAllPosts();
+    _postsStream = usersPostStream.stream;
+
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _postService.getPostsStream().listen((event) async {
+        if (isLoaded) {
+          addAuthorToPost(event);
+        }
       });
-
-    _followService.getUserFollowings(MyAppState.currentUser!.userID).then((value) => {userFollowers = value});
-
-    _blockedUserService.getBlockedByUsers(MyAppState.currentUser!.userID).then((value) => {blockedUsers = value});
+      getBlockedUsersAndFollowers();
+    });
+    super.initState();
   }
 
   @override
   void dispose() {
     _postService.disposePostsStream();
+    usersPostStream.close();
     super.dispose();
   }
 
-  bool checkFollowing(String username) {
-    var followers = userFollowers.firstWhere((element) => element.username == username, orElse: () => User());
-    return followers.username.isNotEmpty;
+  Future<void> getAllPosts() async {
+    List<Post> allPosts = await _postService.getPosts(4);
+    addAuthorToPost(allPosts);
   }
 
   @override
@@ -67,8 +80,7 @@ class PostContainerState extends State<PostContainer> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return PostSkeleton();
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            noPosts = true;
+          } else if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
             return Center(
               child: Container(
                 height: MediaQuery.of(context).size.height - 170,
@@ -80,7 +92,11 @@ class PostContainerState extends State<PostContainer> {
               ),
             );
           } else {
-            noPosts = false;
+            WidgetsBinding.instance!.addPostFrameCallback((_) {
+              setState(() {
+                isLoaded = true;
+              });
+            });
             return ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 4),
               physics: ScrollPhysics(),
@@ -96,8 +112,8 @@ class PostContainerState extends State<PostContainer> {
     );
   }
 
-  _buildWidget(Post post) {
-    if (post.username == MyAppState.currentUser!.username) {
+  Widget _buildWidget(Post post) {
+    if (post.author!.username == MyAppState.currentUser!.username) {
       return _buildPostWidget(post);
     } else {
       if (blockedUsers.isEmpty) {
@@ -105,7 +121,7 @@ class PostContainerState extends State<PostContainer> {
           return _buildPostWidget(post);
         }
 
-        bool checkUserFollowing = checkFollowing(post.username);
+        bool checkUserFollowing = checkFollowing(post.author!.username);
         if (post.privacy == 'Followers' && checkUserFollowing) {
           return _buildPostWidget(post);
         }
@@ -115,7 +131,7 @@ class PostContainerState extends State<PostContainer> {
     return SizedBox.shrink();
   }
 
-  _buildPostWidget(Post post) {
+  Widget _buildPostWidget(Post post) {
     ScreenshotController screenshotController = ScreenshotController();
     PageController _controller = PageController(initialPage: 0);
     return Card(
@@ -255,5 +271,41 @@ class PostContainerState extends State<PostContainer> {
         ),
       ),
     );
+  }
+
+  Future<void> getBlockedUsersAndFollowers() async {
+    List<User> followings = await _followService.getUserFollowings(MyAppState.currentUser!.userID);
+    List<User> blockedByUsers = await _blockedUserService.getBlockedByUsers(MyAppState.currentUser!.userID);
+    setState(() {
+      blockedUsers = blockedByUsers;
+      userFollowers = followings;
+    });
+  }
+
+  Future<void> addAuthorToPost(List<Post> postList) async {
+    updatedPostList.clear();
+    for (var item in postList) {
+      if (item.authorId == MyAppState.currentUser!.userID) {
+        item.author = MyAppState.currentUser!;
+      } else {
+        User? author = await _userService.getCurrentUser(item.authorId);
+        item.author = author;
+      }
+      if (item.sharedPost.authorId.isNotEmpty) {
+        User? sharedPostAuthor = await _userService.getCurrentUser(item.sharedPost.authorId);
+        item.sharedPost.author = sharedPostAuthor!;
+      }
+      if (item.author != null && !item.author!.deleted) {
+        updatedPostList.add(item);
+      }
+    }
+    if (!usersPostStream.isClosed) {
+      usersPostStream.sink.add(updatedPostList);
+    }
+  }
+
+  bool checkFollowing(String username) {
+    var followers = userFollowers.firstWhere((element) => element.username == username, orElse: () => User());
+    return followers.username.isNotEmpty;
   }
 }

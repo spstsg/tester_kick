@@ -224,6 +224,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                 appContext: context,
                 keyboardType: TextInputType.phone,
                 backgroundColor: Colors.transparent,
+                textInputAction: TextInputAction.next,
                 textStyle: TextStyle(fontSize: 22),
                 controller: _otpController,
                 pinTheme: PinTheme(

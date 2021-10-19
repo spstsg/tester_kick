@@ -492,7 +492,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         if (!_isBlocked) {
                           try {
-                            _followService.followUser(MyAppState.currentUser!, widget.user);
+                            _followService.followUser(MyAppState.currentUser!.userID, widget.user.userID);
                             MyAppState.reduxStore!.dispatch(CreateUserAction(widget.user));
                             setState(() {
                               _followersCount++;
@@ -548,7 +548,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? GestureDetector(
                 onTap: () async {
                   if (widget.user.userID != MyAppState.currentUser!.userID) {
-                    bool isSuccessful = await _blockedUserService.blockUser(MyAppState.currentUser!, widget.user);
+                    bool isSuccessful = await _blockedUserService.blockUser(
+                      MyAppState.currentUser!.userID,
+                      widget.user.userID,
+                    );
                     if (!isSuccessful) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

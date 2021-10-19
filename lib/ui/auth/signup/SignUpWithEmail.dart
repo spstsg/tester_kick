@@ -197,7 +197,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                       },
                       obscureText: !togglePassword,
                       controller: _passwordController,
-                      textInputAction: TextInputAction.done,
+                      textInputAction: TextInputAction.next,
                       style: TextStyle(fontSize: 17),
                       cursorColor: ColorPalette.primary,
                       decoration: InputDecoration(

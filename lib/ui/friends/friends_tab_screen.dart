@@ -1,31 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
-import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
+import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/ui/friends/followers_screen.dart';
 import 'package:kick_chat/ui/friends/followings_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class FriendsTabScreen extends StatelessWidget {
+class FriendsTabScreen extends StatefulWidget {
   final int tabIndex;
   final User user;
   FriendsTabScreen({required this.tabIndex, required this.user});
 
   @override
+  State<FriendsTabScreen> createState() => _FriendsTabScreenState();
+}
+
+class _FriendsTabScreenState extends State<FriendsTabScreen> {
+  FollowService _followService = FollowService();
+  int followersCount = 0;
+  int followingsCount = 0;
+
+  @override
+  void initState() {
+    getFollowersAndFollowingsCount();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      initialIndex: tabIndex,
+      initialIndex: widget.tabIndex,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
           leading: IconButton(
             icon: Icon(MdiIcons.arrowLeft, color: ColorPalette.white),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
           title: Text(
-            user.username,
+            widget.user.username,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -43,23 +60,30 @@ class FriendsTabScreen extends StatelessWidget {
             ),
             tabs: [
               Tab(
-                text:
-                    'FOLLOWING (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followingCount : MyAppState.currentUser!.followingCount)})',
+                text: 'FOLLOWING (${NumberFormat.compact().format(followingsCount)})',
               ),
               Tab(
-                text:
-                    'FOLLOWERS (${NumberFormat.compact().format(user.username != MyAppState.currentUser!.username ? user.followersCount : MyAppState.currentUser!.followersCount)})',
+                text: 'FOLLOWERS (${NumberFormat.compact().format(followersCount)})',
               ),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            FollowingsScreen(user: user),
-            FollowersScreen(user: user),
+            FollowingsScreen(user: widget.user),
+            FollowersScreen(user: widget.user),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> getFollowersAndFollowingsCount() async {
+    int countFollowers = await _followService.getUserFollowersCount(widget.user.userID);
+    int countFollowing = await _followService.getUserFollowingsCount(widget.user.userID);
+    setState(() {
+      followersCount = countFollowers;
+      followingsCount = countFollowing;
+    });
   }
 }

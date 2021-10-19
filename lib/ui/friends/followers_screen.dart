@@ -34,8 +34,20 @@ class _FollowersScreenState extends State<FollowersScreen> {
     super.initState();
     blockedUsers = [];
     _followers = _followService.getUserFollowers(widget.user.userID);
-    _blockedUserService.getBlockedUsers(widget.user.userID).then((value) => {blockedUsers = value});
-    _followService.getUserFollowings(MyAppState.currentUser!.userID).then((value) => {userFollowers = value});
+    // _blockedUserService.getBlockedUsers(widget.user.userID).then((value) => {blockedUsers = value});
+    // _followService.getUserFollowings(MyAppState.currentUser!.userID).then((value) => {userFollowers = value});
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      getBlockedUsersAndFollowings();
+    });
+  }
+
+  Future<void> getBlockedUsersAndFollowings() async {
+    List<User> blocked = await _blockedUserService.getBlockedUsers(widget.user.userID);
+    List<User> userFollowings = await _followService.getUserFollowings(MyAppState.currentUser!.userID);
+    setState(() {
+      blockedUsers = blocked;
+      userFollowers = userFollowings;
+    });
   }
 
   @override
@@ -133,7 +145,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
               onPressed: () async {
                 if (checkUserFollowing) return;
                 try {
-                  await _followService.followUser(MyAppState.currentUser!, snapshot[index]);
+                  await _followService.followUser(MyAppState.currentUser!.userID, snapshot[index].userID);
                   setState(() {
                     userFollowers.add(snapshot[index]);
                   });

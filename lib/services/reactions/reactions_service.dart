@@ -66,7 +66,7 @@ class ReactionService {
     updatePostDocument
         .update({'reactionsCount': FieldValue.increment(1), 'reactions.${newReaction}': FieldValue.increment(1)});
 
-    User? user = await _userService.getCurrentUser(post.author.userID);
+    User? user = await _userService.getCurrentUser(post.authorId);
     if (user!.userID != MyAppState.currentUser!.userID) {
       await notificationService.saveNotification(
         'social_reaction',

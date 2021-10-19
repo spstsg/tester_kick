@@ -164,7 +164,7 @@ class _AddClubsScreenState extends State<AddClubsScreen> {
                             child: TextFormField(
                               controller: _countryCtrl,
                               textAlignVertical: TextAlignVertical.center,
-                              // textInputAction: TextInputAction.next,
+                              textInputAction: TextInputAction.next,
                               style: TextStyle(fontSize: 17),
                               keyboardType: TextInputType.text,
                               cursorColor: ColorPalette.primary,

@@ -10,7 +10,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class SharedPostContainer extends StatelessWidget {
-  final dynamic post;
+  final SharedPost post;
   final VoidCallback? onDelete;
 
   SharedPostContainer({Key? key, required this.post, this.onDelete}) : super(key: key);
@@ -144,7 +144,7 @@ class SharedPostContainer extends StatelessWidget {
 }
 
 class _PostHeader extends StatelessWidget {
-  final dynamic post;
+  final SharedPost post;
   final VoidCallback? onDelete;
 
   _PostHeader({
@@ -159,10 +159,14 @@ class _PostHeader extends StatelessWidget {
       child: Row(
         children: [
           ProfileAvatar(
-            imageUrl: post.profilePicture,
-            username: post.username,
-            avatarColor: post.avatarColor,
-            radius: post.profilePicture != '' ? 20 : 45.0,
+            imageUrl: post.author != null ? post.author!.profilePictureURL : '',
+            username: post.author != null ? post.author!.username : '',
+            avatarColor: post.author != null ? post.author!.avatarColor : '',
+            radius: post.author != null
+                ? post.author!.profilePictureURL != ''
+                    ? 20
+                    : 45.0
+                : 20.0,
             fontSize: 20,
           ),
           SizedBox(width: 8.0),
@@ -172,7 +176,8 @@ class _PostHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  post.username,
+                  // 'Manny',
+                  post.author != null ? post.author!.username : '',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,

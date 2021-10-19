@@ -9,19 +9,21 @@ import 'package:kick_chat/redux/actions/user_action.dart';
 import 'package:kick_chat/services/blocked/blocked_service.dart';
 import 'package:kick_chat/services/follow/follow_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/search/search_service.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/chat/widgets/conversation_skeleton.dart';
-import 'package:kick_chat/ui/fans/fans_search_result_screen.dart';
 import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
+import 'package:kick_chat/ui/widgets/circle_button.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class FanScreen extends StatefulWidget {
+class FanSearchResultScreen extends StatefulWidget {
   @override
-  _FanScreenState createState() => _FanScreenState();
+  _FanSearchResultScreen createState() => _FanSearchResultScreen();
 }
 
-class _FanScreenState extends State<FanScreen> {
+class _FanSearchResultScreen extends State<FanSearchResultScreen> {
+  SearchService _searchService = SearchService();
   UserService _userService = UserService();
   FollowService _followService = FollowService();
   BlockedUserService _blockedUserService = BlockedUserService();
@@ -41,18 +43,11 @@ class _FanScreenState extends State<FanScreen> {
   @override
   void initState() {
     loading = true;
-    getAllUsers();
+    _usersController.sink.add([]);
     _usersStream = _usersController.stream;
     SchedulerBinding.instance!.addPostFrameCallback((_) {
       setState(() {
         loading = false;
-      });
-
-      _scrollController.addListener(() {
-        if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !loading) {
-          getAllUsers();
-          _usersStream = _usersController.stream;
-        }
       });
 
       updateUserStream();
@@ -79,6 +74,15 @@ class _FanScreenState extends State<FanScreen> {
         backgroundColor: Colors.white,
         elevation: 1.0,
         centerTitle: false,
+        leadingWidth: 25.0,
+        leading: IconButton(
+          icon: Icon(
+            MdiIcons.chevronLeft,
+            size: 30,
+            color: ColorPalette.primary,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Container(
           width: double.infinity,
           height: 40,
@@ -86,8 +90,19 @@ class _FanScreenState extends State<FanScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(5),
           ),
-          child: searchByUsername(),
+          child: !isFilterButton ? searchByUsername() : filterByClubName(),
         ),
+        actions: [
+          CircleButton(
+            icon: !isFilterButton ? MdiIcons.filter : MdiIcons.filterOff,
+            iconSize: 30.0,
+            onPressed: () {
+              setState(() {
+                isFilterButton = !isFilterButton;
+              });
+            },
+          )
+        ],
       ),
       body: StreamBuilder<List<User>>(
         stream: _usersStream,
@@ -234,18 +249,29 @@ class _FanScreenState extends State<FanScreen> {
   Widget searchByUsername() {
     return Center(
       child: TextFormField(
-        onTap: () {
-          Navigator.of(context).push(
-            new MaterialPageRoute<Null>(
-              builder: (BuildContext context) {
-                return FanSearchResultScreen();
-              },
-              fullscreenDialog: true,
-            ),
-          );
+        controller: _searchController,
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
+        onChanged: (input) async {
+          if (input.isNotEmpty) {
+            List<User> allUsers = await _searchService.searchUsers(input);
+            _usersController.sink.add(allUsers);
+            _usersStream = _usersController.stream;
+          } else {
+            _usersController.sink.add(fetchedUsers);
+            _usersStream = _usersController.stream;
+          }
         },
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.clear),
+            onPressed: () {
+              _searchController.text = '';
+              _usersController.sink.add(fetchedUsers);
+              _usersStream = _usersController.stream;
+            },
+          ),
           hintText: 'Search by username',
           border: InputBorder.none,
         ),
@@ -253,21 +279,37 @@ class _FanScreenState extends State<FanScreen> {
     );
   }
 
-  Future<void> getAllUsers() async {
-    List<User> allUsers = await _userService.getUsers(10);
-    fetchedUsers.addAll(allUsers);
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      setState(() {
-        loading = true;
-      });
-      if (fetchedUsers.isNotEmpty) {
-        _usersController.sink.add(fetchedUsers);
-      }
-
-      setState(() {
-        loading = false;
-      });
-    });
+  Widget filterByClubName() {
+    return Center(
+      child: TextField(
+        controller: _searchFilterController,
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
+        onChanged: (input) async {
+          if (input.isNotEmpty) {
+            List<User> allUsers = await _searchService.filterByClubName(input);
+            _usersController.sink.add(allUsers);
+            _usersStream = _usersController.stream;
+          } else {
+            _usersController.sink.add(fetchedUsers);
+            _usersStream = _usersController.stream;
+          }
+        },
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.search),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.clear),
+            onPressed: () {
+              _searchFilterController.text = '';
+              _usersController.sink.add(fetchedUsers);
+              _usersStream = _usersController.stream;
+            },
+          ),
+          hintText: 'Filter by club name',
+          border: InputBorder.none,
+        ),
+      ),
+    );
   }
 
   void updateUserStream() {
@@ -320,10 +362,7 @@ class _FanScreenState extends State<FanScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('This user is blocked.'),
-          backgroundColor: Colors.blue,
-        ),
+        SnackBar(content: Text('This user is blocked.'), backgroundColor: Colors.blue),
       );
     }
   }

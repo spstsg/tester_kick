@@ -12,19 +12,16 @@ class LiveScoresChat {
   Future<bool> addLivescoresMessages(LivescoresModel conversation) async {
     try {
       String uid = getRandomString(20);
-      await firestore
-          .collection(LIVESCORES_CHAT)
-          .doc(conversation.id)
-          .collection(LIVESCORES_CHAT)
-          .doc(uid)
-          .set(conversation.toJson());
+      Map<String, dynamic> data = conversation.toJson();
+      data.removeWhere((key, value) => value == null);
+      await firestore.collection(LIVESCORES_CHAT).doc(conversation.id).collection(LIVESCORES_CHAT).doc(uid).set(data);
       return true;
     } on Exception catch (e) {
       throw e;
     }
   }
 
-  Stream<List<LivescoresModel>> getLiveScoreMessages(String teamId) async* {
+  Stream<List<LivescoresModel>> getLiveScoreMessagesStream(String teamId) async* {
     conversationsStream = StreamController<List<LivescoresModel>>();
     List<LivescoresModel> messages = [];
     firestore
@@ -43,11 +40,9 @@ class LiveScoresChat {
             querySnapshot.docs,
             (DocumentSnapshot document) async {
               if (document.exists) {
-                LivescoresModel messageJson =
-                    LivescoresModel.fromJson(document.data() as Map<String, dynamic>);
+                LivescoresModel messageJson = LivescoresModel.fromJson(document.data() as Map<String, dynamic>);
                 messages.add(messageJson);
-                // if (!conversationsStream.isClosed) {
-                // }
+
                 conversationsStream.sink.add(messages);
               }
             },
@@ -56,6 +51,22 @@ class LiveScoresChat {
       },
     );
     yield* conversationsStream.stream;
+  }
+
+  Future<List<LivescoresModel>> getLiveScoreMessages(String teamId) async {
+    List<LivescoresModel> _chatList = [];
+    QuerySnapshot result = await firestore
+        .collection(LIVESCORES_CHAT)
+        .doc(teamId)
+        .collection(LIVESCORES_CHAT)
+        .orderBy('lastMessageDate')
+        .get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot chat) async {
+      LivescoresModel chatModel = LivescoresModel.fromJson(chat.data() as Map<String, dynamic>);
+      _chatList.add(chatModel);
+    });
+    return _chatList;
   }
 
   void disposeMessageStream() {

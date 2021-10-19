@@ -17,6 +17,7 @@ import 'package:kick_chat/ui/profile/ui/profile_screen.dart';
 import 'package:kick_chat/ui/widgets/profile_avatar.dart';
 import 'package:kick_chat/ui/widgets/share_widget.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 class ReactionDisplay {
   final String name;
@@ -28,13 +29,13 @@ class ReactionDisplay {
 class PostHeader extends StatelessWidget {
   final Post post;
   final displayedImageIndex;
-  final screenshotController;
+  final ScreenshotController screenshotController;
   final bool showElements;
 
   PostHeader({
     required this.post,
     this.displayedImageIndex,
-    this.screenshotController,
+    required this.screenshotController,
     this.showElements = false,
   });
 
@@ -49,10 +50,10 @@ class PostHeader extends StatelessWidget {
       child: Row(
         children: [
           ProfileAvatar(
-            imageUrl: post.profilePicture,
-            username: post.username,
-            avatarColor: post.avatarColor,
-            radius: post.profilePicture != '' ? 20 : 45.0,
+            imageUrl: post.author!.profilePictureURL,
+            username: post.author!.username,
+            avatarColor: post.author!.avatarColor,
+            radius: post.author!.profilePictureURL != '' ? 20 : 45.0,
             fontSize: 20,
           ),
           SizedBox(width: 8.0),
@@ -63,14 +64,14 @@ class PostHeader extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () async {
-                    if (post.author.userID != MyAppState.currentUser!.userID) {
-                      User? user = await _userService.getCurrentUser(post.author.userID);
+                    if (post.authorId != MyAppState.currentUser!.userID) {
+                      User? user = await _userService.getCurrentUser(post.authorId);
                       MyAppState.reduxStore!.dispatch(CreateUserAction(user!));
                       push(context, ProfileScreen(user: user));
                     }
                   },
                   child: Text(
-                    post.username,
+                    post.author!.username,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -108,7 +109,7 @@ class PostHeader extends StatelessWidget {
                     screenshotController: screenshotController,
                   ),
                 )
-              : post.username == MyAppState.currentUser!.username
+              : post.author!.username == MyAppState.currentUser!.username
                   ? Container(
                       child: Row(
                         children: [
@@ -162,7 +163,7 @@ class PostHeader extends StatelessWidget {
       if (!proceed) {
         return;
       } else {
-        await postService.deletePost(post);
+        postService.deletePost(post);
       }
     } catch (e) {
       await showCupertinoAlert(
@@ -332,9 +333,9 @@ class PostStatsState extends State<PostStats> {
 class PostSharePopMenu extends StatefulWidget {
   final Post post;
   final displayedImageIndex;
-  final screenshotController;
+  final ScreenshotController screenshotController;
 
-  PostSharePopMenu({required this.post, this.displayedImageIndex, this.screenshotController});
+  PostSharePopMenu({required this.post, this.displayedImageIndex, required this.screenshotController});
 
   @override
   PostSharePopMenuState createState() => PostSharePopMenuState();
@@ -352,7 +353,7 @@ class PostSharePopMenuState extends State<PostSharePopMenu> {
         onSelected: (result) async {
           if (result == 2) {
             if (widget.post.bgColor != '#ffffff') {
-              final image = await widget.screenshotController.capture();
+              final image = await widget.screenshotController.capture(delay: Duration(milliseconds: 10));
               if (image == null) return;
               final isSaved = await saveImageToGallery(image);
               if (isSaved) {

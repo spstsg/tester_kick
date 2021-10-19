@@ -152,6 +152,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                               child: TextField(
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _postController,
@@ -190,6 +191,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
                             child: Container(
                               child: TextField(
                                 keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.next,
                                 minLines: 1,
                                 maxLines: 10,
                                 controller: _postController,
@@ -488,12 +490,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
 
   Future _publishPostWithVideo(BuildContext context) async {
     Post post = Post(
-      author: MyAppState.currentUser,
       authorId: MyAppState.currentUser!.userID,
-      username: MyAppState.currentUser!.username,
-      email: MyAppState.currentUser!.email,
-      avatarColor: MyAppState.currentUser!.avatarColor,
-      profilePicture: MyAppState.currentUser!.profilePictureURL,
       bgColor: _bgColor,
       post: _postController.text.trim(),
       gifUrl: '',
@@ -514,12 +511,7 @@ class CreatePostScreenState extends State<CreatePostScreen> {
       await uploadImages();
 
       Post post = Post(
-        author: MyAppState.currentUser,
         authorId: MyAppState.currentUser!.userID,
-        username: MyAppState.currentUser!.username,
-        email: MyAppState.currentUser!.email,
-        avatarColor: MyAppState.currentUser!.avatarColor,
-        profilePicture: MyAppState.currentUser!.profilePictureURL,
         bgColor: _bgColor,
         post: _postController.text.trim(),
         gifUrl: currentGif != null ? currentGif!.images!.original!.url : '',

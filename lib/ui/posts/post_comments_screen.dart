@@ -91,6 +91,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                 },
                 controller: _commentController,
                 textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.next,
                 maxLines: 5,
                 minLines: 1,
                 keyboardType: TextInputType.multiline,
@@ -175,10 +176,10 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                       leading: Container(
                         width: 40,
                         child: ProfileAvatar(
-                          imageUrl: comment.profilePicture,
-                          username: comment.username,
-                          avatarColor: comment.avatarColor,
-                          radius: comment.profilePicture != '' ? 20 : 45.0,
+                          imageUrl: comment.author!.profilePictureURL,
+                          username: comment.author!.username,
+                          avatarColor: comment.author!.avatarColor,
+                          radius: comment.author!.profilePictureURL != '' ? 20 : 45.0,
                           fontSize: 20,
                         ),
                       ),
@@ -186,7 +187,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
                         margin: EdgeInsets.symmetric(vertical: 10),
                         padding: EdgeInsets.only(top: 5),
                         child: Text(
-                          comment.username,
+                          comment.author!.username,
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                         ),
                       ),
@@ -223,9 +224,6 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
     String uid = getRandomString(28);
     Comment newComment = Comment(
       authorId: MyAppState.currentUser!.userID,
-      username: MyAppState.currentUser!.username,
-      avatarColor: MyAppState.currentUser!.avatarColor,
-      profilePicture: MyAppState.currentUser!.profilePictureURL,
       createdAt: Timestamp.now(),
       commentText: comment,
       postId: post.id,
@@ -234,6 +232,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
     );
     _commentsFuture = Future.delayed(Duration(milliseconds: 200), () {
       _scrollToBottom();
+      newComment.author = MyAppState.currentUser!;
       return addedComment(newComment);
     });
     await _postService.postComment(uid, newComment, post);

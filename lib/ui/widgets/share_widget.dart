@@ -107,6 +107,7 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
                       child: Container(
                         child: TextField(
                           keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.next,
                           minLines: 1,
                           maxLines: 5,
                           controller: _postController,
@@ -264,14 +265,16 @@ class ShareOutsideWidgetState extends State<ShareOutsideWidget> {
         );
       }
       await sendNotification(widget.post);
+      Navigator.pop(context);
     } catch (e) {
+      print(e);
       final snackBar = SnackBar(content: Text('Error sharing your content. Try again later.'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
   sendNotification(Post post) async {
-    User? author = await _userService.getCurrentUser(post.sharedPost.author.userID);
+    User? author = await _userService.getCurrentUser(post.sharedPost.authorId);
     if (author!.userID != MyAppState.currentUser!.userID) {
       await notificationService.saveNotification(
         'posts_shared',

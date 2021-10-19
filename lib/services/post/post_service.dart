@@ -17,10 +17,11 @@ class PostService {
   UserService _userService = UserService();
   late StreamSubscription<QuerySnapshot> _postsStreamSubscription;
   StreamController<List<Post>> _profilePostsStream = StreamController.broadcast();
+  StreamController<List<Post>> postStream = StreamController.broadcast();
   late StreamSubscription<QuerySnapshot> _profilePostsStreamSubscription;
   StreamController<List<Post>> _postsStream = StreamController.broadcast();
 
-  Stream<List<Post>> getProfilePosts(String userID) async* {
+  Stream<List<Post>> getProfilePostsStream(String userID) async* {
     List<Post> _profilePosts = [];
     _profilePostsStream = StreamController();
     Stream<QuerySnapshot> result = firestore
@@ -34,14 +35,17 @@ class PostService {
       if (querySnapshot.docs.isEmpty) {
         _profilePostsStream.sink.add([]);
       } else {
-        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
+        await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
           try {
-            _profilePosts.add(Post.fromJson(post.data() as Map<String, dynamic>));
+            Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
+            _profilePosts.add(postModel);
           } catch (e) {
-            print(e);
+            throw e;
           }
         });
-        _profilePostsStream.sink.add(_profilePosts);
+        if (!_profilePostsStream.isClosed) {
+          _profilePostsStream.sink.add(_profilePosts);
+        }
       }
     }, cancelOnError: true);
     yield* _profilePostsStream.stream;
@@ -55,20 +59,43 @@ class PostService {
 
     _postsStreamSubscription = result.listen((QuerySnapshot querySnapshot) async {
       _postsList.clear();
-      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) {
+      await Future.forEach(querySnapshot.docs, (DocumentSnapshot post) async {
         Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
         _postsList.add(postModel);
       });
-      _postsStream.sink.add(_postsList);
+      if (!_postsStream.isClosed) {
+        _postsStream.sink.add(_postsList);
+      }
     });
+
     yield* _postsStream.stream;
   }
 
-  Future<List<Post>> getPosts() async {
+  getTotalPostCount() async {
+    QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).get();
+    return result.size;
+  }
+
+  Future<List<Post>> getPosts(int limit) async {
     List<Post> _postsList = [];
     QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).orderBy('createdAt', descending: true).get();
 
-    await Future.forEach(result.docs, (DocumentSnapshot post) {
+    await Future.forEach(result.docs, (DocumentSnapshot post) async {
+      Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
+      _postsList.add(postModel);
+    });
+    return _postsList;
+  }
+
+  Future<List<Post>> getProfilePosts(String userID) async {
+    List<Post> _postsList = [];
+    QuerySnapshot result = await firestore
+        .collection(SOCIAL_POSTS)
+        .where('authorId', isEqualTo: userID)
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    await Future.forEach(result.docs, (DocumentSnapshot post) async {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
       _postsList.add(postModel);
     });
@@ -79,9 +106,17 @@ class PostService {
     List<Post> _postsList = [];
     QuerySnapshot result = await firestore.collection(SOCIAL_POSTS).where('id', isEqualTo: postId).get();
 
-    await Future.forEach(result.docs, (DocumentSnapshot post) {
+    await Future.forEach(result.docs, (DocumentSnapshot post) async {
       Post postModel = Post.fromJson(post.data() as Map<String, dynamic>);
-      _postsList.add(postModel);
+      User? author = await _userService.getCurrentUser(postModel.authorId);
+      if (author != null) {
+        postModel.author = author;
+        if (postModel.sharedPost.authorId.isNotEmpty) {
+          User? sharedPostAuthor = await _userService.getCurrentUser(postModel.sharedPost.authorId);
+          postModel.sharedPost.author = sharedPostAuthor;
+        }
+        _postsList.add(postModel);
+      }
     });
     return _postsList[0];
   }
@@ -89,24 +124,29 @@ class PostService {
   Future<List<Comment>> getPostComments(Post post) async {
     List<Comment> _commentsList = [];
     QuerySnapshot result = await firestore.collection(POSTS_COMMENTS).where('postId', isEqualTo: post.id).get();
-    await Future.forEach(result.docs, (DocumentSnapshot post) {
+    await Future.forEach(result.docs, (DocumentSnapshot post) async {
       try {
         Comment socialCommentModel = Comment.fromJson(post.data() as Map<String, dynamic>);
+        User? author = await _userService.getCurrentUser(socialCommentModel.authorId);
+        socialCommentModel.author = author!;
         _commentsList.add(socialCommentModel);
       } catch (e) {
-        print('FireStoreUtils.getPostComments POST_COMMENTS table invalid json '
-            'structure exception, doc id is => ${post.id}');
+        throw e;
       }
     });
     return _commentsList;
   }
 
-  publishPost(Post post) async {
+  Future publishPost(Post post) async {
     try {
       String uid = getRandomString(28);
       post.id = uid;
-      await firestore.collection(SOCIAL_POSTS).doc(uid).set(post.toJson()).then((value) => null, onError: (e) {
-        return e;
+      Map<String, dynamic> data = post.toJson();
+      data.removeWhere((key, value) => value == null);
+      data['sharedPost'].removeWhere((key, value) => value == null);
+
+      await firestore.collection(SOCIAL_POSTS).doc(uid).set(data).then((value) => null, onError: (e) {
+        throw e;
       });
 
       if (post.sharedPost.authorId != '') {
@@ -114,7 +154,7 @@ class PostService {
             firestore.collection(SOCIAL_POSTS).doc(post.sharedPost.id);
         incrementShareCount.update({'shareCount': FieldValue.increment(1)});
 
-        User? author = await _userService.getCurrentUser(post.sharedPost.author.userID);
+        User? author = await _userService.getCurrentUser(post.sharedPost.authorId);
         if (author!.userID != MyAppState.currentUser!.userID) {
           await notificationService.saveNotification(
             'posts_shared',
@@ -146,16 +186,17 @@ class PostService {
     }
   }
 
-  updatePost(Post post) async {
+  Future updatePost(Post post) async {
+    post.author = null;
+    post.sharedPost.author = null;
+    Map<String, dynamic> data = post.toJson();
+    data.removeWhere((key, value) => value == null);
+    data['sharedPost'].removeWhere((key, value) => value == null);
     var sharedPostId = post.sharedPost.id;
     if (post.sharedPost.authorId == '') {
       post.sharedPost = SharedPost();
     }
-    await firestore
-        .collection(SOCIAL_POSTS)
-        .doc(post.id)
-        .update(post.toJson())
-        .then((value) => null, onError: (e) => e);
+    await firestore.collection(SOCIAL_POSTS).doc(post.id).update(data).then((value) => null, onError: (e) => e);
 
     if (post.sharedPost.authorId == '' && sharedPostId != '') {
       DocumentReference<Map<String, dynamic>> decrementShareCount =
@@ -179,7 +220,7 @@ class PostService {
     });
   }
 
-  deletePost(Post post) async {
+  Future<void> deletePost(Post post) async {
     await firestore.collection(SOCIAL_POSTS).doc(post.id).delete();
     DocumentReference<Map<String, dynamic>> decrementPostCount = firestore.collection(USERS).doc(post.authorId);
     decrementPostCount.update({'postCount': FieldValue.increment(-1)});
@@ -188,13 +229,15 @@ class PostService {
     MyAppState.currentUser = user;
   }
 
-  postComment(String uid, Comment newComment, Post post) async {
+  Future<void> postComment(String uid, Comment newComment, Post post) async {
     DocumentReference commentDocument = firestore.collection(POSTS_COMMENTS).doc(uid);
-    await commentDocument.set(newComment.toJson());
+    Map<String, dynamic> data = newComment.toJson();
+    data.removeWhere((key, value) => value == null);
+    await commentDocument.set(data);
     DocumentReference<Map<String, dynamic>> incrementCommentsCount = firestore.collection(SOCIAL_POSTS).doc(post.id);
     incrementCommentsCount.update({'commentsCount': FieldValue.increment(1)});
 
-    User? user = await _userService.getCurrentUser(post.author.userID);
+    User? user = await _userService.getCurrentUser(post.authorId);
     if (user!.userID != MyAppState.currentUser!.userID) {
       await notificationService.saveNotification(
         'posts_comments',

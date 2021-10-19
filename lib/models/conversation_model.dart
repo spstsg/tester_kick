@@ -4,7 +4,6 @@ class ConversationModel {
   String id;
   String creatorId;
   String lastMessage;
-  String name;
   String senderId;
   String receiverId;
   Timestamp lastMessageDate;
@@ -15,7 +14,6 @@ class ConversationModel {
     this.id = '',
     this.creatorId = '',
     this.lastMessage = '',
-    this.name = '',
     this.senderId = '',
     this.receiverId = '',
     lastMessageDate,
@@ -30,7 +28,6 @@ class ConversationModel {
       id: parsedJson['id'] ?? '',
       creatorId: parsedJson['creatorID'] ?? parsedJson['creator_id'] ?? '',
       lastMessage: parsedJson['lastMessage'] ?? '',
-      name: parsedJson['name'] ?? '',
       senderId: parsedJson['senderId'] ?? '',
       receiverId: parsedJson['receiverId'] ?? '',
       lastMessageDate: parsedJson['lastMessageDate'],
@@ -44,7 +41,6 @@ class ConversationModel {
       id: parsedJson['id'] ?? '',
       creatorId: parsedJson['creatorID'] ?? parsedJson['creator_id'] ?? '',
       lastMessage: parsedJson['lastMessage'] ?? '',
-      name: parsedJson['name'] ?? '',
       senderId: parsedJson['senderId'] ?? '',
       receiverId: parsedJson['receiverId'] ?? '',
       isRead: parsedJson['isRead'] ?? false,
@@ -58,7 +54,6 @@ class ConversationModel {
       'id': this.id,
       'creatorID': this.creatorId,
       'lastMessage': this.lastMessage,
-      'name': this.name,
       'senderId': this.senderId,
       'receiverId': this.receiverId,
       'lastMessageDate': this.lastMessageDate,
@@ -72,7 +67,6 @@ class ConversationModel {
       'id': this.id,
       'creatorID': this.creatorId,
       'lastMessage': this.lastMessage,
-      'name': this.name,
       'senderId': this.senderId,
       'receiverId': this.receiverId,
       'isRead': this.isRead,

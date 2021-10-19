@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
@@ -127,7 +127,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     currentPasswordNotValid = false;
                   });
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(
@@ -220,7 +220,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     newPasswordNotValid = true;
                   });
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(
@@ -348,7 +348,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   });
                 }
               },
-              textInputAction: TextInputAction.done,
+              textInputAction: TextInputAction.next,
               style: TextStyle(fontSize: 17),
               cursorColor: ColorPalette.primary,
               decoration: InputDecoration(
@@ -434,7 +434,7 @@ class _ChangePasswordState extends State<ChangePassword> {
         if (dialogResponse) {
           await logout(context);
         }
-      } on FirebaseAuthException catch (e) {
+      } on auth.FirebaseAuthException catch (e) {
         setState(() => isLoading = false);
         if (e.code == 'user-not-found') {
           showCupertinoAlert(
@@ -463,7 +463,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
   Future<bool> validateCurrentPassword(auth.User? user) async {
     try {
-      final credentials = EmailAuthProvider.credential(
+      final credentials = auth.EmailAuthProvider.credential(
         email: MyAppState.currentUser!.email,
         password: _currentPassword.text,
       );
@@ -486,8 +486,8 @@ class _ChangePasswordState extends State<ChangePassword> {
     MyAppState.currentUser!.emailPasswordLogin = false;
     MyAppState.currentUser!.lastOnlineTimestamp = Timestamp.now();
     _userService.updateCurrentUser(MyAppState.currentUser!);
-    await FirebaseAuth.instance.signOut();
-    MyAppState.currentUser = null;
+    await auth.FirebaseAuth.instance.signOut();
+    MyAppState.currentUser = User();
     pushAndRemoveUntil(context, LoginScreen(), false, false);
   }
 }

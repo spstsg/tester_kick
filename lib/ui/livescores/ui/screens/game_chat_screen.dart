@@ -9,6 +9,7 @@ import 'package:kick_chat/models/livescores_chat_model.dart';
 import 'package:kick_chat/models/user_model.dart';
 import 'package:kick_chat/services/chat/livescores_chat_service.dart';
 import 'package:kick_chat/services/helper.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/friends/followers_skeleton.dart';
 import 'package:kick_chat/ui/livescores/ui/widgets/widget_chats.dart';
 
@@ -24,16 +25,21 @@ class GameChatScreen extends StatefulWidget {
 
 class _GameChatScreenState extends State<GameChatScreen> {
   LiveScoresChat _livescoresChatService = LiveScoresChat();
+  UserService _userService = UserService();
   TextEditingController _messageController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
-  late Stream<List<LivescoresModel>> _livescoreMessageStream;
   bool hasMessage = false;
+  List<LivescoresModel> livescoresChatList = [];
+  StreamController<List<LivescoresModel>> livescoresChatListStream = StreamController.broadcast();
 
   @override
   void initState() {
     _scrollController = ScrollController(initialScrollOffset: 0);
     String uid = roomUID();
-    _livescoreMessageStream = _livescoresChatService.getLiveScoreMessages(uid);
+    getRoomMessage();
+    _livescoresChatService.getLiveScoreMessagesStream(uid).listen((event) {
+      addSenderToMessage(event);
+    });
     SchedulerBinding.instance!.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -54,7 +60,7 @@ class _GameChatScreenState extends State<GameChatScreen> {
       children: [
         Expanded(
           child: StreamBuilder<List<LivescoresModel>>(
-            stream: _livescoreMessageStream,
+            stream: livescoresChatListStream.stream,
             initialData: [],
             builder: (context, snapshot) {
               WidgetsBinding.instance!.addPostFrameCallback((_) {
@@ -100,8 +106,8 @@ class _GameChatScreenState extends State<GameChatScreen> {
                     return Column(
                       children: [
                         CardChat(
-                          name: chatMessages[index].username,
-                          image: chatMessages[index].profilePicture,
+                          name: chatMessages[index].sender!.username,
+                          image: chatMessages[index].sender!.profilePictureURL,
                           message: chatMessages[index].lastMessage,
                         ),
                       ],
@@ -143,6 +149,7 @@ class _GameChatScreenState extends State<GameChatScreen> {
                                 Expanded(
                                   child: TextField(
                                     textAlignVertical: TextAlignVertical.center,
+                                    textInputAction: TextInputAction.next,
                                     controller: _messageController,
                                     style: TextStyle(fontSize: 16),
                                     decoration: InputDecoration(
@@ -222,7 +229,7 @@ class _GameChatScreenState extends State<GameChatScreen> {
 
   _listenForMessageChanges(String uid) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    _livescoresChatService.getLiveScoreMessages(uid).listen((event) {
+    _livescoresChatService.getLiveScoreMessagesStream(uid).listen((event) {
       _scrollToBottom();
     });
   }
@@ -240,8 +247,6 @@ class _GameChatScreenState extends State<GameChatScreen> {
       lastMessageDate: Timestamp.now(),
       lastMessage: _messageController.text,
       senderId: user.userID,
-      username: user.username,
-      profilePicture: user.profilePictureURL,
     );
     bool isSuccessful = await _livescoresChatService.addLivescoresMessages(conversation);
     if (isSuccessful) {
@@ -251,5 +256,25 @@ class _GameChatScreenState extends State<GameChatScreen> {
       });
     }
     return isSuccessful;
+  }
+
+  Future<void> getRoomMessage() async {
+    String uid = roomUID();
+    List<LivescoresModel> chatList = await _livescoresChatService.getLiveScoreMessages(uid);
+    addSenderToMessage(chatList);
+  }
+
+  Future<void> addSenderToMessage(List<LivescoresModel> chatList) async {
+    livescoresChatList.clear();
+    for (var item in chatList) {
+      if (item.senderId == MyAppState.currentUser!.userID) {
+        item.sender = MyAppState.currentUser!;
+      } else {
+        User? author = await _userService.getCurrentUser(item.senderId);
+        item.sender = author;
+      }
+      livescoresChatList.add(item);
+    }
+    livescoresChatListStream.sink.add(livescoresChatList);
   }
 }

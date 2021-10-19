@@ -322,20 +322,28 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (result != null && result is User) {
-        result.active = true;
-        result.lastOnlineTimestamp = Timestamp.now();
-        result.emailPasswordLogin = false;
-        _userService.updateCurrentUser(result);
-        MyAppState.currentUser = result;
-        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
-        setFinishedOnBoarding();
-        pushAndRemoveUntil(
-          context,
-          NavScreen(),
-          false,
-          true,
-          'Logging in, Please wait...',
-        );
+        if (!result.deleted) {
+          result.active = true;
+          result.lastOnlineTimestamp = Timestamp.now();
+          result.emailPasswordLogin = false;
+          _userService.updateCurrentUser(result);
+          MyAppState.currentUser = result;
+          MyAppState.reduxStore!.dispatch(CreateUserAction(result));
+          setFinishedOnBoarding();
+          pushAndRemoveUntil(
+            context,
+            NavScreen(),
+            false,
+            true,
+            'Logging in, Please wait...',
+          );
+        } else {
+          final snackBar = SnackBar(
+            content: Text('Sorry, account does not exist.'),
+            backgroundColor: Colors.red,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
       } else if (result != null && result is auth.UserCredential) {
         MyAppState.reduxStore!.dispatch(
           CreateUserAction(
@@ -355,7 +363,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (error) {
-      final snackBar = SnackBar(content: Text('Error authenticating. Please try again later.'));
+      final snackBar = SnackBar(
+        content: Text('Error authenticating. Please try again later.'),
+        backgroundColor: Colors.red,
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
@@ -366,20 +377,28 @@ class _LoginScreenState extends State<LoginScreen> {
       dynamic result = await _googleAuthService.signInWithGoogle(googleUser);
 
       if (result != null && result is User) {
-        result.active = true;
-        result.lastOnlineTimestamp = Timestamp.now();
-        result.emailPasswordLogin = false;
-        _userService.updateCurrentUser(result);
-        MyAppState.currentUser = result;
-        MyAppState.reduxStore!.dispatch(CreateUserAction(result));
-        setFinishedOnBoarding();
-        pushAndRemoveUntil(
-          context,
-          NavScreen(),
-          false,
-          true,
-          'Logging in, Please wait...',
-        );
+        if (!result.deleted) {
+          result.active = true;
+          result.lastOnlineTimestamp = Timestamp.now();
+          result.emailPasswordLogin = false;
+          _userService.updateCurrentUser(result);
+          MyAppState.currentUser = result;
+          MyAppState.reduxStore!.dispatch(CreateUserAction(result));
+          setFinishedOnBoarding();
+          pushAndRemoveUntil(
+            context,
+            NavScreen(),
+            false,
+            true,
+            'Logging in, Please wait...',
+          );
+        } else {
+          final snackBar = SnackBar(
+            content: Text('Sorry, account does not exist.'),
+            backgroundColor: Colors.red,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
       } else if (result != null && result is auth.UserCredential) {
         MyAppState.reduxStore!.dispatch(
           CreateUserAction(
@@ -399,7 +418,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (error) {
-      final snackBar = SnackBar(content: Text('Error authenticating. Please try again later.'));
+      final snackBar = SnackBar(
+        content: Text('Error authenticating. Please try again later.'),
+        backgroundColor: Colors.red,
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }

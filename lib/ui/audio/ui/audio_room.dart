@@ -19,6 +19,7 @@ import 'package:kick_chat/services/chat/audio_room_chat.dart';
 import 'package:kick_chat/services/helper.dart';
 import 'package:kick_chat/services/sharedpreferences/shared_preferences_service.dart';
 import 'package:kick_chat/services/time/timer_service.dart';
+import 'package:kick_chat/services/user/user_service.dart';
 import 'package:kick_chat/ui/audio/ui/edit_audio_room.dart';
 import 'package:kick_chat/ui/audio/ui/room_discussion.dart';
 import 'package:kick_chat/ui/audio/widgets/audio_room_single_skeleton.dart';
@@ -40,8 +41,8 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
   AudioChatService _audioChatService = AudioChatService();
   AudioRoomChatService _audioChatRoomService = AudioRoomChatService();
   AgoraService _agoraService = AgoraService();
+  UserService _userService = UserService();
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
-  late Stream<List<AudioChatRoomModel>> _audioChatMessageStream;
   List raisedHands = [];
   List speakers = [];
   List participants = [];
@@ -49,6 +50,8 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
   bool userHandRaised = false;
   bool muted = true;
   late int localUid;
+  List<AudioChatRoomModel> audioChatList = [];
+  StreamController<List<AudioChatRoomModel>> audioChatListStream = StreamController.broadcast();
   static late RtcEngine engine;
   String agoraAppId = dotenv.get('AGORA_APP_ID');
   TimerService timerService = TimerService();
@@ -56,7 +59,10 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
 
   @override
   void initState() {
-    _audioChatMessageStream = _audioChatRoomService.getAudioRoomMessages(widget.room.id);
+    getRoomMessage();
+    _audioChatRoomService.getAudioRoomMessagesStream(widget.room.id).listen((event) {
+      addSenderToMessage(event);
+    });
     MyAppState.reduxStore!.dispatch(CreateSelectedRoomAction(Room()));
     raisedHands = widget.room.raisedHands;
     participants = widget.room.participants;
@@ -86,6 +92,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     timerService.reset();
     _audioChatService.disposeSingLiveStream();
     _audioChatRoomService.disposeAudioRoomMessageStream();
+    audioChatListStream.close();
     removeUserFromRaisedHands();
     super.dispose();
   }
@@ -194,7 +201,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
           children: [
             Expanded(
               child: StreamBuilder<List<AudioChatRoomModel>>(
-                  stream: _audioChatMessageStream,
+                  stream: audioChatListStream.stream,
                   initialData: [],
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -225,7 +232,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                               child: Image(
                                 height: 40.0,
                                 width: 40.0,
-                                image: NetworkImage(snapshot.data!.last.profilePicture),
+                                image: NetworkImage(snapshot.data!.last.sender!.profilePictureURL),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -238,7 +245,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                               margin: EdgeInsets.only(top: 5),
                               padding: EdgeInsets.only(top: 5),
                               child: Text(
-                                snapshot.data!.last.username,
+                                snapshot.data!.last.sender!.username,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -270,6 +277,7 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
                 margin: const EdgeInsets.only(left: 15.0, right: 15.0),
                 child: TextField(
                   controller: _messageController,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     enabledBorder: OutlineInputBorder(
@@ -321,8 +329,6 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
       lastMessageDate: Timestamp.now(),
       lastMessage: _messageController.text,
       senderId: user.userID,
-      username: user.username,
-      profilePicture: user.profilePictureURL,
     );
     bool isSuccessful = await _audioChatRoomService.addAudioRoomMessage(conversation);
     if (isSuccessful) {
@@ -543,6 +549,25 @@ class AudioRoomScreenState extends State<AudioRoomScreen> {
     var minutes = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
     var seconds = (secs % 60).toString().padLeft(2, '0');
     return "$hours:$minutes:$seconds";
+  }
+
+  Future<void> getRoomMessage() async {
+    List<AudioChatRoomModel> postList = await _audioChatRoomService.getAudioRoomMessages(widget.room.id);
+    addSenderToMessage(postList);
+  }
+
+  Future<void> addSenderToMessage(List<AudioChatRoomModel> chatList) async {
+    audioChatList.clear();
+    for (var item in chatList) {
+      if (item.senderId == MyAppState.currentUser!.userID) {
+        item.sender = MyAppState.currentUser!;
+      } else {
+        User? author = await _userService.getCurrentUser(item.senderId);
+        item.sender = author;
+      }
+      audioChatList.add(item);
+    }
+    audioChatListStream.sink.add(audioChatList);
   }
 
   Widget appBarActions() {

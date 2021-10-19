@@ -62,6 +62,7 @@ class _UserSearchState extends State<UserSearch> {
           child: Center(
             child: TextField(
               controller: _searchController,
+              textInputAction: TextInputAction.next,
               onChanged: (input) async {
                 if (input.isNotEmpty) {
                   var userList = await _searchService.searchUsers(input);

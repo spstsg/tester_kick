@@ -31,7 +31,9 @@ class SearchService {
 
     Future.forEach(users.docs, (DocumentSnapshot user) {
       User userModel = User.fromJson(user.data() as Map<String, dynamic>);
-      _userList.add(userModel);
+      if (!userModel.deleted) {
+        _userList.add(userModel);
+      }
     });
     return _userList;
   }
@@ -55,7 +57,9 @@ class SearchService {
         await firestore.collection(USERS).where('lowercaseTeam', isGreaterThanOrEqualTo: searchTerm).get();
     await Future.forEach(result.docs, (DocumentSnapshot user) {
       User userModel = User.fromJson(user.data() as Map<String, dynamic>);
-      _usersList.add(userModel);
+      if (!userModel.deleted) {
+        _usersList.add(userModel);
+      }
     });
     return _usersList;
   }
