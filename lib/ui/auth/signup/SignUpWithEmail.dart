@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
 import 'package:kick_chat/models/user_model.dart';
@@ -26,7 +27,6 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
   int passwordLength = 0;
   bool togglePassword = false;
   bool userEmailExist = false;
-  String signupNextButton = 'Next';
   String emailErrorMessage = '';
   bool isLoading = false;
 
@@ -73,7 +73,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
             Padding(
               padding: EdgeInsets.only(left: 25, right: 25, top: 16),
               child: Text(
-                'Sign up',
+                'signupText'.tr(),
                 style: TextStyle(
                   color: ColorPalette.black,
                   fontSize: 24,
@@ -121,7 +121,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                           left: 16,
                           right: 16,
                         ),
-                        hintText: 'Email',
+                        hintText: 'emailText'.tr(),
                         hintStyle: TextStyle(fontSize: 17),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(0.0),
@@ -217,7 +217,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                             });
                           },
                         ),
-                        hintText: 'Password',
+                        hintText: 'passwordText'.tr(),
                         hintStyle: TextStyle(fontSize: 17),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(0.0),
@@ -254,15 +254,12 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
             ConstrainedBox(
               constraints: BoxConstraints(minWidth: double.infinity),
               child: Padding(
-                padding: EdgeInsets.only(
-                  right: 24.0,
-                  left: 24.0,
-                ),
+                padding: EdgeInsets.only(right: 24.0, left: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Your password must have:',
+                      'yourPasswordMustHave'.tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: ColorPalette.black,
@@ -279,7 +276,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          '8 to 20 characers',
+                          'eightToTwentyCharacters'.tr(),
                           style: TextStyle(
                             color: ColorPalette.grey,
                             fontSize: 16,
@@ -298,7 +295,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          'Numbers, letters, and special characters',
+                          'numbersLettersAndSpecialCharacters'.tr(),
                           style: TextStyle(
                             color: ColorPalette.grey,
                             fontSize: 16,
@@ -339,7 +336,7 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
                           ],
                         )
                       : Text(
-                          signupNextButton,
+                          'nextText'.tr(),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -361,18 +358,17 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
       isLoading = true;
     });
     // whenever you are testing, you can comment this part
-    // var validateEmail = await _authService.validateEmail(_emailController.text.trim());
-    // if (!validateEmail['validators']['mx']['valid'] &&
-    //     !validateEmail['validators']['smtp']['valid'] &&
-    //     !validateEmail['valid']) {
-    //   setState(() {
-    //     emailErrorMessage = 'Email is invalid';
-    //     userEmailExist = true;
-    //     signupNextButton = 'Next';
-    //     isLoading = false;
-    //   });
-    //   return;
-    // }
+    var validateEmail = await _authService.validateEmail(_emailController.text.trim());
+    if (!validateEmail['validators']['mx']['valid'] &&
+        !validateEmail['validators']['smtp']['valid'] &&
+        !validateEmail['valid']) {
+      setState(() {
+        emailErrorMessage = 'emailInvalid'.tr();
+        userEmailExist = true;
+        isLoading = false;
+      });
+      return;
+    }
 
     var emailExist = await _authService.checkIfEmailExist(
       _emailController.text.trim(),
@@ -387,9 +383,8 @@ class _SignUpWithEmailState extends State<SignUpWithEmail> {
       push(context, DateOfBirthScreen('signup', 'email', ''));
     } else {
       setState(() {
-        emailErrorMessage = 'Email is already in use';
+        emailErrorMessage = 'emailAlreadyInUse'.tr();
         userEmailExist = true;
-        signupNextButton = 'Next';
         isLoading = false;
       });
     }

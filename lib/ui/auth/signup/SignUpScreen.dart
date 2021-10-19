@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -17,6 +18,9 @@ import 'package:kick_chat/ui/auth/login/LoginScreen.dart';
 import 'package:kick_chat/ui/auth/phone/PhoneNumberInputScreen.dart';
 import 'package:kick_chat/ui/auth/signup/SignUpWithEmail.dart';
 import 'package:kick_chat/ui/home/nav_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+String privacyPolicyUrl = 'https://www.kickchatapp.com/privacy-policy';
 
 class SignUpScreen extends StatelessWidget {
   final UserService _userService = UserService();
@@ -51,7 +55,7 @@ class SignUpScreen extends StatelessWidget {
                   bottom: 8,
                 ),
                 child: Text(
-                  'Sign up for KickChat',
+                  'signupTitle'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: ColorPalette.black,
@@ -61,11 +65,7 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                  right: 40.0,
-                  left: 40.0,
-                  top: 40,
-                ),
+                padding: EdgeInsets.only(right: 40.0, left: 40.0, top: 40),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     minWidth: double.infinity,
@@ -98,7 +98,7 @@ class SignUpScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              'Phone number',
+                              'phoneNumber'.tr(),
                               style: TextStyle(
                                 color: ColorPalette.black,
                                 fontSize: 16,
@@ -147,7 +147,7 @@ class SignUpScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              'Email/password',
+                              'emailPassword'.tr(),
                               style: TextStyle(
                                 color: ColorPalette.black,
                                 fontSize: 16,
@@ -161,11 +161,7 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                  right: 40.0,
-                  left: 40.0,
-                  top: 15,
-                ),
+                padding: const EdgeInsets.only(right: 40.0, left: 40.0, top: 15),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(minWidth: double.infinity),
                   child: ElevatedButton(
@@ -250,72 +246,86 @@ class SignUpScreen extends StatelessWidget {
                   Navigator.pushReplacement(context, _createRoute());
                 },
                 child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "alreadyHaveAnAccount".tr(),
+                        style: TextStyle(
+                          fontSize: 17,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          "loginText".tr(),
                           style: TextStyle(
                             fontSize: 17,
+                            color: ColorPalette.primary,
+                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            "Log in",
-                            style: TextStyle(
-                              fontSize: 17,
-                              color: ColorPalette.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      ],
-                    )),
+                      )
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
       bottomSheet: Container(
-          height: 80,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 25, right: 25, top: 20),
-            child: RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.black,
-                ),
-                children: [
-                  TextSpan(
-                    text: 'By using this app, you agree to our Privacy Policy and Terms of Service, available',
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  TextSpan(
-                    text: ' Here',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: ColorPalette.black,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        print('clicking...');
-                      },
-                  ),
-                ],
+        height: 80,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 20),
+          child: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14.0,
+                color: Colors.black,
               ),
+              children: [
+                TextSpan(
+                  text: 'agreePolicyOne'.tr(),
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+                TextSpan(
+                  text: 'agreePolicyTwo'.tr(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ColorPalette.black,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () async {
+                      if (await canLaunch(privacyPolicyUrl)) {
+                        await launch(privacyPolicyUrl);
+                      } else {
+                        await showCupertinoAlert(
+                          context,
+                          'errorText'.tr(),
+                          'privacyPolicyError'.tr(),
+                          'ok'.tr(),
+                          '',
+                          '',
+                          false,
+                        );
+                      }
+                    },
+                ),
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
@@ -361,11 +371,11 @@ class SignUpScreen extends StatelessWidget {
             NavScreen(),
             false,
             true,
-            'Signing up, Please wait...',
+            'signingUp'.tr(),
           );
         } else {
           final snackBar = SnackBar(
-            content: Text('Sorry, account does not exist.'),
+            content: Text('socialAccountError'.tr()),
             backgroundColor: Colors.red,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -385,12 +395,12 @@ class SignUpScreen extends StatelessWidget {
           DateOfBirthScreen('signup', 'facebook', result),
           false,
           true,
-          'Please wait...',
+          'pleaseWait'.tr(),
         );
       }
     } catch (error) {
       final snackBar = SnackBar(
-        content: Text('Error authenticating. Please try again later.'),
+        content: Text('authenticationError'.tr()),
         backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -415,11 +425,11 @@ class SignUpScreen extends StatelessWidget {
             NavScreen(),
             false,
             true,
-            'Signing up, Please wait...',
+            'signingUp'.tr(),
           );
         } else {
           final snackBar = SnackBar(
-            content: Text('Sorry, account does not exist.'),
+            content: Text('socialAccountError'.tr()),
             backgroundColor: Colors.red,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -439,12 +449,12 @@ class SignUpScreen extends StatelessWidget {
           DateOfBirthScreen('signup', 'google', result),
           false,
           true,
-          'Please wait...',
+          'pleaseWait'.tr(),
         );
       }
     } catch (error) {
       final snackBar = SnackBar(
-        content: Text('Error authenticating. Please try again later.'),
+        content: Text('authenticationError'.tr()),
         backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);

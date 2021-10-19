@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,7 +38,6 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
   SharedPreferencesService _sharedPreferences = SharedPreferencesService();
   TextEditingController _searchController = TextEditingController();
   User? userData;
-  String usernameSignupButton = 'Sign up';
   List<String> clubs = [];
   bool isLoading = false;
   String cloudinaryAppEndpoint = dotenv.get('CLOUDINARY_APP_ENDPOINT');
@@ -63,7 +63,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
-          widget.type == 'login' ? 'Sign in' : 'Sign up',
+          widget.type == 'login' ? 'signinText'.tr() : 'signupText'.tr(),
           style: TextStyle(
             color: ColorPalette.black,
             fontSize: 18,
@@ -89,7 +89,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
                     child: Text(
-                      'Set primary team',
+                      'setPrimaryTeam'.tr(),
                       style: TextStyle(
                         color: ColorPalette.black,
                         fontWeight: FontWeight.bold,
@@ -103,7 +103,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      'Search and select the main team you support.',
+                      'searchAndSelectTeam'.tr(),
                       style: TextStyle(
                         color: ColorPalette.grey,
                         fontWeight: FontWeight.normal,
@@ -145,7 +145,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                                   left: 16,
                                   right: 16,
                                 ),
-                                hintText: 'Enter search',
+                                hintText: 'enterSearch'.tr(),
                                 hintStyle: TextStyle(fontSize: 17),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(0.0),
@@ -235,7 +235,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
                                 ],
                               )
                             : Text(
-                                usernameSignupButton,
+                                'signupText'.tr(),
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: ColorPalette.white,
@@ -326,7 +326,7 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           push(context, NavScreen());
         } else if (user is String) {
           setState(() {
-            usernameSignupButton = 'Sign up';
+            isLoading = false;
           });
           final snackBar = SnackBar(content: Text(user.toString()));
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -334,11 +334,12 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
       }
     } catch (error) {
       setState(() {
-        usernameSignupButton = 'Sign up';
         isLoading = false;
       });
-      String message = 'Couldn\'t sign up. Please try again.';
-      final snackBar = SnackBar(content: Text(message.toString()));
+      final snackBar = SnackBar(
+        content: Text('authenticationError'.tr()),
+        backgroundColor: Colors.red,
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
@@ -371,44 +372,20 @@ class _SetTeamNameScreenState extends State<SetTeamNameScreen> {
           push(context, NavScreen());
         } else if (user is String) {
           setState(() {
-            usernameSignupButton = 'Sign up';
+            isLoading = false;
           });
           final snackBar = SnackBar(content: Text(user.toString()));
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       }
-    } on auth.FirebaseAuthException catch (error) {
-      setState(() {
-        usernameSignupButton = 'Sign up';
-        isLoading = false;
-      });
-      String message = 'Couldn\'t sign up. Please try again.';
-      switch (error.code) {
-        case 'email-already-in-use':
-          message = 'Email already in use';
-          break;
-        case 'invalid-email':
-          message = 'Enter valid e-mail';
-          break;
-        case 'operation-not-allowed':
-          message = 'Email/password accounts are not enabled';
-          break;
-        case 'weak-password':
-          message = 'Password must be more than 5 characters';
-
-          break;
-        case 'too-many-requests':
-          message = 'Too many requests, Please try again later.';
-          break;
-      }
-      final snackBar = SnackBar(content: Text(message.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } catch (e) {
       setState(() {
-        usernameSignupButton = 'Sign up';
         isLoading = false;
       });
-      final snackBar = SnackBar(content: Text('Error creating an account. Try again later'));
+      final snackBar = SnackBar(
+        content: Text('authenticationError'.tr()),
+        backgroundColor: Colors.red,
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }

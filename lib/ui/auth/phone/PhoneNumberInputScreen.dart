@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -38,7 +39,6 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
   AuthService _authService = AuthService();
   UserService _userService = UserService();
   String _phoneNumber = '';
-  String buttonName = 'Send code';
   String verificationID = '';
   String resendToken = '';
   int phoneNumberLength = 0;
@@ -72,7 +72,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: ColorPalette.white),
         title: Text(
-          widget.type == 'login' ? "Sign in" : 'Sign up',
+          widget.type == 'login' ? 'signinText'.tr() : 'signupText'.tr(),
           style: TextStyle(
             color: ColorPalette.black,
             fontSize: 18,
@@ -120,10 +120,8 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                   ignoreBlank: false,
                   autoValidateMode: AutovalidateMode.disabled,
                   inputDecoration: InputDecoration(
-                    hintText: 'Phone Number',
-                    hintStyle: TextStyle(
-                      fontSize: 17,
-                    ),
+                    hintText: 'phoneNumber'.tr(),
+                    hintStyle: TextStyle(fontSize: 17),
                     border: OutlineInputBorder(
                       borderSide: BorderSide.none,
                     ),
@@ -173,7 +171,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                           ],
                         )
                       : Text(
-                          buttonName,
+                          'sendCode'.tr(),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -198,7 +196,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
             new Align(
               alignment: Alignment.center,
               child: Text(
-                'Verify your phone number',
+                'verifyPhoneNumber'.tr(),
                 style: TextStyle(
                   color: ColorPalette.black,
                   fontSize: 24,
@@ -210,7 +208,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
               alignment: Alignment.center,
               height: 40,
               child: Text(
-                truncateString('We have sent an sms code to $_phoneNumber', 42),
+                truncateString('weSentCode'.tr(args: ['$_phoneNumber']), 42),
                 style: TextStyle(
                   color: ColorPalette.black,
                   fontSize: 16,
@@ -258,7 +256,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                   ),
                   onPressed: !isLoading ? () => _submitCode() : null,
                   child: Text(
-                    'Verify',
+                    'verifyText'.tr(),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -299,12 +297,12 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
         (String verificationId) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Code verification timeout, request new code.'),
+              content: Text('codeVerificationTimeout'.tr()),
+              backgroundColor: Colors.red,
             ),
           );
           setState(() {
             verificationID = verificationId;
-            buttonName = 'Send code';
           });
         },
         (String verificationId, int? forceResendingToken) {
@@ -314,30 +312,27 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
           });
         },
         (auth.FirebaseAuthException error) {
-          String message = 'An error has occurred, please try again.';
-          switch (error.code) {
-            case 'invalid-verification-code':
-              message = 'Invalid code or has been expired.';
-              break;
-            case 'user-disabled':
-              message = 'This user has been disabled.';
-              break;
-            default:
-              message = 'An error has occurred, please try again.';
-              break;
-          }
           setState(() {
             phoneNumberLength = 0;
-            buttonName = 'Send code';
+            isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
+            SnackBar(
+              content: Text('errorOccurred'.tr()),
+              backgroundColor: Colors.red,
+            ),
           );
         },
         (auth.PhoneAuthCredential credential) async {},
       );
     } catch (e) {
       setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('errorOccurred'.tr()),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -381,31 +376,18 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Couldn\'t get verification ID'),
-          duration: Duration(seconds: 6),
+          content: Text('errorOccurred'.tr()),
+          backgroundColor: Colors.red,
         ));
       }
-    } on auth.FirebaseAuthException catch (exception) {
-      String message = 'An error has occurred, please try again.';
-      switch (exception.code) {
-        case 'invalid-verification-code':
-          message = 'Invalid code or has been expired.';
-          break;
-        case 'user-disabled':
-          message = 'This user has been disabled.';
-          break;
-        default:
-          message = 'An error has occurred, please try again.';
-          break;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (e) {
       setState(() {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error has occurred, please try again.'),
+          content: Text('errorOccurred'.tr()),
+          backgroundColor: Colors.red,
         ),
       );
     }

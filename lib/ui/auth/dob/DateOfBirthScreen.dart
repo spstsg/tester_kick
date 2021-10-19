@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kick_chat/colors/color_palette.dart';
@@ -31,7 +32,6 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
   DateTime _selectedDate = DateTime.now();
   bool isValidDate = false;
   bool eligibleDate = false;
-  String dobNextButton = 'Next';
   User? userData;
   bool isLoading = false;
 
@@ -63,7 +63,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
-          widget.type == 'login' ? "Sign in" : 'Sign up',
+          widget.type == 'login' ? 'signinText'.tr() : 'signupText'.tr(),
           style: TextStyle(
             color: ColorPalette.black,
             fontSize: 18,
@@ -80,12 +80,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
       ),
       body: SafeArea(
         child: Container(
-          margin: new EdgeInsets.only(
-            left: 25,
-            right: 25,
-            bottom: 16,
-            top: 16,
-          ),
+          margin: new EdgeInsets.only(left: 25, right: 25, bottom: 16, top: 16),
           child: new Form(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +90,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
                     child: Text(
-                      'Select your date of birth',
+                      'selectDOB'.tr(),
                       style: TextStyle(
                         color: ColorPalette.black,
                         fontWeight: FontWeight.bold,
@@ -109,7 +104,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      'Enter your date of birth. This won\'t be made public.',
+                      'enterDOB'.tr(),
                       style: TextStyle(
                         color: ColorPalette.grey,
                         fontWeight: FontWeight.normal,
@@ -135,17 +130,14 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                               keyboardType: TextInputType.emailAddress,
                               cursorColor: ColorPalette.primary,
                               decoration: InputDecoration(
-                                contentPadding: new EdgeInsets.only(
-                                  left: 16,
-                                  right: 16,
-                                ),
+                                contentPadding: EdgeInsets.only(left: 16, right: 16),
                                 suffixIcon: isValidDate
                                     ? Icon(
                                         Icons.check,
                                         color: ColorPalette.primary,
                                       )
                                     : Padding(padding: EdgeInsets.zero),
-                                hintText: 'Birthday',
+                                hintText: 'birthdayText'.tr(),
                                 hintStyle: TextStyle(fontSize: 17),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(0.0),
@@ -182,10 +174,8 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                     ? Padding(
                         padding: const EdgeInsets.only(bottom: 25),
                         child: Text(
-                          'Sorry, you are not eligible to create an account.',
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
+                          'notEligibleError'.tr(),
+                          style: TextStyle(color: Colors.red),
                         ),
                       )
                     : Padding(
@@ -217,7 +207,7 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
                               ],
                             )
                           : Text(
-                              dobNextButton,
+                              'nextText'.tr(),
                               style: TextStyle(
                                 fontSize: 18,
                                 color: ColorPalette.white,
@@ -286,7 +276,6 @@ class _DateOfBirthScreenState extends State<DateOfBirthScreen> {
       setState(() {
         isLoading = false;
         eligibleDate = true;
-        dobNextButton = 'Next';
       });
     }
   }

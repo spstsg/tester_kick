@@ -41,6 +41,10 @@ WHERE TO ADD NOTIFICATION
 - Send notification when a user share another user's post - done
 - Create a page for displaying user's chat notification - done
 
+FOR LOCALIZATION
+
+- Make sure to add the language locale to CFBundleLocalizations in the info.plist file for ios
+
 <!-- - When a user creates a post, notify all his followers
 - Send chat
   - If the receiver is still on the app but on a different page, use local notification

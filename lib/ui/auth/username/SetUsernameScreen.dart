@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/main.dart';
@@ -26,7 +27,6 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
   User? userData;
   int usernameLength = 0;
   bool usernameExist = false;
-  String usernameSignupButton = 'Sign up';
   bool isLoading = false;
 
   @override
@@ -50,7 +50,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: Colors.white),
         title: Text(
-          widget.type == 'login' ? 'Sign in' : 'Sign up',
+          widget.type == 'login' ? 'signinText'.tr() : 'signupText'.tr(),
           style: TextStyle(
             color: ColorPalette.black,
             fontSize: 18,
@@ -76,7 +76,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
                     child: Text(
-                      'Create username',
+                      'createUsername'.tr(),
                       style: TextStyle(
                         color: ColorPalette.black,
                         fontWeight: FontWeight.bold,
@@ -90,7 +90,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      'Enter your username. This will be visible to other users.',
+                      'enterVisibleYourUsername'.tr(),
                       style: TextStyle(
                         color: ColorPalette.grey,
                         fontWeight: FontWeight.normal,
@@ -125,7 +125,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                                   left: 16,
                                   right: 16,
                                 ),
-                                hintText: 'Enter your username',
+                                hintText: 'enterYourUsername'.tr(),
                                 hintStyle: TextStyle(fontSize: 17),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(0.0),
@@ -163,7 +163,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 25),
                     child: Text(
-                      usernameExist ? 'Username already exists' : '',
+                      usernameExist ? 'usernameAlreadyExist'.tr() : '',
                       style: TextStyle(
                         color: Colors.red,
                       ),
@@ -201,7 +201,7 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
                               ],
                             )
                           : Text(
-                              usernameSignupButton,
+                              'signupText'.tr(),
                               style: TextStyle(
                                 fontSize: 18,
                                 color: ColorPalette.white,
@@ -242,7 +242,6 @@ class _SetUsernameScreenState extends State<SetUsernameScreen> {
     } else {
       setState(() {
         usernameExist = true;
-        usernameSignupButton = 'Sign up';
         isLoading = false;
       });
     }

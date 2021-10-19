@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/constants.dart';
 import 'package:kick_chat/main.dart';
@@ -33,7 +34,6 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
   bool userEmailDoesNotExist = false;
   bool userPasswordDoesNotExist = false;
   int usernameLength = 0;
-  String loginButtonText = 'Log in';
   bool isLoading = false;
 
   @override
@@ -68,7 +68,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
             Padding(
               padding: EdgeInsets.only(left: 25, right: 25, top: 16),
               child: Text(
-                'Log in',
+                'loginText'.tr(),
                 style: TextStyle(
                   color: ColorPalette.black,
                   fontSize: 24,
@@ -113,7 +113,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                             Icons.check,
                             color: ColorPalette.primary,
                           ),
-                    hintText: 'Email',
+                    hintText: 'emailText'.tr(),
                     hintStyle: TextStyle(fontSize: 17),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(0.0),
@@ -144,7 +144,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                 padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
                 child: userEmailDoesNotExist
                     ? Text(
-                        'Email does not exist',
+                        'emailInvalid'.tr(),
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 14,
@@ -180,7 +180,6 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                         validPassword = false;
                       });
                   },
-                  onFieldSubmitted: (password) {},
                   textInputAction: TextInputAction.next,
                   style: TextStyle(fontSize: 17),
                   cursorColor: ColorPalette.primary,
@@ -198,7 +197,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                         });
                       },
                     ),
-                    hintText: 'Password',
+                    hintText: 'passwordText'.tr(),
                     hintStyle: TextStyle(fontSize: 17),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(0.0),
@@ -235,7 +234,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                 padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
                 child: userPasswordDoesNotExist
                     ? Text(
-                        'Password is invalid',
+                        'passwordInvalid'.tr(),
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 14,
@@ -256,7 +255,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                     );
                   },
                   child: Text(
-                    'Forgot password?',
+                    'forgotPassword'.tr(),
                     style: TextStyle(
                       color: Colors.lightBlue,
                       fontWeight: FontWeight.bold,
@@ -296,7 +295,7 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
                           ],
                         )
                       : Text(
-                          loginButtonText,
+                          'loginText'.tr(),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -327,7 +326,6 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
     } else {
       setState(() {
         userEmailDoesNotExist = true;
-        loginButtonText = 'Log in';
         isLoading = false;
       });
     }
@@ -352,47 +350,28 @@ class _LoginWithEmailState extends State<LoginWithEmail> {
         } else {
           setState(() {
             userEmailDoesNotExist = true;
-            loginButtonText = 'Log in';
             isLoading = false;
           });
         }
       } else if (user is String) {
         setState(() {
-          loginButtonText = 'Log in';
           isLoading = false;
         });
-        final snackBar = SnackBar(content: Text(user.toString()));
+        final snackBar = SnackBar(
+          content: Text(user.toString()),
+          backgroundColor: Colors.red,
+        );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
-    } on auth.FirebaseAuthException catch (error) {
+    } catch (error) {
       setState(() {
-        loginButtonText = 'Log in';
         isLoading = false;
       });
-      switch (error.code) {
-        case "invalid-email":
-          return 'Email address is malformed.';
-        case "wrong-password":
-          setState(() {
-            userPasswordDoesNotExist = true;
-            isLoading = false;
-          });
-          return 'Wrong password.';
-        case "user-not-found":
-          return 'No user corresponding to the given email address.';
-        case "user-disabled":
-          return 'This user has been disabled.';
-        case 'too-many-requests':
-          return 'Too many attempts to sign in as this user.';
-      }
-      // to be removed
-      final snackBar = SnackBar(content: Text('Login failed'));
+      final snackBar = SnackBar(
+        content: Text('authenticationError'.tr()),
+        backgroundColor: Colors.red,
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } catch (e) {
-      setState(() {
-        loginButtonText = 'Log in';
-        isLoading = false;
-      });
     }
   }
 }

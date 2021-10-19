@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,6 +38,7 @@ HandleNotificationService _handleNotificationService = HandleNotificationService
 void main() async {
   await dotenv.load(fileName: "assets/.env");
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   // Wait for Firebase to initialize and set `_initialized` state to true
   await Firebase.initializeApp();
 
@@ -45,7 +47,15 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_handleNotificationService.backgroundMessageHandler);
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en')],
+      path: 'assets/translations',
+      fallbackLocale: Locale('en'),
+      useOnlyLangCode: true,
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -155,14 +165,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     if (_error) {}
-
-    /// Show a loader until FlutterFire is initialized
-    if (!_initialized) {
-      return Container(
-        color: Colors.white,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
     final store = DevToolsStore<AppState>(appStateReducer, initialState: AppState.initialState());
     MyAppState.reduxStore = store;
 
@@ -171,8 +173,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         navigatorObservers: [routeObserver],
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         debugShowCheckedModeBanner: false,
-        title: 'KickChat',
+        title: 'appName'.tr(),
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,

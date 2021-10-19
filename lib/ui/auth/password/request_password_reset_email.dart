@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:kick_chat/colors/color_palette.dart';
 import 'package:kick_chat/services/auth/auth_service.dart';
@@ -53,7 +54,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
             Padding(
               padding: EdgeInsets.only(left: 25, right: 25, top: 16),
               child: Text(
-                'Request password reset email',
+                'requestPasswordReset'.tr(),
                 style: TextStyle(
                   color: ColorPalette.black,
                   fontSize: 24,
@@ -80,10 +81,8 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
                   cursorColor: Colors.blue,
                   decoration: InputDecoration(
                     contentPadding: new EdgeInsets.only(left: 16, right: 16),
-                    hintText: 'Enter your email',
-                    hintStyle: TextStyle(
-                      fontSize: 17,
-                    ),
+                    hintText: 'enterEmail'.tr(),
+                    hintStyle: TextStyle(fontSize: 17),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(0.0),
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
@@ -110,7 +109,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
                 padding: EdgeInsets.only(top: 4.0, right: 24.0, left: 24.0),
                 child: !userEmailExist && validEmail
                     ? Text(
-                        'Email is invalid',
+                        'emailInvalid'.tr(),
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 14,
@@ -143,7 +142,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
                             ),
                             SizedBox(width: 24),
                             Text(
-                              'Please wait...',
+                              'pleaseWait'.tr(),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -153,7 +152,7 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
                           ],
                         )
                       : Text(
-                          'Send email',
+                          'sendEmail'.tr(),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -194,9 +193,9 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
       _emailController.text = '';
       showCupertinoAlert(
         context,
-        'Email sent',
-        'An email has been sent to you, Click the link provided to complete password reset',
-        'OK',
+        'emailSent'.tr(),
+        'emailHasBeenSent'.tr(),
+        'ok'.tr(),
         '',
         '',
         false,
@@ -205,9 +204,9 @@ class _RequestPasswordResetEmailState extends State<RequestPasswordResetEmail> {
       setState(() => isLoading = false);
       showCupertinoAlert(
         context,
-        'Error',
-        'An error occured. Please try again later.',
-        'OK',
+        'errorText'.tr(),
+        'errorOccurred'.tr(),
+        'ok'.tr(),
         '',
         '',
         false,

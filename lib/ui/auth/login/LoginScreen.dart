@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -62,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     bottom: 8,
                   ),
                   child: Text(
-                    'Log in to KickChat',
+                    'loginTitle'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: ColorPalette.black,
@@ -72,15 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                    right: 40.0,
-                    left: 40.0,
-                    top: 40,
-                  ),
+                  padding: const EdgeInsets.only(right: 40.0, left: 40.0, top: 40),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: double.infinity,
-                    ),
+                    constraints: const BoxConstraints(minWidth: double.infinity),
                     child: ElevatedButton(
                       onPressed: () {
                         pushAndRemoveUntil(
@@ -109,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Phone number',
+                                'phoneNumber'.tr(),
                                 style: TextStyle(
                                   color: ColorPalette.black,
                                   fontSize: 16,
@@ -158,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Email/password',
+                                'emailPassword'.tr(),
                                 style: TextStyle(
                                   color: ColorPalette.black,
                                   fontSize: 16,
@@ -172,11 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                    right: 40.0,
-                    left: 40.0,
-                    top: 15,
-                  ),
+                  padding: const EdgeInsets.only(right: 40.0, left: 40.0, top: 15),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(minWidth: double.infinity),
                     child: ElevatedButton(
@@ -276,16 +267,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account?",
-                          style: TextStyle(
-                            fontSize: 17,
-                          ),
+                          "dontHaveAccount".tr(),
+                          style: TextStyle(fontSize: 17),
                           textAlign: TextAlign.center,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Text(
-                            "Sign up",
+                            "signupText".tr(),
                             style: TextStyle(
                               fontSize: 17,
                               color: ColorPalette.primary,
@@ -335,11 +324,11 @@ class _LoginScreenState extends State<LoginScreen> {
             NavScreen(),
             false,
             true,
-            'Logging in, Please wait...',
+            'loggingIn'.tr(),
           );
         } else {
           final snackBar = SnackBar(
-            content: Text('Sorry, account does not exist.'),
+            content: Text('socialAccountError'.tr()),
             backgroundColor: Colors.red,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -359,12 +348,12 @@ class _LoginScreenState extends State<LoginScreen> {
           DateOfBirthScreen('login', 'facebook', result),
           false,
           true,
-          'Please wait...',
+          'pleaseWait'.tr(),
         );
       }
     } catch (error) {
       final snackBar = SnackBar(
-        content: Text('Error authenticating. Please try again later.'),
+        content: Text('authenticationError'.tr()),
         backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -390,11 +379,11 @@ class _LoginScreenState extends State<LoginScreen> {
             NavScreen(),
             false,
             true,
-            'Logging in, Please wait...',
+            'loggingIn'.tr(),
           );
         } else {
           final snackBar = SnackBar(
-            content: Text('Sorry, account does not exist.'),
+            content: Text('socialAccountError'.tr()),
             backgroundColor: Colors.red,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -414,12 +403,12 @@ class _LoginScreenState extends State<LoginScreen> {
           DateOfBirthScreen('login', 'google', result),
           false,
           true,
-          'Please wait...',
+          'pleaseWait'.tr(),
         );
       }
     } catch (error) {
       final snackBar = SnackBar(
-        content: Text('Error authenticating. Please try again later.'),
+        content: Text('authenticationError'.tr()),
         backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
